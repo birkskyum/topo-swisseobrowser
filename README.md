@@ -96,7 +96,7 @@ The swissEO Browser therefore always uses the physical reflectance.
 
 ## Features
 
-- **Date selection as in Copernicus Browser** — a link without a date opens on the latest date with data;
+- **Date selection as in Copernicus Browser**: a link without a date opens on the latest date with data;
   ‹ › jump to the previous / next date with data, the arrow button jumps to the latest one. The calendar,
   ‹ › and the grey "no data" date only consider acquisitions that **reach the map view**: the swath edge
   runs diagonally through each mosaic, so the data footprint of every relative orbit (`ORBIT_NR`) is read
@@ -104,22 +104,24 @@ The swissEO Browser therefore always uses the physical reflectance.
   The calendar marks days with data, has month / year pull-downs and a maximum cloud-coverage slider
   (cloud cover of the whole mosaic, from its `metadata.json`, as the tile cloud cover in Copernicus). Several orbits acquired on the same day are mosaicked
   (most recent on top).
-- **Configurations** — as the themes of the Copernicus Browser, the *Configuration* pull-down lists the
+- **Configurations**: as the themes of the Copernicus Browser, the *Configuration* pull-down lists the
   layers for a task; each layer keeps its own data source, and the calendar shows the dates of the
   selected layer's source:
-  - *Default* — composites (true color, false color, urban, SWIR, agriculture, geology), indices (NDVI,
+  - *Default*: composites (true color, false color, urban, SWIR, agriculture, geology), indices (NDVI,
     NDWI, moisture index, NDSI, NBR, AOT, **swissEO VHI** forest and vegetation, **swissEO NDVIdiff**),
     masks & quality (scene classification, cloud mask, terrain);
-  - *Agriculture* — as the Copernicus Browser Agriculture theme, with the TCI as true color and without
+  - *Agriculture*: as the Copernicus Browser Agriculture theme, with the TCI as true color and without
     custom scripts: true color, false color, NDVI, EVI, Barren Soil, Moisture Stress, moisture index,
     agriculture, SAVI (colour steps and scripts of the Copernicus layers);
-  - *Drought* — NDVI, swissEO VHI forest / vegetation, swissEO NDVIdiff, **swissEO NDVIdiff v200 BETA**,
-    swissEO NDVIz, NDDI, NDDI change vs. the previous year and the NDVI Analyst (Canton of Aargau);
-  - *Drought 2026* — as the Copernicus Browser *Drought and Floods* theme: true color, moisture index,
-    NDWI, Moisture Stress, NDVI, SWIR, urban and Highlight Optimized Natural Color, plus **highlights**.
-- **Highlights** (*Drought 2026*) — story cards as in the Copernicus Browser (live thumbnail, title,
-  dates, chevron). Clicking a card opens it on the map — the place at a fixed resolution and the TCI of the
-  two dates as a split at 50 % (earlier date left), with a swipe handle — and the card turns blue; clicking
+  - *Drought*: true color (TCI), NDVI, moisture index, swissEO VHI forest / vegetation, swissEO NDVIdiff,
+    **swissEO NDVIdiff v200 BETA**, swissEO NDVIz, NDDI, NDDI change vs. the previous year and the NDVI Analyst;
+  - *Drought 2026*: like the Copernicus Browser *Drought and Floods* theme, with true color, moisture index,
+    NDWI, Moisture Stress, NDVI, SWIR, urban and Highlight Optimized Natural Color, plus **highlights**;
+  - *Forest*: true color (TCI), swissEO VHI forest, swissEO NDVIdiff, swissEO NDVIdiff v200 BETA, swissEO
+    NDVIz, NDVI Analyst, Normalized Burn Ratio, moisture index and the **Forest Disturbance Classification**.
+- **Highlights** (*Drought 2026*): story cards as in the Copernicus Browser (live thumbnail, title,
+  dates, chevron). Clicking a card opens it on the map (the place at a fixed resolution and the TCI of the
+  two dates as a split at 50 %, earlier date left, with a swipe handle) and the card turns blue; clicking
   another card switches. The chevron shows the text (English, at most ten lines), ending with *Show effects
   and advanced options*, which opens the compare settings. Choosing a layer leaves the highlight. Shared
   links reopen the highlight. Stories (defined in `CONFIGS.DROUGHT2026.highlights`: title, dates, layer,
@@ -136,19 +138,20 @@ The swissEO Browser therefore always uses the physical reflectance.
   | All of Switzerland | 2025-08-08 ↔ 2026-07-24 | watson.ch |
 
   The Tages-Anzeiger article on the same topic could not be read (paywall, archive not reachable).
-- **Verification status** — behind every layer name a symbol shows whether the layer has been checked in
+- **Verification status**: behind every layer name a symbol shows whether the layer has been checked in
   depth (✓ *Verified*) or not yet (⏳ *To be verified*); see [Layer verification](#layer-verification).
-- **Layers** — S2-SR: true color — the **TCI** (`tci_10m`, 8-bit RGB, JPEG / YCbCr) delivered with each mosaic,
-  shown as delivered — and the composites computed from the bands (false color, urban, SWIR, agriculture,
+- **Layers**: for S2-SR the true color, i.e. the **TCI** delivered with each mosaic (`tci_10m`, 8-bit RGB,
+  JPEG / YCbCr) and shown as delivered, and the composites computed from the bands (false color, urban, SWIR, agriculture,
   geology 12-8-2, Barren Soil, Highlight Optimized Natural Color); NDVI, NDWI, moisture index, NDSI, NBR,
-  AOT, EVI, SAVI, Moisture Stress, NDDI; scene classification, cloud mask, terrain / solar incidence.
+  AOT, EVI, SAVI, Moisture Stress, NDDI, Forest Disturbance Classification; scene classification, cloud mask,
+  terrain / solar incidence.
   VHI: forest and vegetation (WMS). Layers are listed with the Copernicus Browser preview thumbnails as icons.
-- **Drought layers**
+- **Drought and forest layers**
   - *swissEO NDVIdiff* and *swissEO NDVIz* are read from their COGs with the colour ranges of the content
     information sheets (missing data grey). There are only three products per year (end of July, August,
-    September), so the product **nearest to the selected date** is shown — also in compare, timelapse,
+    September), so the product **nearest to the selected date** is shown, also in compare, timelapse,
     statistics and exports; the date line names the product used.
-  - *swissEO NDVIdiff v200 BETA* — beta data, not an official product: the year-on-year NDVI change of
+  - *swissEO NDVIdiff v200 BETA*: beta data, not an official product. The year-on-year NDVI change of
     two-month **cloud-free mosaics** instead of single acquisitions. The mosaic
     ([main_cloudfree_mosaic_csde.py](https://github.com/swisstopo/topo-satromo-v2/blob/dev-20261006/main_functions/main_cloudfree_mosaic_csde.py))
     takes, per pixel and band (B02, B03, B04, B08), the first quartile of all observations of the window that
@@ -173,9 +176,21 @@ The swissEO Browser therefore always uses the physical reflectance.
     | SWIR (Gu et al. 2007), with the offset | 74.5 % | 0.54 | 4 % |
 
     So the all-red map comes from the green NDWI, not from the reflectance offset.
-  - *NDDI change vs. previous year* — NDDI of the date minus NDDI one year earlier (notebook palette,
+  - *NDDI change vs. previous year*: NDDI of the date minus NDDI one year earlier (notebook palette,
     −1…1). The notebook compares May–July means of two years; here single dates are compared.
-  - *NDVI Analyst (Kt. Aargau)* — port of [RaffiBienz/ndvi_analyst](https://github.com/RaffiBienz/ndvi_analyst):
+  - *Forest Disturbance Classification*: the [Sentinel Hub custom script](https://custom-scripts.sentinel-hub.com/sentinel-2/forest_disturbance_classification/)
+    by Jonas Viehweger and Martin Puhm (Joanneum Research, EvoLand project), run in the browser. A LightGBM
+    model of 150 gradient-boosted trees classifies every pixel of a single date from B02, B05, B06, B8A, B11
+    and B12 into bark beetle, clear cut, salvage logged (low confidence, same colour as clear cut), wildfire
+    and windthrow; healthy forest is not drawn. Trained in Germany, Sweden and Spain (macro F1 0.83), valid
+    only on forest, so the forest mask is on by default (clouds and cloud shadows are masked too). The trees
+    (411 kB) are loaded on first use from jsDelivr, pinned to commit `0a071cf` of sentinel-hub/custom-scripts,
+    and are only accepted when the code consists of tree functions alone. **Scaling:** the trees split on
+    Sentinel Hub L2A digital numbers in the convention DN = 10000 × reflectance (data before processing
+    baseline 04.00, e.g. the script's 2019 example), so the browser passes `max(0, DN − 1000)` of the swissEO
+    bands, which equals 10000 × ρ. The port was checked against the original script (run in QuickJS): the same
+    class for all 3000 test vectors. A 256 px tile takes about 0.2 s with the forest mask.
+  - *NDVI Analyst*: port of [RaffiBienz/ndvi_analyst](https://github.com/RaffiBienz/ndvi_analyst) (Canton of Aargau):
     ΔNDVI = NDVI(date) − NDVI(reference) (negative reflectance set to 0), forest mask by default, change =
     ΔNDVI below a threshold (default −0.08) followed by a 3 × 3 majority filter against edge effects.
     *Display*: the difference, or the detected change. The AOI statistics add the report of the original
@@ -191,8 +206,8 @@ The swissEO Browser therefore always uses the physical reflectance.
   - legend with adjustable colour scale (min / max); NDSI is rendered as in the Copernicus Browser (snow
     above an adjustable threshold in blue, true color elsewhere);
   - masks: clouds and cloud shadows (OmniCloudMask), terrain shadow (terrain mask 200), a vegetation
-    mask (Off / Forest / All vegetation, from swissEO VHI v100) and a **custom mask**: your own polygons —
-    e.g. a forest map — loaded from a file or URL with the same import and limits as the area of interest;
+    mask (Off / Forest / All vegetation, from swissEO VHI v100) and a **custom mask**: your own polygons
+    (e.g. a forest map) loaded from a file or URL with the same import and limits as the area of interest;
     *Inside* keeps the data inside the polygons, *Outside* (inverted) the data outside. It works for every
     layer rendered from COGs (not the VHI WMS) and applies to the map, compare, AOI statistics, exports and
     the timelapse. After loading, the map zooms to the mask (a mask that comes with a shared link keeps the
@@ -200,32 +215,32 @@ The swissEO Browser therefore always uses the physical reflectance.
     *Replace* and *Remove*. A mask loaded from a URL is part of copied links, one from a file is not;
   - *effects and advanced options*: gain, gamma, red / green / blue ranges and opacity for all colour
     layers (for the TCI applied on top of the delivered image); for the composites computed from the bands
-    also **Look** — *Standard* stretch or *True
+    also **Look**: *Standard* stretch or *True
     color optimized* (the tone curve of the Copernicus Browser True color layer: contrast enhancement with
     highlight compression, saturation 1.2, sRGB); gain, gamma, **adaptive gain** (lowers the gain when the
-    view is bright — snow, glaciers, clouds — so that the 98th percentile of the reflectance stays just
+    view is bright (snow, glaciers, clouds) so that the 98th percentile of the reflectance stays just
     below saturation; never brightens, at most a factor of 4, recomputed when the view changes; not needed
     with the optimized look). Statistics, spectral explorer and pixel inspector use the reflectance bands
     also for true color; the inspector additionally shows the TCI value.
-- **Compare** — add layers to the compare list; opening the Compare panel (or the ⇄ map button) shows
+- **Compare**: add layers to the compare list; opening the Compare panel (or the ⇄ map button) shows
   them with a split or opacity effect, going back to Layers shows the single layer again. Reorder,
   remove and zoom to each entry (each titled with its layer name, prefixed by the data source only for
   the S2-SR layers). With the split effect a handle on the map swipes the top layer, with the
   date of each side next to it.
-- **Area of interest** — draw a rectangle (axis-aligned in LV95) or polygon, or import KML/KMZ, GPX, WKT,
+- **Area of interest**: draw a rectangle (axis-aligned in LV95) or polygon, or import KML/KMZ, GPX, WKT,
   GeoJSON, a zipped Shapefile, an MGRS / GEOREF cell or a bounding box (WGS84, LV95 and LV03 coordinates
-  are detected). Files can be uploaded or **loaded from a URL** (KML, KMZ, GPX, GeoJSON / JSON — also API or
-  WFS URLs returning GeoJSON —, WKT, zipped Shapefile; the type comes from the extension, otherwise from
+  are detected). Files can be uploaded or **loaded from a URL** (KML, KMZ, GPX, GeoJSON / JSON including API or
+  WFS URLs returning GeoJSON, WKT, zipped Shapefile; the type comes from the extension, otherwise from
   the content; the server must allow cross-origin requests, CORS). **Sharing:** an area imported from a
-  file or pasted is part of a copied link only when it is small (about 280 vertices; the link holds at
-  most 8000 characters) — the import dialog warns about this and the AOI bar shows *⚠ not in link*; an
+  file or pasted is part of a copied link only when it is small (about 270 vertices; the link holds at
+  most 8000 characters); the import dialog warns about this and the AOI bar shows *⚠ not in link*; an
   area loaded from a URL is shared as the URL (`aoiUrl`). Vertices stay editable (up to 2,000) and
   drawing again adds a polygon. The AOI is shown as an outline
   only; its toolbar copies the geometry, shows the area, centres the map and downloads the AOI as GeoJSON.
   For the area:
   - *Statistical info*: statistics and histogram for the selected date, and a time series over a date
-    range (CSV download). The time series reads every date in the range — clouds are judged over the
-    AOI itself, not by the cloud cover of the whole scene — least cloudy first (Stop keeps what has been
+    range (CSV download). The time series reads every date in the range (clouds are judged over the
+    AOI itself, not by the cloud cover of the whole scene), least cloudy first (Stop keeps what has been
     read), and reports which dates were not reached by that day's orbit and which were fully masked. Clouds can additionally be excluded with the scene classification (SCL 3, 8, 9, 10),
     which catches clouds OmniCloudMask misses, and the area can be restricted to forest or to all
     vegetation (the share of valid pixels then refers to the masked area); a custom mask that is switched
@@ -233,7 +248,7 @@ The swissEO Browser therefore always uses the physical reflectance.
     their COGs; the two-date layers report the difference (and the NDVI Analyst
     report) instead of a time series.
   - *Spectral explorer*: mean surface reflectance of all 12 bands (± σ), with CSV download.
-- **Image download** — three tabs as in the Copernicus Browser:
+- **Image download**: three tabs as in the Copernicus Browser:
   - *Basic*: the current view as PNG or JPG, with captions (datasource, date, scale bar) and an optional
     description, map overlays, legend, crop to AOI and an optional AOI outline; works in compare mode.
   - *Analytical*: any layers of the collection (visualised) and raw bands (B01–B12, B8A, AOT, SCL, cloud
@@ -243,27 +258,32 @@ The swissEO Browser therefore always uses the physical reflectance.
     files are zipped.
   - *High-res print*: the view re-rendered for a printed size (width / height in inches and DPI), with
     the same captions, legend, overlay and AOI options, as PNG or JPG.
-- **Timelapse** — as in the Copernicus Browser, for the current layer over the area of interest (data
+- **Timelapse**: as in the Copernicus Browser, for the current layer over the area of interest (data
   clipped to it, no outline drawn) or the current view:
   - time range, *Select 1 image per* orbit / day / week / month / year, month filter, Search;
   - list of images with thumbnail, cloud cover and coverage of the timelapse area (AOI or view, computed
-    from the cloud mask and the data footprint — not the cloud cover of the whole scene); per interval the image with the best coverage × clear sky is chosen; Max. cloud
+    from the cloud mask and the data footprint, not the cloud cover of the whole scene); per interval the image with the best coverage × clear sky is chosen; Max. cloud
     coverage and Min. tile coverage filter the list, images can be (de)selected;
   - preview player with speed (fps), transition None / Fade with fade duration, delay last frame,
     adaptive gain per frame for the band composites (snowy winter frames), legend, map overlays and captions (date label,
     scale bar, source);
   - download as GIF or as video (MP4 or WebM, depending on the browser), default 1024 px (up to 2048).
     VHI layers work too (via the WMS).
-- **Loading indicator** — bottom left: the number of tiles still rendering and of requests in flight; after
+- **Loading indicator**: at the bottom left, the number of tiles still rendering and of requests in flight; after
   6 s of continuous loading it says that the connection is slow.
-- **Pixel inspector** — band values (DN and physical value), index value, SCL, cloud mask, terrain mask
-  and forest / vegetation mask at a clicked location; for the two-date layers the index on both sides and
-  the difference; for VHI, NDVIdiff, NDVIdiff v200 BETA and NDVIz the product value.
-- **Permalink** — the URL is updated on every change (configuration, view, date, cloud filter, layer,
+- **Pixel inspector**: the LV95 position, band values (DN and physical value), index value, SCL, cloud
+  mask, terrain mask and forest / vegetation mask at a clicked location; for the two-date layers the index
+  on both sides and the difference; for the Forest Disturbance Classification the class; for VHI,
+  NDVIdiff, NDVIdiff v200 BETA and NDVIz the product value.
+- **Coordinates**: positions are LV95 (EPSG:2056) everywhere: the map centre in the permalink
+  (`center=2703331.08,1133878.99`, as on map.geo.admin.ch), the compare entries, the pixel inspector, the
+  area of interest in the link and the defaults of the import dialog. Links with the former `lat` / `lng`
+  parameters open on the whole of Switzerland.
+- **Permalink**: the URL is updated on every change (configuration, view, date, cloud filter, layer,
   legend range, masks incl. the custom mask mode, look and effects, reference date, compare list, AOI);
   *Copy link* in the header copies it. Areas and custom masks loaded from a URL are shared as that URL;
   areas imported from a file only when they are small, masks from a file never.
-- **Info tab** — the *not for operational use* notice, the acquisitions of the selected date with their
+- **Info tab**: the *not for operational use* notice, the acquisitions of the selected date with their
   metadata, the scaling / no-data table, a description of the services used and links to all
   repositories and libraries the website builds on.
 - Colours follow the Swiss Confederation scheme used by
@@ -272,7 +292,7 @@ The swissEO Browser therefore always uses the physical reflectance.
 ## Layer verification
 
 The layers are being checked one by one, in depth: data access (assets, dates, nearest product), scaling and
-no-data, the formula and its source, masks, rendering and legend, statistics and exports — compared with
+no-data, the formula and its source, masks, rendering and legend, statistics and exports, compared with
 reference implementations where possible (GDAL / rasterio reads of the COGs, the original scripts). Until a
 layer has passed this check it is shown with ⏳ *To be verified*; afterwards with ✓ *Verified*.
 
@@ -283,34 +303,35 @@ page is missing here or an id here is unknown. A local copy of `swisseo-browser.
 repository reads this README itself.
 
 <!-- verification:start -->
-- [x] `true` — True color *(Default, Agriculture, Drought 2026)*
-- [x] `nir` — False color *(Default, Agriculture)*
-- [ ] `urban` — False color (urban) *(Default, Drought 2026)*
-- [x] `swir` — SWIR *(Default, Drought 2026)*
-- [ ] `agri` — Agriculture *(Default, Agriculture)*
-- [ ] `geo` — Geology 12, 8, 2 *(Default)*
-- [x] `ndvi` — NDVI *(Default, Agriculture, Drought, Drought 2026)*
-- [ ] `ndwi` — NDWI *(Default, Drought 2026)*
-- [ ] `ndmi` — Moisture index *(Default, Agriculture, Drought 2026)*
-- [ ] `ndsi` — NDSI *(Default)*
-- [ ] `nbr` — Normalized Burn Ratio (NBR) *(Default)*
-- [ ] `aot` — Aerosol optical thickness *(Default)*
-- [x] `scl` — Scene classification map *(Default)*
-- [x] `cloud` — Cloud mask *(Default)*
-- [x] `terrain` — Terrain / solar incidence *(Default)*
-- [ ] `vhi` — swissEO VHI forest *(Default, Drought)*
-- [ ] `vhiveg` — swissEO VHI vegetation *(Default, Drought)*
-- [ ] `evi` — EVI *(Agriculture)*
-- [ ] `savi` — SAVI *(Agriculture)*
-- [ ] `barren` — Barren Soil *(Agriculture)*
-- [ ] `mstress` — Moisture Stress *(Agriculture, Drought 2026)*
-- [ ] `hon` — Highlight Optimized Natural Color *(Drought 2026)*
-- [ ] `ndvidiff` — swissEO NDVIdiff *(Default, Drought)*
-- [ ] `ndvidiff2` — swissEO NDVIdiff v200 BETA *(Drought)*
-- [ ] `ndviz` — swissEO NDVIz *(Drought)*
-- [ ] `nddi` — NDDI *(Drought)*
-- [ ] `nddichg` — NDDI change vs. previous year *(Drought)*
-- [ ] `analyst` — NDVI Analyst (Kt. Aargau) *(Drought)*
+- [x] `true`: True color *(Default, Agriculture, Drought, Drought 2026, Forest)*
+- [x] `nir`: False color *(Default, Agriculture)*
+- [ ] `urban`: False color (urban) *(Default, Drought 2026)*
+- [x] `swir`: SWIR *(Default, Drought 2026)*
+- [ ] `agri`: Agriculture *(Default, Agriculture)*
+- [ ] `geo`: Geology 12, 8, 2 *(Default)*
+- [x] `ndvi`: NDVI *(Default, Agriculture, Drought, Drought 2026)*
+- [ ] `ndwi`: NDWI *(Default, Drought 2026)*
+- [ ] `ndmi`: Moisture index *(Default, Agriculture, Drought, Drought 2026, Forest)*
+- [ ] `ndsi`: NDSI *(Default)*
+- [ ] `nbr`: Normalized Burn Ratio (NBR) *(Default, Forest)*
+- [ ] `aot`: Aerosol optical thickness *(Default)*
+- [x] `scl`: Scene classification map *(Default)*
+- [x] `cloud`: Cloud mask *(Default)*
+- [x] `terrain`: Terrain / solar incidence *(Default)*
+- [ ] `vhi`: swissEO VHI forest *(Default, Drought, Forest)*
+- [ ] `vhiveg`: swissEO VHI vegetation *(Default, Drought)*
+- [ ] `evi`: EVI *(Agriculture)*
+- [ ] `savi`: SAVI *(Agriculture)*
+- [ ] `barren`: Barren Soil *(Agriculture)*
+- [ ] `mstress`: Moisture Stress *(Agriculture, Drought 2026)*
+- [ ] `hon`: Highlight Optimized Natural Color *(Drought 2026)*
+- [ ] `ndvidiff`: swissEO NDVIdiff *(Default, Drought, Forest)*
+- [ ] `ndvidiff2`: swissEO NDVIdiff v200 BETA *(Drought, Forest)*
+- [ ] `ndviz`: swissEO NDVIz *(Drought, Forest)*
+- [ ] `nddi`: NDDI *(Drought)*
+- [ ] `nddichg`: NDDI change vs. previous year *(Drought)*
+- [ ] `analyst`: NDVI Analyst *(Drought, Forest)*
+- [ ] `fdc`: Forest Disturbance Classification *(Forest)*
 <!-- verification:end -->
 
 ### Limits of the browser
@@ -324,7 +345,7 @@ Firefox on a laptop:
 | Area of interest | 100,000 vertices | 99,000 vertices: drawn in 2.5 s, rasterised for statistics in 0.2 s |
 | Vertex editing of the AOI | 2,000 vertices | one edit handle per vertex; above this the area is shown without handles |
 | Custom mask | 1,000,000 vertices | 20,000 polygons: 3 ms per 256 px tile at 10 m, 70–90 ms per tile when the whole country is in view |
-| Area in a copied link | ≈ 280 vertices | the geometry is written into the link only below 8000 characters; URL-loaded areas and masks are shared as their URL |
+| Area in a copied link | about 270 vertices | the geometry is written into the link only below 8000 characters; URL-loaded areas and masks are shared as their URL |
 
 ## Running it
 
@@ -337,6 +358,9 @@ python -m http.server 8000
 ```
 
 A current desktop browser (Firefox, Chrome, Edge) is required.
+
+Conventions for further development (for people and for Claude Code) are in [`CLAUDE.md`](CLAUDE.md):
+no em-dashes in any text, LV95 coordinates, pushes only to this repository, how to add a layer.
 
 ### Deployment
 
@@ -357,11 +381,12 @@ Parameter names follow the Copernicus Browser where an equivalent exists.
 
 | Parameter | Example | Meaning |
 | --- | --- | --- |
-| `lat`, `lng`, `zoom` | `46.55`, `6.70`, `17` | Map centre (WGS84) and zoom level of the LV95 grid (8–27; ≈17–18 for a region; fractional values, as written by the highlights, give resolutions between the grid levels) |
+| `center` | `2703331.08,1133878.99` | Map centre in LV95 (E,N), as on map.geo.admin.ch |
+| `zoom` | `17` | Zoom level of the LV95 grid (8 to 27; about 17 to 18 for a region; fractional values, as written by the highlights, give resolutions between the grid levels) |
 | `fromTime`, `toTime` | `2026-10-05T00:00:00.000Z` | Selected date |
 | `cloudCoverage` | `30` | Maximum cloud coverage in % |
-| `themeId` | `DROUGHT` | Configuration: `DEFAULT`, `AGRICULTURE`, `DROUGHT`, `DROUGHT2026` (when missing or not containing the layer, the first configuration with the layer is used) |
-| `layerId` | `ndvi` | `true`, `nir`, `urban`, `swir`, `agri`, `geo`, `barren`, `hon`, `ndvi`, `ndwi`, `ndmi`, `ndsi`, `nbr`, `aot`, `evi`, `savi`, `mstress`, `nddi`, `nddichg`, `analyst`, `scl`, `cloud`, `terrain` (S2-SR); `vhi`, `vhiveg` (VHI); `ndvidiff`, `ndvidiff2` (v200 BETA), `ndviz` |
+| `themeId` | `DROUGHT` | Configuration: `DEFAULT`, `AGRICULTURE`, `DROUGHT`, `DROUGHT2026`, `FOREST` (when missing or not containing the layer, the first configuration with the layer is used) |
+| `layerId` | `ndvi` | `true`, `nir`, `urban`, `swir`, `agri`, `geo`, `barren`, `hon`, `ndvi`, `ndwi`, `ndmi`, `ndsi`, `nbr`, `aot`, `evi`, `savi`, `mstress`, `nddi`, `nddichg`, `analyst`, `fdc`, `scl`, `cloud`, `terrain` (S2-SR); `vhi`, `vhiveg` (VHI); `ndvidiff`, `ndvidiff2` (v200 BETA), `ndviz` |
 | `valueRange` | `[0,0.9]` | Colour-scale min/max of index and continuous layers |
 | `threshold` | `0.5` | NDSI snow threshold (default 0.42; above it snow is shown in blue, otherwise true colour, as in the Copernicus Browser); NDVI Analyst change threshold (default −0.08) |
 | `refDate` | `2025-07-01` | Reference date of the two-date layers (default: the same day one year earlier) |
@@ -375,14 +400,14 @@ Parameter names follow the Copernicus Browser where an equivalent exists.
 | `cloudMask`, `shadowMask`, `terrainMask` | `true` | Masks (written when they differ from the layer's default; the two-date layers mask clouds and shadows by default) |
 | `vegetationMask` | `forest` | Vegetation mask: `off`, `forest` or `vegetation` (S2-SR layers; from swissEO VHI v100; the NDVI Analyst defaults to `forest`) |
 | `basemap`, `labels` | `swissimage`, `true` | Basemap (`pixelkarte`, `swissimage`, `grey`, `none`) and label overlay |
-| `compareLayers`, `comparedOpacity`, `comparedClipping`, `compareMode` | | Compare list (base64url JSON), per-layer opacity and split range; `compareMode` is `split` / `opacity` when comparing and `off` otherwise (links without it open in compare mode) |
-| `aoi` | | Area of interest as base64url GeoJSON (only areas up to ≈ 280 vertices) |
+| `compareLayers`, `comparedOpacity`, `comparedClipping`, `compareMode` | | Compare list (base64url JSON, each entry with its LV95 view), per-layer opacity and split range; `compareMode` is `split` / `opacity` when comparing and `off` otherwise (links without it open in compare mode) |
+| `aoi` | | Area of interest as base64url GeoJSON geometry in LV95, 0.1 m (only areas up to about 270 vertices) |
 | `aoiUrl` | `https://…/area.geojson` | Area of interest loaded from this URL (written instead of `aoi` when the area came from a URL and was not edited) |
 | `maskUrl` | `https://…/forest.geojson` | Custom mask loaded from this URL |
 | `customMask` | `in` | Custom mask of the layer: `in` (keep inside the polygons) or `out` (keep outside); needs a mask (`maskUrl` or loaded in the page) |
 
 Example:
-`swisseo-browser.html?zoom=17&lat=46.55&lng=6.70&fromTime=2026-10-05T00:00:00.000Z&toTime=2026-10-05T23:59:59.999Z&cloudCoverage=77&layerId=ndvi&valueRange=[0,0.9]`
+`swisseo-browser.html?zoom=17&center=2703331.08,1133878.99&fromTime=2026-10-05T00:00:00.000Z&toTime=2026-10-05T23:59:59.999Z&cloudCoverage=77&layerId=ndvi&valueRange=[0,0.9]`
 
 ## Limitations
 
@@ -393,6 +418,8 @@ Example:
 - NDVIdiff / NDVIz: see the note on their overviews above; zoomed out, implausible overview pixels are left out.
 - NDDI and NDDI change compare single acquisitions, not the May–July means of the openEO notebook. With the
   notebook's green NDWI the NDDI saturates (see above); the default SWIR NDWI does not.
+- The Forest Disturbance Classification is a single-date model trained outside Switzerland; expect
+  misclassifications, use it on forest only and validate the results.
 - The NDVI Analyst works on the swissEO S2-SR mosaics instead of the original script's own Sentinel-2
   processing; AOI reports use a grid of at least 10 m (coarser for large areas, which the report states).
 - Statistics, time series, analytical downloads and high-res prints read the COGs in the browser; large
@@ -402,7 +429,7 @@ Example:
 
 ## Credits and terms
 
-- Data © [swisstopo](https://www.swisstopo.admin.ch) —
+- Data © [swisstopo](https://www.swisstopo.admin.ch),
   [open government data](https://www.swisstopo.admin.ch/ogd-conditions). swissEO S2-SR and swissEO VHI
   contain modified Copernicus Sentinel data. Label overlay © [ASIT VD](https://www.asit-asso.ch).
 - User-interface workflow modelled on the [Copernicus Browser](https://browser.dataspace.copernicus.eu/)
@@ -414,7 +441,7 @@ Example:
   (colour scheme), [RaffiBienz/ndvi_analyst](https://github.com/RaffiBienz/ndvi_analyst) (NDVI Analyst of
   the Canton of Aargau), [Open-EO/openeo-community-examples](https://github.com/Open-EO/openeo-community-examples)
   (NDDI drought notebook), [sentinel-hub/custom-scripts](https://github.com/sentinel-hub/custom-scripts)
-  (index definitions and visualisations); libraries [Leaflet](https://github.com/Leaflet/Leaflet),
+  (index definitions and visualisations; Forest Disturbance Classification by Joanneum Research, EvoLand); libraries [Leaflet](https://github.com/Leaflet/Leaflet),
   [Proj4Leaflet](https://github.com/kartena/Proj4Leaflet), [proj4js](https://github.com/proj4js/proj4js),
   [Leaflet-Geoman](https://github.com/geoman-io/leaflet-geoman), [geotiff.js](https://github.com/geotiffjs/geotiff.js),
   [togeojson](https://github.com/placemark/togeojson), [shpjs](https://github.com/calvinmetcalf/shapefile-js),

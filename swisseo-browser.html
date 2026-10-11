@@ -152,7 +152,7 @@ code.fx{display:block;background:var(--bg);border:1px solid var(--border);border
 .cls{display:flex;align-items:center;gap:8px;margin:3px 0;font-size:12px}
 .cls i{width:14px;height:14px;flex:0 0 14px;border:1px solid #00000040}
 
-/* sliders — Copernicus-style blue thumb on a thin track */
+/* sliders: Copernicus-style blue thumb on a thin track */
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;margin:0;cursor:pointer}
 input[type=range]:focus{outline:none}
 input[type=range]::-webkit-slider-runnable-track{height:3px;background:var(--border);border-radius:2px}
@@ -409,7 +409,7 @@ table.kv td:first-child{color:var(--muted)}
       <span>swissEO Browser</span>
     </a>
     <span class="by">swisstopo</span>
-    <div id="scenebadge"><span>Date</span><b id="badgeTxt">—</b></div>
+    <div id="scenebadge"><span>Date</span><b id="badgeTxt">…</b></div>
     <div class="spacer"></div>
     <button class="action-btn" id="btnLink" title="Copy a link to exactly this view">Copy link</button>
     <button class="action-btn" id="btnInspect">Pixel inspector: off</button>
@@ -456,7 +456,7 @@ table.kv td:first-child{color:var(--muted)}
             <button class="dc-ico on" data-v="layers" id="dcLayers" title="Layers"></button>
             <button class="dc-ico" data-v="compare" id="dcCompare" title="Compare"><span class="badge" id="cmpBadge" hidden></span></button>
           </div>
-          <select class="dc-sel" id="cfgSel" title="Configuration — the set of layers for a task"></select>
+          <select class="dc-sel" id="cfgSel" title="Configuration: the set of layers for a task"></select>
         </div>
 
         <div class="card" id="v-layers">
@@ -486,7 +486,7 @@ table.kv td:first-child{color:var(--muted)}
             <p>This is an experimental <b>beta</b> prototype. It is <b>not intended for operational use</b>: values, renderings and
               statistics are computed in the browser, are not validated and may be wrong or incomplete. For authoritative data use the
               swisstopo products and services directly.</p>
-            <p><b>Layer verification:</b> we will check every layer in depth — data access, scaling and no-data, formula,
+            <p><b>Layer verification:</b> we will check every layer in depth: data access, scaling and no-data, formula,
               masks and rendering, compared with reference implementations (e.g. GDAL / rasterio reads and the original
               scripts). A layer that passed this check carries the symbol
               <span class="ver ok" title="Verified">VER_OK</span> <b>Verified</b>; all others show
@@ -513,7 +513,7 @@ table.kv td:first-child{color:var(--muted)}
               <tr><td>Cloud mask</td><td>1</td><td>0</td><td>0 = clear · 1 thick · 2 thin · 3 shadow</td></tr>
               <tr><td>Terrain mask</td><td>1</td><td>0</td><td>255 · 0–180° lit · 200 shadow</td></tr>
               <tr><td>TCI</td><td>1</td><td>0</td><td>0 (uint8)</td></tr>
-              <tr><td>VHI (WMS)</td><td>—</td><td>—</td><td>110 = no data</td></tr>
+              <tr><td>VHI (WMS)</td><td>n/a</td><td>n/a</td><td>110 = no data</td></tr>
               <tr><td>VHI (COG)</td><td>1</td><td>0</td><td>255 · 0–100 VHI</td></tr>
               <tr><td>NDVIdiff</td><td>0.001</td><td>0</td><td>32701 · 32700 missing</td></tr>
               <tr><td>NDVIz</td><td>0.01</td><td>0</td><td>32701 · 32700 missing</td></tr>
@@ -542,16 +542,21 @@ table.kv td:first-child{color:var(--muted)}
             <p><b>Area of interest:</b> the pentagon button on the map draws a rectangle (axis-aligned in LV95) or polygon,
               or imports KML/KMZ, GPX, WKT, GeoJSON, zipped Shapefiles (from a file or a URL), an MGRS/GEOREF cell or a bounding box
               (WGS84, LV95, LV03). Limits: files up to 50 MB, areas up to 100,000 vertices. An area imported from a file is only part of a
-              copied link when it is small (about 280 vertices); one loaded from a URL is shared as the URL.
+              copied link when it is small (about 270 vertices); one loaded from a URL is shared as the URL.
               Vertices stay editable; drawing again adds a polygon. <i>Statistical info</i> reads the COGs over the area for the
               selected date (statistics, histogram) and over a date range (time series, CSV); swissEO VHI statistics come from the
               <code>forest-10m</code> / <code>vegetation-10m</code> COGs. The <i>spectral explorer</i> plots mean reflectance of
               all 12 bands. The image download can be clipped to the area.</p>
-            <p><b>Configurations:</b> as the themes of the Copernicus Browser, a configuration lists the layers for a task —
-              <i>Default</i>, <i>Agriculture</i>, <i>Drought</i> and <i>Drought 2026</i> with highlights. Each layer keeps its own
+            <p><b>Configurations:</b> as the themes of the Copernicus Browser, a configuration lists the layers for a task:
+              <i>Default</i>, <i>Agriculture</i>, <i>Drought</i>, <i>Drought 2026</i> with highlights, and <i>Forest</i>. Each layer keeps its own
               data source and dates.</p>
-            <p><b>Custom mask:</b> the fifth mask of every layer keeps the data inside (or, inverted, outside) your own polygons —
-              e.g. a forest map — loaded from a file or URL like an area of interest (up to 50 MB and 1,000,000 vertices).
+            <p><b>Forest Disturbance Classification:</b> the Sentinel Hub custom script of Joanneum Research (EvoLand), run in the
+              browser on swissEO S2-SR: the model expects Sentinel Hub DN as 10000 × reflectance, which is swissEO DN − 1000.
+              Its 150 trees are loaded on first use from jsDelivr, pinned to a commit.</p>
+            <p><b>Coordinates:</b> positions are given in LV95 (EPSG:2056) everywhere, also in the permalink
+              (<code>center=2703331.08,1133878.99</code>, as on map.geo.admin.ch).</p>
+            <p><b>Custom mask:</b> the fifth mask of every layer keeps the data inside (or, inverted, outside) your own polygons
+              (e.g. a forest map), loaded from a file or URL like an area of interest (up to 50 MB and 1,000,000 vertices).
               It applies to the map, statistics, exports and the timelapse.</p>
             <p><b>Highlights:</b> click a story to open it on the map (the card turns blue; a split comparison of two dates, drag
               the handle); the chevron shows the text, whose last line opens the compare settings. Texts after watson.ch
@@ -573,30 +578,30 @@ table.kv td:first-child{color:var(--muted)}
           </div></div>
         <div class="card"><h4>Based on and uses</h4>
           <ul class="links">
-            <li><a href="https://github.com/eu-cdse/copernicus-browser" target="_blank" rel="noopener">eu-cdse/copernicus-browser</a> —
+            <li><a href="https://github.com/eu-cdse/copernicus-browser" target="_blank" rel="noopener">eu-cdse/copernicus-browser</a>:
               the Copernicus Browser, model for the user interface, themes, layer descriptions and previews</li>
-            <li><a href="https://github.com/davidoesch/swisseobrowser" target="_blank" rel="noopener">davidoesch/swisseobrowser</a> — this website</li>
-            <li><a href="https://github.com/swisstopo/topo-satromo-v2" target="_blank" rel="noopener">swisstopo/topo-satromo-v2</a> —
+            <li><a href="https://github.com/davidoesch/swisseobrowser" target="_blank" rel="noopener">davidoesch/swisseobrowser</a>: this website</li>
+            <li><a href="https://github.com/swisstopo/topo-satromo-v2" target="_blank" rel="noopener">swisstopo/topo-satromo-v2</a>:
               processing of the swissEO products (S2-SR, VHI, NDVIdiff, NDVIz, vegetation masks)</li>
-            <li><a href="https://github.com/swisstopo/topo-drought-briefing" target="_blank" rel="noopener">swisstopo/topo-drought-briefing</a> — colour scheme</li>
-            <li><a href="https://github.com/RaffiBienz/ndvi_analyst" target="_blank" rel="noopener">RaffiBienz/ndvi_analyst</a> —
+            <li><a href="https://github.com/swisstopo/topo-drought-briefing" target="_blank" rel="noopener">swisstopo/topo-drought-briefing</a>: colour scheme</li>
+            <li><a href="https://github.com/RaffiBienz/ndvi_analyst" target="_blank" rel="noopener">RaffiBienz/ndvi_analyst</a>:
               NDVI Analyst of the Canton of Aargau (method of the NDVI Analyst layer)</li>
-            <li><a href="https://github.com/Open-EO/openeo-community-examples/blob/main/python/50_thematic-notebooks/drought-nddi/drought-nddi.ipynb" target="_blank" rel="noopener">Open-EO/openeo-community-examples</a> —
+            <li><a href="https://github.com/Open-EO/openeo-community-examples/blob/main/python/50_thematic-notebooks/drought-nddi/drought-nddi.ipynb" target="_blank" rel="noopener">Open-EO/openeo-community-examples</a>:
               NDDI drought notebook</li>
-            <li><a href="https://github.com/sentinel-hub/custom-scripts" target="_blank" rel="noopener">sentinel-hub/custom-scripts</a> — index definitions and visualisations</li>
+            <li><a href="https://github.com/sentinel-hub/custom-scripts" target="_blank" rel="noopener">sentinel-hub/custom-scripts</a>: index definitions and visualisations</li>
             <li><a href="https://github.com/Leaflet/Leaflet" target="_blank" rel="noopener">Leaflet</a>,
               <a href="https://github.com/kartena/Proj4Leaflet" target="_blank" rel="noopener">Proj4Leaflet</a>,
               <a href="https://github.com/proj4js/proj4js" target="_blank" rel="noopener">proj4js</a>,
-              <a href="https://github.com/geoman-io/leaflet-geoman" target="_blank" rel="noopener">Leaflet-Geoman</a> — map</li>
-            <li><a href="https://github.com/geotiffjs/geotiff.js" target="_blank" rel="noopener">geotiff.js</a> — reading the COGs</li>
+              <a href="https://github.com/geoman-io/leaflet-geoman" target="_blank" rel="noopener">Leaflet-Geoman</a>: map</li>
+            <li><a href="https://github.com/geotiffjs/geotiff.js" target="_blank" rel="noopener">geotiff.js</a>: reading the COGs</li>
             <li><a href="https://github.com/placemark/togeojson" target="_blank" rel="noopener">togeojson</a>,
               <a href="https://github.com/calvinmetcalf/shapefile-js" target="_blank" rel="noopener">shpjs</a>,
               <a href="https://github.com/proj4js/mgrs" target="_blank" rel="noopener">mgrs</a>,
               <a href="https://github.com/Stuk/jszip" target="_blank" rel="noopener">JSZip</a>,
-              <a href="https://github.com/mattdesl/gifenc" target="_blank" rel="noopener">gifenc</a> — import, export, timelapse</li>
+              <a href="https://github.com/mattdesl/gifenc" target="_blank" rel="noopener">gifenc</a>: import, export, timelapse</li>
           </ul></div>
         <div class="card"><h4>Terms</h4>
-          <div style="color:var(--muted);font-size:11.5px">© swisstopo —
+          <div style="color:var(--muted);font-size:11.5px">© swisstopo,
             <a href="https://www.swisstopo.admin.ch/ogd-conditions" target="_blank">open government data</a>.
             The swissEO products contain modified Copernicus Sentinel data. Not for operational use.</div></div>
       </div>
@@ -615,7 +620,7 @@ table.kv td:first-child{color:var(--muted)}
         <button data-b="none">None</button>
         <span class="sep"></span>
         <button class="tog" id="btnOverlay"
-          title="ASIT VD roads and place-name overlay — always drawn above the data layers">Labels</button>
+          title="ASIT VD roads and place-name overlay: always drawn above the data layers">Labels</button>
       </div>
       <div id="aoiTool">
         <button class="mapbtn" id="btnAoi" title="Create an area of interest"></button>
@@ -628,7 +633,7 @@ table.kv td:first-child{color:var(--muted)}
           <button id="aoiCopy" title="Copy geometry (GeoJSON) to clipboard"></button>
           <span class="area" id="aoiArea"></span>
           <span class="nolink" id="aoiNoLink" hidden
-            title="This area is too large for a link (more than about 280 vertices) and is not shared when you copy the link. Load it from a URL to share it.">⚠ not in link</span>
+            title="This area is too large for a link (more than about 270 vertices) and is not shared when you copy the link. Load it from a URL to share it.">⚠ not in link</span>
           <button id="aoiCenter" title="Center map on area of interest"></button>
           <button id="aoiStats" title="Statistical info / time series for the area of interest"></button>
           <button id="aoiSpec" title="Spectral explorer for the area of interest"></button>
@@ -652,7 +657,7 @@ table.kv td:first-child{color:var(--muted)}
 
         <div data-ep="basic">
           <label class="chk" title="Exported image will include datasource and date, scale bar and branding."><input type="checkbox" id="exCapB" checked> Show captions</label>
-          <textarea class="exdesc" id="exDescB" placeholder="Description — a short text added to the caption"></textarea>
+          <textarea class="exdesc" id="exDescB" placeholder="Description: a short text added to the caption"></textarea>
           <label class="chk" title="Place labels, streets and boundaries (ASIT VD overlay)."><input type="checkbox" id="exOvB"> Add map overlays</label>
           <label class="chk"><input type="checkbox" id="exLegB" checked> Show legend</label>
           <label class="chk aoi-only"><input type="checkbox" id="exCropB"> Crop to AOI</label>
@@ -693,7 +698,7 @@ table.kv td:first-child{color:var(--muted)}
 
         <div data-ep="print" hidden>
           <label class="chk"><input type="checkbox" id="exCapP" checked> Show captions</label>
-          <textarea class="exdesc" id="exDescP" placeholder="Description — a short text added to the caption"></textarea>
+          <textarea class="exdesc" id="exDescP" placeholder="Description: a short text added to the caption"></textarea>
           <label class="chk"><input type="checkbox" id="exOvP"> Add map overlays</label>
           <label class="chk"><input type="checkbox" id="exLegP" checked> Show legend</label>
           <label class="chk aoi-only"><input type="checkbox" id="exCropP"> Crop to AOI</label>
@@ -729,7 +734,7 @@ table.kv td:first-child{color:var(--muted)}
           <div class="hint" style="margin:0 0 8px">Upload a KML/KMZ, GPX, WKT, GeoJSON/JSON file or a zipped Shapefile
             (.zip with .shp and .prj). Coordinates in WGS84, LV95 (EPSG:2056) or LV03 (EPSG:21781) are detected automatically.</div>
           <div class="warnbox" id="aoiFileWarn" style="margin:0 0 8px">An area imported from a file is <b>not shared when you copy the
-            link</b> — only small areas (up to about 280 vertices) fit into a link. To share an imported area, load it from a URL.</div>
+            link</b>: only small areas (up to about 270 vertices) fit into a link. To share an imported area, load it from a URL.</div>
           <label class="drop" id="aoiDrop">
             <input type="file" id="aoiFile" accept=".kml,.kmz,.gpx,.wkt,.txt,.geojson,.json,.zip" hidden>
             <b>Drop a file here</b><span>or click to choose one</span></label>
@@ -745,9 +750,9 @@ table.kv td:first-child{color:var(--muted)}
         </div>
         <div data-mp="text" hidden>
           <div class="hint" style="margin:0 0 8px">Paste a WKT polygon, GeoJSON, or a bounding box
-            <code>[minLon, minLat, maxLon, maxLat]</code>. LV95 / LV03 coordinates are accepted too.</div>
+            <code>[minE, minN, maxE, maxN]</code> in LV95. LV03 and WGS84 coordinates are accepted too.</div>
           <textarea id="aoiText" spellcheck="false"
-            placeholder="POLYGON((7.40 46.92, 7.48 46.92, 7.48 46.97, 7.40 46.97, 7.40 46.92))"></textarea>
+            placeholder="POLYGON((2600000 1199000, 2606000 1199000, 2606000 1204000, 2600000 1204000, 2600000 1199000))"></textarea>
           <div class="mrow" style="margin-top:8px"><button class="btn sm" id="aoiTextGo">Upload</button></div>
         </div>
         <div data-mp="grid" hidden>
@@ -758,13 +763,13 @@ table.kv td:first-child{color:var(--muted)}
         </div>
         <div data-mp="bbox" hidden>
           <div class="mrow">Coordinates
-            <select id="bbCrs"><option value="EPSG:4326">WGS84 (longitude / latitude)</option>
-              <option value="EPSG:2056">LV95 (E / N)</option></select></div>
+            <select id="bbCrs"><option value="EPSG:2056">LV95 (E / N)</option>
+              <option value="EPSG:4326">WGS84 (longitude / latitude)</option></select></div>
           <div class="bbgrid">
-            <label><span id="bbL0">Min longitude</span><input type="number" id="bbX0" step="any"></label>
-            <label><span id="bbL1">Min latitude</span><input type="number" id="bbY0" step="any"></label>
-            <label><span id="bbL2">Max longitude</span><input type="number" id="bbX1" step="any"></label>
-            <label><span id="bbL3">Max latitude</span><input type="number" id="bbY1" step="any"></label>
+            <label><span id="bbL0">Min E</span><input type="number" id="bbX0" step="any"></label>
+            <label><span id="bbL1">Min N</span><input type="number" id="bbY0" step="any"></label>
+            <label><span id="bbL2">Max E</span><input type="number" id="bbX1" step="any"></label>
+            <label><span id="bbL3">Max N</span><input type="number" id="bbY1" step="any"></label>
           </div>
           <div class="mrow"><button class="btn sm" id="aoiBbGo">Upload</button>
             <button class="lnk" id="aoiBbView">Use current map view</button></div>
@@ -911,7 +916,7 @@ const UI = {
 };
 
 /* ============================================================
-   1. CRS — EPSG:2056 (CH1903+ / LV95), swisstopo tile grid
+   1. CRS: EPSG:2056 (CH1903+ / LV95), swisstopo tile grid
    ============================================================ */
 const DEF2056 = "+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 " +
                 "+x_0=2600000 +y_0=1200000 +ellps=bessel " +
@@ -948,7 +953,7 @@ const CH_BOUNDS = L.latLngBounds(lv95(2484000, 1074000), lv95(2838000, 1300000))
 map.fitBounds(CH_BOUNDS);
 
 /* ============================================================
-   2. Basemaps — swisstopo WMTS, native LV95
+   2. Basemaps: swisstopo WMTS, native LV95
    ============================================================ */
 const ATTR = '&copy; <a href="https://www.swisstopo.admin.ch">swisstopo</a>';
 const ATTR_VD = '&copy; <a href="https://www.asit-asso.ch">ASIT VD</a>';
@@ -1050,7 +1055,7 @@ const physIdx = (b, dn) => Math.max(0, phys(b, dn));
 const toRho = dn => dn * REFL.scale + REFL.offset;
 
 /* ============================================================
-   4. COG access — pyramid discovery + windowed tile reads
+   4. COG access: pyramid discovery + windowed tile reads
    ============================================================ */
 const pyrCache = new Map();
 function pyramid(url) {
@@ -1172,7 +1177,7 @@ const rgbCss = c => "rgb(" + Math.round(c[0]) + "," + Math.round(c[1]) + "," + M
 const hx = v => [(v >> 16) & 255, (v >> 8) & 255, v & 255];
 const rampHex = stops => ramp(stops.map(s => [s[0], hx(s[1])]));
 
-/* NDVI — EO Browser ramp, verbatim */
+/* NDVI: EO Browser ramp, verbatim */
 const R_NDVI = rampHex([
   [-0.5, 0x0c0c0c], [-0.2, 0xbfbfbf], [-0.1, 0xdbdbdb], [0, 0xeaeaea],
   [0.025, 0xfff9cc], [0.05, 0xede8b5], [0.075, 0xddd89b], [0.1, 0xccc682],
@@ -1182,7 +1187,7 @@ const R_NDVI = rampHex([
   [1, 0x004400]
 ]);
 
-/* NDMI moisture index — EO Browser moistureRamps, verbatim */
+/* NDMI moisture index: EO Browser moistureRamps, verbatim */
 const R_NDMI = rampHex([
   [-0.8, 0x800000], [-0.24, 0xff0000], [-0.032, 0xffff00],
   [0.032, 0x00ffff], [0.24, 0x0000ff], [0.8, 0x000080]
@@ -1289,6 +1294,44 @@ const ICONS = {
 };
 
 const nd = v => (v[0] - v[1]) / (v[0] + v[1]);
+/* Forest Disturbance Classification (Sentinel Hub custom script by Joanneum Research, EvoLand project).
+   The 150 trees (411 kB) are loaded on first use from jsDelivr, pinned to a commit, and only accepted when the
+   code consists of tree functions alone. The model expects Sentinel Hub L2A DN with harmonizeValues = true,
+   i.e. DN = 10000 × reflectance: for swissEO (ρ = DN × 0.0001 − 0.1) that is DN − 1000, clamped at 0. */
+const FDC_URL = "https://cdn.jsdelivr.net/gh/sentinel-hub/custom-scripts@0a071cfc15adc91ae79cdda1cec6332133bb7565/sentinel-2/forest_disturbance_classification/script.js";
+const FDC_PALETTE = { 0: ["Bark beetle", [171, 104, 32]], 1: ["Clear cut", [184, 182, 180]], 2: ["Healthy forest (not drawn)", null],
+  3: ["Salvage logged (low confidence)", [184, 182, 180]], 4: ["Wildfire", [122, 46, 1]], 5: ["Windthrow", [76, 119, 237]] };
+let fdcReq = null;
+function fdcModel() {
+  if (!fdcReq) {
+    fdcReq = (async () => {
+      const r = await fetch(FDC_URL);
+      if (!r.ok) throw new Error("HTTP " + r.status + " for the classification model");
+      const src = await r.text(), a = src.indexOf("function pt0("), b = src.indexOf("function predict(");
+      if (a < 0 || b < a) throw new Error("Unexpected format of the classification model.");
+      const code = src.slice(a, b);
+      const rest = code.replace(/function pt\d+\(B02, B05, B06, B8A, B11, B12\)|return|\b(B02|B05|B06|B8A|B11|B12)\b/g, "");
+      if (/[^\s\d.eE+\-<=?:(){};,]/.test(rest)) throw new Error("The classification model contains unexpected code.");
+      const n = (code.match(/function pt\d+\(/g) || []).length;
+      return new Function(code + "\nreturn [" + Array.from({ length: n }, (_, i) => "pt" + i).join(",") + "];")();
+    })();
+    fdcReq.catch(() => { fdcReq = null; });
+  }
+  return fdcReq;
+}
+/* predict() of the script: classes in order of frequency; a class wins as soon as its logistic score exceeds 0.5,
+   otherwise the highest score (the tree loop runs to i < 149 exactly as in the original). */
+function fdcPredict(T, v) {
+  let score = -Infinity, best = 0;
+  for (const c of [2, 1, 3, 4, 0, 5]) {
+    let sum = 0;
+    for (let i = c; i < 149; i += 6) sum += T[i](v[0], v[1], v[2], v[3], v[4], v[5]);
+    if (1 / (1 + Math.exp(-sum)) > 0.5) return c;
+    if (sum > score) { score = sum; best = c; }
+  }
+  return best;
+}
+const fdcInput = (a, k) => a.map(x => Math.max(0, x[k] - 1000));
 /* NDDI = (NDVI − NDWI) / (NDVI + NDWI) from [B08, B04, B03, B11], clipped to −1…1.
    Default: NDWI = (B08 − B11) / (B08 + B11) as in Gu et al. 2007 (the paper Awesome Spectral Indices cites).
    Variant "green": NDWI = (B03 − B08) / (B03 + B08) as in Awesome Spectral Indices and the openEO notebook; then
@@ -1318,7 +1361,7 @@ const LAYERS = [
     icon:"sun", sw:"linear-gradient(135deg,#6f8f5c,#c9bb8e)", fg:"#1d2410",
     sub:"Based on bands 4, 3, 2",
     desc:"True color image (TCI) delivered with the mosaic.",
-    formula:"tci_10m.tif — 8-bit RGB true color image (B04, B03, B02) as delivered with the mosaic\nR, G, B = (TCI / 255 × gain) ^ (1 / gamma), then the RGB ranges" },
+    formula:"tci_10m.tif: 8-bit RGB true color image (B04, B03, B02) as delivered with the mosaic\nR, G, B = (TCI / 255 × gain) ^ (1 / gamma), then the RGB ranges" },
 
   { id:"nir", group:"Composites", name:"False colour (infrared)", type:"rgb", source:"s2", bands:["b08","b04","b03"],
     icon:"spectrum", sw:"linear-gradient(135deg,#e0384a,#7fb0d8)", fg:"#2a0a10",
@@ -1335,7 +1378,7 @@ const LAYERS = [
   { id:"swir", group:"Composites", name:"SWIR", type:"rgb", source:"s2", bands:["b12","b8a","b04"], gainMul:0.8,
     icon:"radiance", sw:"linear-gradient(135deg,#d8623a,#79c07a)", fg:"#2a1206",
     sub:"Based on bands 12, 8A, 4",
-    desc:"Short-wave infrared composite — burn scars, bare soil and moisture contrast.",
+    desc:"Short-wave infrared composite: burn scars, bare soil and moisture contrast.",
     formula:"R = ρ(B12)\nG = ρ(B8A)\nB = ρ(B04)" },
 
   { id:"agri", group:"Composites", name:"Agriculture", type:"rgb", source:"s2", bands:["b11","b08","b02"],
@@ -1354,20 +1397,20 @@ const LAYERS = [
   { id:"ndvi", group:"Indices", name:"NDVI", type:"index", source:"s2", bands:["b08","b04"], ramp:R_NDVI,
     min:-0.5, max:1, lim:[-1, 1], icon:"leaf", sw:"linear-gradient(135deg,#ccc682,#306d1c)", fg:"#f2f7ea",
     sub:"Based on a combination of bands (B8 - B4)/(B8 + B4)",
-    desc:"Normalised difference vegetation index — greenness and biomass.",
+    desc:"Normalised difference vegetation index: greenness and biomass.",
     formula:"NDVI = (ρ(B08) − ρ(B04)) / (ρ(B08) + ρ(B04))", fn:nd },
 
   { id:"ndwi", group:"Indices", name:"NDWI", type:"index", source:"s2", bands:["b03","b08"], ramp:R_NDWI,
     min:-0.8, max:0.8, lim:[-1, 1], icon:"waves", sw:"linear-gradient(135deg,#008000,#0000cc)", fg:"#eaf2ff",
     sub:"Based on a combination of bands (B3 - B8)/(B3 + B8)",
-    desc:"McFeeters water index — open water and flooding.",
+    desc:"McFeeters water index: open water and flooding.",
     formula:"NDWI = (ρ(B03) − ρ(B08)) / (ρ(B03) + ρ(B08))", fn:nd },
 
   { id:"ndmi", group:"Indices", name:"Moisture index (NDMI)", type:"index", source:"s2", bands:["b8a","b11"],
     ramp:R_NDMI, min:-0.8, max:0.8, lim:[-1, 1], icon:"drop",
     sw:"linear-gradient(135deg,#ff0000,#ffff00,#0000ff)", fg:"#1a0a0a",
     sub:"Based on a combination of bands (B8A - B11)/(B8A + B11)",
-    desc:"Vegetation moisture content — drought and water stress.",
+    desc:"Vegetation moisture content: drought and water stress.",
     formula:"NDMI = (ρ(B8A) − ρ(B11)) / (ρ(B8A) + ρ(B11))", fn:nd },
 
   /* Rendered as the Copernicus Browser NDSI script: snow above the threshold, true colour elsewhere. */
@@ -1382,7 +1425,7 @@ const LAYERS = [
   { id:"nbr", group:"Indices", name:"NBR", type:"index", source:"s2", bands:["b08","b12"], ramp:R_NBR,
     min:-1, max:1, lim:[-1, 1], icon:"flame", sw:"linear-gradient(135deg,#f0783c,#0a5a14)", fg:"#2a1004",
     sub:"Based on a combination of bands (B8 - B12)/(B8 + B12)",
-    desc:"Normalised burn ratio — fire damage and vegetation loss.",
+    desc:"Normalised burn ratio: fire damage and vegetation loss.",
     formula:"NBR = (ρ(B08) − ρ(B12)) / (ρ(B08) + ρ(B12))", fn:nd },
 
   { id:"aot", group:"Indices", name:"Aerosol optical thickness", type:"cont", source:"s2", band:"aot",
@@ -1399,14 +1442,14 @@ const LAYERS = [
     sw:"linear-gradient(135deg,#00a000,#ffe65a,#0000ff)", fg:"#0d1a0d",
     sub:"Based on the scene classification band (SCL)",
     desc:"Sentinel-2 L2A scene classification (Sen2Cor), 20 m.",
-    formula:"scl_20m.tif — categorical, scale 1, offset 0\n0 = no data" },
+    formula:"scl_20m.tif: categorical, scale 1, offset 0\n0 = no data" },
 
   { id:"cloud", group:"Masks & quality", name:"Cloud mask", type:"class", source:"s2",
     band:"cloud", palette:P_CLOUD, icon:"cloud",
     sw:"linear-gradient(135deg,#dfe8f5,#6a4fa3)", fg:"#141024",
     sub:"Based on the OmniCloudMask cloud mask band",
     desc:"OmniCloudMask cloud and cloud-shadow mask, 10 m.",
-    formula:"cloudmask_10m.tif — categorical\n0 clear · 1 thick cloud · 2 thin cloud · 3 cloud shadow" },
+    formula:"cloudmask_10m.tif: categorical\n0 clear · 1 thick cloud · 2 thin cloud · 3 cloud shadow" },
 
   { id:"terrain", group:"Masks & quality", name:"Terrain / solar incidence", type:"terrain", source:"s2",
     band:"terrain", ramp:R_INC, min:0, max:180, lim:[0, 180], icon:"mountain",
@@ -1469,7 +1512,7 @@ const LAYERS = [
     sw:"linear-gradient(135deg,#b71c1c,#f5f5f5,#004d40)", fg:"#1a1206",
     sub:"NDVI change: current vs. previous year (forest)",
     desc:"Difference of the vegetation state (NDVI) of the current year compared to the previous year, masked to the forest perimeter, 10 m.",
-    formula:"forest-10m.tif — NDVI change = value / 1000\n32700 = missing data · 32701 = no data" },
+    formula:"forest-10m.tif: NDVI change = value / 1000\n32700 = missing data · 32701 = no data" },
 
   { id:"ndviz", group:"Indices", name:"swissEO NDVIz", type:"cont", source:"ndviz", band:"prod",
     ramp:R_NDVIZ, min:-5, max:5, lim:[-10, 10], cogScale:0.01, cogFill:32701, cogMissing:32700, unit:"NDVI z-score",
@@ -1477,7 +1520,7 @@ const LAYERS = [
     sw:"linear-gradient(135deg,#7d6608,#f5f5f5,#145a32)", fg:"#1a1206",
     sub:"NDVI anomaly as z-score (forest)",
     desc:"Current vegetation vitality as NDVI anomaly (z-score), masked to the forest perimeter, 10 m.",
-    formula:"forest-10m.tif — z-score = value / 100\n32700 = missing data · 32701 = no data" },
+    formula:"forest-10m.tif: z-score = value / 100\n32700 = missing data · 32701 = no data" },
 
   { id:"ndvidiff2", group:"Indices", name:"swissEO NDVIdiff v200 BETA", type:"cont", source:"ndvidiff2", band:"prod",
     ramp:R_NDVIDIFF, min:-0.3, max:0.3, lim:[-1, 1], cogScale:0.001, cogFill:32701, unit:"NDVI change",
@@ -1485,9 +1528,18 @@ const LAYERS = [
     icon:"tree", sw:"linear-gradient(135deg,#b71c1c,#f5f5f5,#004d40)", fg:"#1a1206",
     sub:"BETA: NDVI change of two-month cloud-free mosaics vs. the previous year (forest)",
     desc:"Year-on-year NDVI change computed from first-quartile two-month cloud-free mosaics of swissEO S2-SR v200, forest perimeter, 10 m.",
-    formula:"ndvidiff-forest_10m.tif (int16) — ΔNDVI = value / 1000 (−2…2) · 32701 = no data\n" +
+    formula:"ndvidiff-forest_10m.tif (int16): ΔNDVI = value / 1000 (−2…2) · 32701 = no data\n" +
       "NDVI = (ρ(B08) − ρ(B04)) / (ρ(B08) + ρ(B04)), ρ = DN × 0.0001 − 0.1, of the first-quartile mosaic of the window\n" +
       "ΔNDVI = NDVI(window) − NDVI(same window one year earlier)" },
+
+  { id:"fdc", group:"Indices", name:"Forest Disturbance Classification", type:"fnclass", source:"s2",
+    bands:["b02","b05","b06","b8a","b11","b12"], def:{ cloud:true, shadow:true, veg:"forest" }, palette:FDC_PALETTE,
+    icon:"tree", sw:"linear-gradient(135deg,#ab6820,#b8b6b4,#7a2e01,#4c77ed)", fg:"#ffffff",
+    sub:"Bark beetle, clear cut, wildfire, windthrow (Sentinel Hub custom script)",
+    desc:"LightGBM classification of forest disturbances; healthy forest is not drawn.",
+    formula:"Sentinel Hub custom script (Joanneum Research, EvoLand): 150 gradient-boosted trees on the DN of B02, B05, B06, B8A, B11, B12\n" +
+      "input DN = max(0, DN(swissEO) − 1000) = 10000 × ρ, the Sentinel Hub L2A convention the trees were trained on\n" +
+      "classes: 0 bark beetle · 1 clear cut · 2 healthy (not drawn) · 3 salvage logged · 4 wildfire · 5 windthrow" },
 
   { id:"nddi", group:"Indices", name:"NDDI", type:"index", source:"s2", bands:["b08","b04","b03","b11"], ramp:R_NDDI, ndwiOpt:true,
     min:-1, max:1, lim:[-1, 1], icon:"drop", sw:"linear-gradient(135deg,#f2f5ef,#63a3e7,#b2182b)", fg:"#1a0a0a",
@@ -1504,7 +1556,7 @@ const LAYERS = [
     formula:"NDDI(date) − NDDI(reference), each NDDI clipped to −1…1\nreference = per pixel the first clear one of the acquisitions within ±20 days of the same day one year earlier (or of the chosen reference date), clearest first",
     fn:nddi },
 
-  { id:"analyst", group:"Indices", name:"NDVI Analyst (Kt. Aargau)", type:"diff2", source:"s2", bands:["b08","b04"], fn:nd,
+  { id:"analyst", group:"Indices", name:"NDVI Analyst", type:"diff2", source:"s2", bands:["b08","b04"], fn:nd,
     ramp:R_NDVIDIFF, min:-0.3, max:0.3, lim:[-1, 1], modal:true, unit:"ΔNDVI",
     def:{ cloud:true, shadow:true, veg:"forest", thr:-0.08, mode:"diff" }, icon:"tree",
     sw:"linear-gradient(135deg,#b71c1c,#f5f5f5,#004d40)", fg:"#1a1206",
@@ -1517,7 +1569,7 @@ const LAYER = Object.fromEntries(LAYERS.map(r => [r.id, r]));
    src/assets/cache/configuration.json, public/previews). Layers without a Copernicus equivalent link to the
    swisstopo product page instead. */
 const COP_META = {
-  true: { name: "True color", sub: "TCI — based on bands B4, B3, B2", thumb: "DEFAULT-THEME-a91f72-1_TRUE_COLOR.png",
+  true: { name: "True color", sub: "TCI, based on bands B4, B3, B2", thumb: "DEFAULT-THEME-a91f72-1_TRUE_COLOR.png",
     cop: "# True color (TCI)\n\nThe true color image delivered with each swissEO S2-SR mosaic (asset `tci_10m`): the visible bands red (B04), green (B03) and blue (B02) rendered as an 8-bit RGB image at 10 m, representing the Earth as humans would naturally see it. It is shown as delivered; gain, gamma and the RGB ranges can be adjusted on top, and the cloud, shadow and vegetation masks apply. Statistics and the pixel inspector use the reflectance bands.\n\nMore info [here](https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-s2-sr)." },
   nir: { name: "False color", sub: "Based on bands B8, B4, B3", thumb: "DEFAULT-THEME-a91f72-2_FALSE_COLOR.png",
     cop: "# False color composite\n\nA false color composite uses at least one non-visible wavelength to image Earth. The false color composite using near infrared, red and green bands is very popular (a band is a region of the electromagnetic spectrum; a satellite sensor can image Earth in different bands). The false colour composite is most commonly used to assess plant density and health, since plants reflect near infrared and green light, while they absorb red. Cities and exposed ground are grey or tan, and water appears blue or black.\n\n\n\nMore info [here](https://custom-scripts.sentinel-hub.com/sentinel-2/false_color_infrared/) and [here.](https://eo.belspo.be/en/colour-composites)" },
@@ -1553,9 +1605,11 @@ const COP_META = {
   ndviz: { more: "https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-ndviz",
     cop: "# swissEO NDVIz\n\nThe NDVI anomalies show the current vegetation vitality as observed by satellites, as a z-score relative to the long-term behaviour, for the forest areas of Switzerland at 10 m. Negative values (brown) mean lower vitality than usual, positive values (green) higher. The product is published for the end of July, August and September; the product nearest to the selected date is shown. Grey: missing data.\n\nMore info [here](https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-ndviz) and in the [content information](https://www.swisstopo.admin.ch/dam/en/sd-web/mZTj7kABmTrD/swissEO_NDVIz_AdditionalContentInfo.pdf)." },
   ndvidiff2: { more: "https://github.com/swisstopo/topo-satromo-v2/blob/dev-20261006/main_functions/test_reprocess_ndvidiff_csde.py",
-    cop: "# swissEO NDVIdiff v200 BETA\n\n**Beta version, not an official product.** Year-on-year NDVI change for the forest areas of Switzerland at 10 m, computed from **cloud-free two-month mosaics** of swissEO S2-SR v200 instead of single acquisitions. Three overlapping windows per year: June/July, July/August and August/September, each named after its end date (31 July, 31 August, 30 September); the window nearest to the selected date is shown.\n\n**Mosaic** ([main_cloudfree_mosaic_csde.py](https://github.com/swisstopo/topo-satromo-v2/blob/dev-20261006/main_functions/main_cloudfree_mosaic_csde.py)): for every pixel and band (B02, B03, B04, B08) all observations of the window are used; observations flagged by the cloud mask (1, 2, 3), outside the scene footprint or in terrain shadow (200) are discarded, and the **first quartile** of the remaining values is taken — following the Sentinel-2 quarterly mosaic algorithm of the Copernicus Data Space Ecosystem, more robust to cloud and haze residues than the first cloud-free value or the mean.\n\n**NDVI difference** ([test_reprocess_ndvidiff_csde.py](https://github.com/swisstopo/topo-satromo-v2/blob/dev-20261006/main_functions/test_reprocess_ndvidiff_csde.py)): NDVI = (NIR − Red) / (NIR + Red) from the reflectance of the mosaic (ρ = DN × 0.0001 − 0.1), minus the NDVI of the same window one year earlier; Int16, value / 1000, no data 32701. Negative values (red) mean less vital vegetation than a year ago, positive values (green) more.\n\nThe COGs are published as examples on cms.geo.admin.ch, not in the STAC catalogue." },
+    cop: "# swissEO NDVIdiff v200 BETA\n\n**Beta version, not an official product.** Year-on-year NDVI change for the forest areas of Switzerland at 10 m, computed from **cloud-free two-month mosaics** of swissEO S2-SR v200 instead of single acquisitions. Three overlapping windows per year: June/July, July/August and August/September, each named after its end date (31 July, 31 August, 30 September); the window nearest to the selected date is shown.\n\n**Mosaic** ([main_cloudfree_mosaic_csde.py](https://github.com/swisstopo/topo-satromo-v2/blob/dev-20261006/main_functions/main_cloudfree_mosaic_csde.py)): for every pixel and band (B02, B03, B04, B08) all observations of the window are used; observations flagged by the cloud mask (1, 2, 3), outside the scene footprint or in terrain shadow (200) are discarded, and the **first quartile** of the remaining values is taken, following the Sentinel-2 quarterly mosaic algorithm of the Copernicus Data Space Ecosystem, more robust to cloud and haze residues than the first cloud-free value or the mean.\n\n**NDVI difference** ([test_reprocess_ndvidiff_csde.py](https://github.com/swisstopo/topo-satromo-v2/blob/dev-20261006/main_functions/test_reprocess_ndvidiff_csde.py)): NDVI = (NIR − Red) / (NIR + Red) from the reflectance of the mosaic (ρ = DN × 0.0001 − 0.1), minus the NDVI of the same window one year earlier; Int16, value / 1000, no data 32701. Negative values (red) mean less vital vegetation than a year ago, positive values (green) more.\n\nThe COGs are published as examples on cms.geo.admin.ch, not in the STAC catalogue." },
   nddi: { cop: "# Normalized Difference Drought Index (NDDI)\n\nThe NDDI (Gu et al. 2007) combines vegetation greenness (NDVI) and vegetation water content (NDWI): NDDI = (NDVI − NDWI) / (NDVI + NDWI). Vegetation under drought stress has less water and less green, which raises the NDDI (red). By default the NDWI is computed from NIR and SWIR (B08, B11), as in the original paper; values are clipped to −1…1.\n\nThe openEO drought notebook uses the Awesome Spectral Indices formula with an NDWI from green and NIR (B03, B08), selectable as *Green*. With it NDVI + NDWI is close to zero over vegetation, and almost every pixel ends up at −1 or +1 (99.8 % in a test over Aarau, independent of the reflectance offset), so the map is saturated.\n\nMore info [here](https://doi.org/10.1029/2006GL029127) and in the [openEO notebook](https://github.com/Open-EO/openeo-community-examples/blob/main/python/50_thematic-notebooks/drought-nddi/drought-nddi.ipynb)." },
   nddichg: { cop: "# NDDI change vs. previous year\n\nDifference between the NDDI of the selected date and the NDDI one year earlier, as in the openEO drought notebook, which compares a drought year with a baseline year. Positive values (red) mean drier conditions than a year ago, negative values (blue) wetter. The NDWI is computed from NIR and SWIR (Gu et al. 2007) by default; the notebook's green NDWI is selectable but saturates. The reference uses the acquisitions within ±20 days of the same day one year earlier (or of a reference date you choose), clearest first; each pixel takes the first one with clear data. Unlike the notebook, which averages May–July, single dates are compared, so clouds and cloud shadows are masked on both sides by default.\n\nMore info [here](https://github.com/Open-EO/openeo-community-examples/blob/main/python/50_thematic-notebooks/drought-nddi/drought-nddi.ipynb)." },
+  fdc: { more: "https://custom-scripts.sentinel-hub.com/sentinel-2/forest_disturbance_classification/",
+    cop: "# Forest Disturbance Classification\n\nA LightGBM classification of forest disturbances by Jonas Viehweger and Martin Puhm (Joanneum Research, EvoLand project), published as a Sentinel Hub custom script. From a single date it assigns every pixel to *bark beetle* (brown), *clear cut* (grey), *salvage logged* (grey too, low confidence), *wildfire* (dark brown) or *windthrow* (blue); *healthy* forest is not drawn. It was trained on samples from Germany, Sweden and Spain (macro F1 0.83), works best on recent, large disturbances and is only valid on forest, so the forest mask is on by default. Expect classification errors and validate the results.\n\n**Input scaling:** the trees split on Sentinel Hub L2A digital numbers in the convention DN = 10000 × reflectance (data before processing baseline 04.00, e.g. the script's 2019 example). swissEO stores DN = (ρ + 0.1) × 10000, so the script receives DN − 1000, clamped at 0. The Copernicus Browser feeds recent scenes without removing the offset (see the README on harmonizeValues), so its result can differ there. The 150 trees are loaded unchanged from the script on first use.\n\nMore info [here](https://custom-scripts.sentinel-hub.com/sentinel-2/forest_disturbance_classification/)." },
   analyst: { cop: "# NDVI Analyst (Canton of Aargau)\n\nPort of the NDVI Analyst by Raffael Bienz (Canton of Aargau): the NDVI difference between two dates (later minus earlier), using swissEO S2-SR reflectance with negative values set to 0, masked to forest. Changes are pixels with an NDVI drop below the threshold (default −0.08); a 3 × 3 majority filter removes edge effects. *Detected change* shows the binary result. The statistics of an area of interest report the forest area and the affected area in ha and %, with and without edge-effect removal, like the original script.\n\nMore info [here](https://github.com/RaffiBienz/ndvi_analyst)." }
 };
 Object.keys(COP_META).forEach(id => Object.assign(LAYER[id], COP_META[id]));
@@ -1573,7 +1627,7 @@ const CONFIGS = {
   AGRICULTURE: { name: "Agriculture", groups: [
     ["Layers", ["true", "nir", "ndvi", "evi", "barren", "mstress", "ndmi", "agri", "savi"]]] },
   DROUGHT: { name: "Drought", groups: [
-    ["Layers", ["ndvi", "vhi", "vhiveg", "ndvidiff", "ndvidiff2", "ndviz", "nddi", "nddichg", "analyst"]]] },
+    ["Layers", ["true", "ndvi", "ndmi", "vhi", "vhiveg", "ndvidiff", "ndvidiff2", "ndviz", "nddi", "nddichg", "analyst"]]] },
   DROUGHT2026: { name: "Drought 2026", groups: [
     ["Layers", ["true", "ndmi", "ndwi", "mstress", "ndvi", "swir", "urban", "hon"]]],
     highlights: [
@@ -1617,6 +1671,8 @@ const CONFIGS = {
         center: [2660000, 1190000], res: 340,
         text: "By late July a brown-yellow belt stretched across much of Switzerland, above all the Mittelland and the Jura, where last year’s meadows and fields have visibly dried out. The 2026 image is from 24 July, when two cloud-free orbits covered the country; a narrow strip in the west lies between them. (Source: watson.ch, 10 August 2026)" }] }
 };
+CONFIGS.FOREST = { name: "Forest", groups: [
+  ["Layers", ["true", "vhi", "ndvidiff", "ndvidiff2", "ndviz", "analyst", "nbr", "ndmi", "fdc"]]] };
 const cfgLayers = id => CONFIGS[id].groups.flatMap(g => g[1]);
 
 /* Verification status of the layers: the checklist "Layer verification" in README.md (checked = verified).
@@ -1631,7 +1687,7 @@ function parseVerified(md) {
   md.slice(a, b).split("\n").forEach(l => { const m = l.match(/^\s*[-*] \[([ xX])\] `([a-z0-9_]+)`/); if (m && m[1] !== " ") ids.push(m[2]); });
   return ids;
 }
-const VER_TXT = { ok: "Verified — checked in depth", todo: "To be verified — not yet checked in depth" };
+const VER_TXT = { ok: "Verified: checked in depth", todo: "To be verified: not yet checked in depth" };
 const PREVIEWS = "public/previews/", PREVIEWS_CDSE = "https://browser.dataspace.copernicus.eu/previews/";
 
 /* Minimal Markdown for the descriptions: '# ' title, paragraphs, [links](url) and `code`. */
@@ -1647,7 +1703,7 @@ function mdLite(text) {
     : "<p>" + inline(t).replace(/\n/g, "<br>") + "</p>").join("");
 }
 LAYERS.forEach(r => { if (r.ramp) r.domain = [r.min, r.max]; });
-const MASKABLE = { rgb: 1, index: 1, cont: 1, terrain: 1, fnrgb: 1, diff2: 1 };
+const MASKABLE = { rgb: 1, index: 1, cont: 1, terrain: 1, fnrgb: 1, diff2: 1, fnclass: 1 };
 const SCL_CLOUD = { 3: 1, 8: 1, 9: 1, 10: 1 };
 
 /* Vegetation masks: the forest-10m / vegetation-10m COGs of swissEO VHI v100 (STAC collection
@@ -1678,7 +1734,7 @@ async function readVegMask(kind, date, bbox, W, H, signal) {
     return m;
   } catch (e) {
     if (e && e.name === "AbortError") throw e;
-    if (!vegWarned) { vegWarned = true; setStatus("The " + VEG_LABEL[kind].toLowerCase() + " mask (swissEO VHI v100) could not be loaded — shown without it."); }
+    if (!vegWarned) { vegWarned = true; setStatus("The " + VEG_LABEL[kind].toLowerCase() + " mask (swissEO VHI v100) could not be loaded and is not applied."); }
     return null;
   }
 }   // SCL cloud shadow, cloud medium / high probability, cirrus
@@ -1982,7 +2038,7 @@ async function resolveScenes(rec, date, cc) {
 }
 
 /* Reference of the two-date layers (NDDI change, NDVI Analyst): the S2-SR acquisitions within ±20 days of
-   the reference date (by default the same day one year earlier), clearest first — a chosen reference date
+   the reference date (by default the same day one year earlier), clearest first; a chosen reference date
    itself goes first. Up to six days are used as a per-pixel composite: each pixel takes the first
    acquisition that covers it and is not masked, so orbit gaps and clouds of the best day are filled. */
 const yearBack = d => isoD(new Date(Date.UTC(+d.slice(0, 4) - 1, +d.slice(5, 7) - 1, +d.slice(8, 10), 12)));
@@ -2103,6 +2159,16 @@ async function renderScene(rec, s, id, bbox, W, H, signal) {
       const c = rec.rgb(bands.map((b, i) => physIdx(b, a[i][k])));
       for (let j = 0; j < 3; j++) d[k * 4 + j] = 255 * clamp(c[j], 0, 1);
       d[k * 4 + 3] = 255;
+    }
+    return img;
+  }
+
+  if (rec.type === "fnclass") {                 // Forest Disturbance Classification; healthy forest stays transparent
+    const T = await fdcModel();
+    for (let k = 0; k < n; k++) {
+      if (a.some(x => x[k] === 0) || masked(k)) continue;
+      const e = rec.palette[fdcPredict(T, fdcInput(a, k))];
+      if (e && e[1]) put(k, e[1]);
     }
     return img;
   }
@@ -2354,7 +2420,7 @@ const expanded = new Set(["true"]);
 const showCode = new Set();
 const advOpen = new Set();
 
-let compare = [];               // {layerId, date, cc, s, view:[lat,lng,zoom], opacity, clip:[a,b]}
+let compare = [];               // {layerId, date, cc, s, view:[E, N, zoom] in LV95, opacity, clip:[a,b]}
 let compareMode = false, compareEffect = "split";
 let cmpLayers = [];
 
@@ -2403,7 +2469,7 @@ function refreshPending() {
   $("#loadTxt").textContent = "Loading data" +
     (n ? " · " + n + " tile" + (n > 1 ? "s" : "") : nb ? " · basemap" : "") +
     (netInflight ? " · " + netInflight + " request" + (netInflight > 1 ? "s" : "") : "") +
-    (slow ? " — slow connection, still loading…" : "…");
+    (slow ? ": slow connection, still loading…" : "…");
   loadTimer = setTimeout(refreshPending, 1000);            // keeps the slow-connection hint current
 }
 
@@ -2434,9 +2500,9 @@ async function autoGainFactor(rec, s, scenes, bbox, signal, grid) {
 function showAutoGain(f) {
   const e = $("#agInfo");
   if (e) e.textContent = currentRec.type === "rgb" && S(currentRec).autoGain
-    ? "Gain × " + f.toFixed(2) + " for this view" + (f < 1 ? " — lowered so bright areas do not saturate" : " — not bright, unchanged")
+    ? "Gain × " + f.toFixed(2) + " for this view" + (f < 1 ? ": lowered so bright areas do not saturate" : ": not bright, unchanged")
     : "Lowers the gain when the view is bright (snow, clouds) so it does not saturate";
-  if (e && S(currentRec).look === "optimized" && S(currentRec).autoGain) e.textContent = "Not needed with the True color optimized look — it compresses highlights instead of clipping them";
+  if (e && S(currentRec).look === "optimized" && S(currentRec).autoGain) e.textContent = "Not needed with the True color optimized look: it compresses highlights instead of clipping them";
 }
 /* Recomputes the factor for the view; true when it changed enough to redraw. */
 async function refreshAutoGain() {
@@ -2580,7 +2646,7 @@ function updateDateInfo(rec, scenes) {
     t = "VHI day " + day + (day === state.date ? "" : " (nearest available to " + state.date + ")");
   } else if (SOURCES[rec.source].sparse) {
     const day = scenes[0].slice(0, 10);
-    t = SOURCES[rec.source].name + " " + day + (day === state.date ? "" : " — the product nearest to " + state.date +
+    t = SOURCES[rec.source].name + " " + day + (day === state.date ? "" : ": the product nearest to " + state.date +
         " (" + (SOURCES[rec.source].note || "published for the end of July, August and September") + ")");
   } else {
     t = scenes.length + " acquisition" + (scenes.length > 1 ? "s" : "") + ": " + scenes.slice().reverse().map(id => {
@@ -2591,7 +2657,7 @@ function updateDateInfo(rec, scenes) {
   $("#dateInfo").textContent = t;
   if (rec.type === "diff2" && scenes.length) {
     resolveRef(S(rec), state.date).then(r => {
-      if (currentRec === rec) $("#dateInfo").textContent = t + " — compared with " +
+      if (currentRec === rec) $("#dateInfo").textContent = t + "; compared with " +
         (r.date ? "the clearest acquisitions around " + r.target + " (" + refLabel(r) + ")" : "no reference (none within ±20 days of " + r.target + ")");
     }).catch(() => {});
   }
@@ -2821,8 +2887,8 @@ function layerBody(rec) {
       (rec.more ? '<p>More info <a href="' + rec.more + '" target="_blank" rel="noopener">here</a>.</p>' : ""));
   body.append(d);
   const vk = VERIFIED.has(rec.id) ? "ok" : "todo", vr = el("div", "verrow " + vk);
-  vr.innerHTML = verBadge(rec) + "<span>" + (vk === "ok" ? "<b>Verified</b> — this layer has been checked in depth."
-    : "<b>To be verified</b> — this layer has not yet been checked in depth (see Info).") + "</span>";
+  vr.innerHTML = verBadge(rec) + "<span>" + (vk === "ok" ? "<b>Verified</b>: this layer has been checked in depth."
+    : "<b>To be verified</b>: this layer has not yet been checked in depth (see Info).") + "</span>";
   body.append(vr);
   if (showCode.has(rec.id)) {
     const note = rec.note || (rec.type === "rgb" || rec.type === "index" ? SCALE_NOTE : "");
@@ -2898,7 +2964,7 @@ function layerBody(rec) {
     body.append(nw);
     if (s.ndwi === "green") body.append(el("div", "warnbox", "Warning: with the green / NIR NDWI of the openEO notebook, NDVI + NDWI " +
       "is close to zero over vegetation, so the NDDI explodes. In a test over Aarau (2026-07-04) 99.8 % of the pixels were outside −1…1 " +
-      "— with or without the −0.1 reflectance offset — and the map shows almost only +1 (red) and −1 (white). Use SWIR for a usable index."));
+      "(with or without the −0.1 reflectance offset), and the map shows almost only +1 (red) and −1 (white). Use SWIR for a usable index."));
   }
 
   /* ---- two-date layers: reference and change detection ---- */
@@ -2959,7 +3025,7 @@ function layerBody(rec) {
     };
     tog("cloud", "Clouds", "OmniCloudMask thick (1) and thin (2) cloud");
     tog("shadow", "Cloud shadows", "OmniCloudMask cloud shadow (3)");
-    tog("terrain", "Terrain shadow", "Terrain mask value 200 — cast or self-shadow");
+    tog("terrain", "Terrain shadow", "Terrain mask value 200: cast or self-shadow");
   }
   if (rec.source === "s2") {
     const l = el("div", "tog");
@@ -3171,7 +3237,7 @@ function applyHighlight(h) {
   const rec = LAYER[h.layer], z = CRS2056.zoom(1 / h.res), ll = lv95(h.center[0], h.center[1]);
   activeHl = h;
   setViewFrac(ll, z);
-  const view = [ll.lat, ll.lng, +z.toFixed(3)];
+  const view = [h.center[0], h.center[1], +z.toFixed(3)];
   compare = [{ layerId: rec.id, date: h.left, cc: 100, s: defaults(rec), view, opacity: 1, clip: [0, 0.5] },
              { layerId: rec.id, date: h.right, cc: 100, s: defaults(rec), view, opacity: 1, clip: [0, 1] }];
   compareEffect = "split";
@@ -3190,8 +3256,7 @@ function matchHighlight() {
   activeHl = hs.find(h => {                       // several stories share their dates, so the place must match too
     if (compare.length !== 2 || compare[0].layerId !== h.layer || compare[1].layerId !== h.layer ||
         compare[0].date !== h.left || compare[1].date !== h.right) return false;
-    const ll = lv95(h.center[0], h.center[1]);
-    return Math.abs(compare[0].view[0] - ll.lat) < 0.002 && Math.abs(compare[0].view[1] - ll.lng) < 0.002;
+    return Math.abs(compare[0].view[0] - h.center[0]) < 50 && Math.abs(compare[0].view[1] - h.center[1]) < 50;
   }) || null;
 }
 
@@ -3234,9 +3299,9 @@ $("#btnExport").innerHTML = UI.export;
 
 function addToCompare(rec) {
   activeHl = null;
-  const c = map.getCenter();
+  const c = CRS2056.project(map.getCenter());
   compare.push({ layerId: rec.id, date: state.date, cc: state.cc, s: cloneSettings(S(rec)),
-                 view: [c.lat, c.lng, map.getZoom()], opacity: 1, clip: [0, 1] });
+                 view: [+c.x.toFixed(2), +c.y.toFixed(2), +map.getZoom().toFixed(3)], opacity: 1, clip: [0, 1] });
   renderCompare();
   const b = $("#cmpBadge");
   b.animate([{ transform: "scale(1.6)" }, { transform: "scale(1)" }], { duration: 350 });
@@ -3406,10 +3471,10 @@ function renderCompare() {
     const loc = el("button", "ib");
     loc.title = "Zoom to this layer's location";
     loc.innerHTML = UI.locate;
-    loc.onclick = () => map.setView([it.view[0], it.view[1]], it.view[2]);
+    loc.onclick = () => setViewFrac(lv95(it.view[0], it.view[1]), it.view[2]);
     t.append(loc);
     m.append(t, el("div", null, "Date: " + it.date));
-    m.append(el("div", null, "Lat/Lon: " + it.view[0].toFixed(2) + ", " + it.view[1].toFixed(2) + " | Zoom: " + it.view[2]));
+    m.append(el("div", null, "LV95: " + Math.round(it.view[0]) + ", " + Math.round(it.view[1]) + " | Zoom: " + it.view[2]));
     const sl = el("div", "sl");
     if (compareEffect === "split") {
       sl.append(el("span", null, "Split position:"),
@@ -3752,7 +3817,7 @@ async function toGeo(text, ext) {
 
 /* What a browser handles comfortably (tested in Firefox and Chrome): files up to 50 MB; an area of interest
    up to 100,000 vertices (vertex editing up to 2,000); a custom mask up to 1,000,000 vertices. A copied link
-   holds an imported area only up to about 280 vertices; areas and masks loaded from a URL travel as the URL. */
+   holds an imported area only up to about 270 vertices; areas and masks loaded from a URL travel as the URL. */
 const GEO_MAX_MB = 50, AOI_MAX_VERT = 100000, AOI_EDIT_MAX = 2000, MASK_MAX_VERT = 1000000, LINK_MAX_CHARS = 8000;
 const countVert = polys => polys.reduce((t, p) => t + p.reduce((u, r) => u + r.length, 0), 0);
 const fmtInt = n => n.toLocaleString("en-US");
@@ -3836,7 +3901,7 @@ function acceptPolys(polys, label, src, fit) {
   setAoi(g, fit !== false, src || null);
   closeModal($("#aoiModal"));
   setStatus("Area of interest imported from " + label + (r.crs !== "EPSG:4326" ? " (reprojected from " + r.crs + ")" : "") + "." +
-    (aoiParam() ? "" : " It is too large for a link and is <b>not shared</b> when you copy the link — load it from a URL to share it."));
+    (aoiParam() ? "" : " It is too large for a link and is <b>not shared</b> when you copy the link. Load it from a URL to share it."));
   setTimeout(() => { if (statusKind === "msg") setStatus(""); }, aoiParam() ? 3500 : 9000);
 }
 
@@ -4048,7 +4113,8 @@ async function sampleAoi(r, scenes, grid, o, signal) {
   const bands = r.type === "spectral" ? r.bands : (r.bands || [r.band]);
   const nb = r.type === "rgb" || r.type === "spectral" ? bands.length : 1;
   const vals = Array.from({ length: nb }, () => new Float32Array(n).fill(NaN));
-  const cls = r.type === "class" ? new Int16Array(n).fill(-1) : null;
+  const cls = r.type === "class" || r.type === "fnclass" ? new Int16Array(n).fill(-1) : null;
+  const T = r.type === "fnclass" ? await fdcModel() : null;
   const done = new Uint8Array(n), cov = new Uint8Array(n);
   let masked = 0, shadow = 0, outside = 0;
   const soft = q => q && q.catch(e => { if (e && e.name === "AbortError") throw e; return null; });
@@ -4114,6 +4180,10 @@ async function sampleAoi(r, scenes, grid, o, signal) {
     const a = covBand === bands[0] ? [first].concat(rest) : rest;
     for (let k = 0; k < n; k++) {
       if (!has[k]) continue;
+      if (r.type === "fnclass") {
+        if (a.some(x => !x[k])) continue;
+        cls[k] = fdcPredict(T, fdcInput(a, k)); done[k] = 1; continue;
+      }
       if (r.type === "class") {
         const v = a[0][k];
         if (r.band === "scl" && v === 0) continue;
@@ -4237,7 +4307,7 @@ function openStats() {
   const rec = currentRec, r = statRec(rec);
   stRec = rec;
   const s2 = r.source === "s2";
-  $("#stTitle").textContent = "Statistical info — " + rec.name;
+  $("#stTitle").textContent = "Statistical info: " + rec.name;
   $("#stCloudRow").hidden = !s2 || r.type === "class";
   $("#stSclRow").hidden = !s2 || r.type === "class";
   $("#stTerrRow").hidden = !s2 || r.type === "class" || r.type === "terrain";
@@ -4246,10 +4316,10 @@ function openStats() {
   $("#stVeg").replaceChildren(vegSeg(stVeg, v => { stVeg = v; runCurrentStats(); }));
   $("#stTerr").checked = S(rec).terrain;
   $("#stDate").textContent = state.date;
-  const noTs = r.type === "class" || rec.type === "diff2";
+  const noTs = r.type === "class" || r.type === "fnclass" || rec.type === "diff2";
   $("#stTsCtl").hidden = noTs;
-  $("#stProg").textContent = r.type === "class" ? "Time series are not available for categorical layers." :
-    rec.type === "diff2" ? "Time series are not available for the two-date layers — use the index itself (NDVI, NDDI) for a time series." : "";
+  $("#stProg").textContent = r.type === "class" || r.type === "fnclass" ? "Time series are not available for categorical layers." :
+    rec.type === "diff2" ? "Time series are not available for the two-date layers. Use the index itself (NDVI, NDDI) for a time series." : "";
   $("#stChart").innerHTML = "";
   $("#stTo").value = state.date;
   $("#stFrom").value = SOURCES[r.source].sparse ? SOURCES[r.source].firstYear + "-01-01" : addDays(state.date, r.source === "vhi" ? -60 : -120);
@@ -4278,7 +4348,7 @@ async function runCurrentStats() {
     const res = await sampleAoi(r, scenes, grid, opt);
     if (stRec !== rec) return;
     const pct = v => (100 * v / res.total).toFixed(1) + " %";
-    if (r.type === "class") {
+    if (r.type === "class" || r.type === "fnclass") {
       const cnt = {};
       let tot = 0;
       res.cls.forEach(v => { if (v >= 0) { cnt[v] = (cnt[v] || 0) + 1; tot++; } });
@@ -4376,7 +4446,7 @@ async function diffStats(rec, r, scenes, grid, opt, box) {
       "<tr><td>Compared (valid on both dates)</td><td>" + fmtHa(st.n) + "</td><td>" + (100 * st.n / inArea).toFixed(1) + " %</td></tr>" +
       "<tr><td>Affected (ΔNDVI &lt; " + +thr.toFixed(3) + ")</td><td>" + fmtHa(raw) + "</td><td>" + (100 * raw / st.n).toFixed(1) + " %</td></tr>" +
       "<tr><td>Affected after edge-effect removal</td><td>" + fmtHa(filt) + "</td><td>" + (100 * filt / st.n).toFixed(1) + " %</td></tr></table>" +
-      '<div class="hint">Shares refer to the compared area. Grid ' + grid.res + " m" + (grid.res > 10 ? " (coarser than 10 m because of the AOI size — draw a smaller AOI for the full resolution)" : "") + ".</div>";
+      '<div class="hint">Shares refer to the compared area. Grid ' + grid.res + " m" + (grid.res > 10 ? " (coarser than 10 m because of the AOI size; draw a smaller AOI for the full resolution)" : "") + ".</div>";
   }
   const d0 = r.domain[0], k2 = (r.domain[1] - d0) / ((s.max - s.min) || 1e-9);
   html += histChart(st.sorted, s.min, s.max, v => { const c = r.ramp(d0 + (v - s.min) * k2); return c ? rgbCss(c) : "#999"; },
@@ -4539,29 +4609,28 @@ $("#spCsv").onclick = () => downloadText("swissEO_aoi_spectrum_" + state.date + 
     .map(v => typeof v === "number" ? +v.toFixed(5) : v).join(",")).join("\n"), "text/csv");
 
 /* ============================================================
-   14. Permalink — the URL follows every change
+   14. Permalink: the URL follows every change
    ============================================================ */
 let booted = false, urlTimer = null;
 const b64e = o => btoa(unescape(encodeURIComponent(JSON.stringify(o))))
   .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 const b64d = s => JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/")))));
 
-/* The area in the link: the URL it was loaded from, or the geometry when it is small enough (≈ 280 vertices). */
+/* The area in the link: the URL it was loaded from, or the geometry when it is small enough (≈ 270 vertices). */
 function aoiParam() {
   if (!aoi) return null;
   if (aoiSrc && aoiSrc.url) return ["aoiUrl", aoiSrc.url];
-  if (aoiEnc == null) {
-    const g = { type: aoi.type, coordinates: JSON.parse(JSON.stringify(aoi.coordinates, (k, v) => typeof v === "number" ? +v.toFixed(6) : v)) };
-    aoiEnc = b64e(g);
+  if (aoiEnc == null) {                         // LV95, 0.1 m
+    const lv = polysOf(aoi).map(pl => pl.map(r => r.map(c => proj4("EPSG:4326", "EPSG:2056", c).map(v => +v.toFixed(1)))));
+    aoiEnc = b64e(lv.length === 1 ? { type: "Polygon", coordinates: lv[0] } : { type: "MultiPolygon", coordinates: lv });
   }
   return aoiEnc.length < LINK_MAX_CHARS ? ["aoi", aoiEnc] : null;
 }
 function writeUrlSoon() { if (!booted) return; clearTimeout(urlTimer); urlTimer = setTimeout(writeUrl, 200); }
 function writeUrl() {
-  const c = map.getCenter(), p = new URLSearchParams();
+  const c = CRS2056.project(map.getCenter()), p = new URLSearchParams();
   p.set("zoom", +map.getZoom().toFixed(3));
-  p.set("lat", c.lat.toFixed(5));
-  p.set("lng", c.lng.toFixed(5));
+  p.set("center", c.x.toFixed(2) + "," + c.y.toFixed(2));               // LV95 E,N as on map.geo.admin.ch
   p.set("fromTime", state.date + "T00:00:00.000Z");
   p.set("toTime", state.date + "T23:59:59.999Z");
   if (currentRec.source === "s2" || state.cc !== 100) p.set("cloudCoverage", state.cc);
@@ -4574,7 +4643,7 @@ function writeUrl() {
   if (compare.length) {
     p.set("compareLayers", b64e(compare.map(it => ({
       l: it.layerId, d: it.date, c: it.cc, s: settingsToObj(LAYER[it.layerId], it.s),
-      v: [r3(it.view[0]), r3(it.view[1]), it.view[2]]
+      v: [+it.view[0].toFixed(2), +it.view[1].toFixed(2), it.view[2]]
     }))));
     p.set("comparedOpacity", JSON.stringify(compare.map(it => r3(it.opacity))));
     p.set("comparedClipping", JSON.stringify(compare.map(it => it.clip.map(r3))));
@@ -4617,7 +4686,7 @@ function readUrl() {
       compare = items.filter(it => LAYER[it.l] && DATE_RE.test(it.d)).map((it, i) => ({
         layerId: it.l, date: it.d, cc: isFinite(it.c) ? it.c : 100,
         s: objToSettings(LAYER[it.l], it.s || {}),
-        view: Array.isArray(it.v) && it.v.length === 3 ? it.v.map(Number) : [46.8, 8.2, 9],
+        view: Array.isArray(it.v) && it.v.length === 3 && +it.v[0] > 2e6 ? it.v.map(Number) : [2660000, 1190000, 9],
         opacity: isFinite(op[i]) ? clamp(+op[i], 0, 1) : 1,
         clip: Array.isArray(cl[i]) && cl[i].length === 2 ? [clamp(+cl[i][0], 0, 1), clamp(+cl[i][1], 0, 1)] : [0, 1]
       }));
@@ -4625,13 +4694,16 @@ function readUrl() {
   }
   const cm = q.get("compareMode");
   if (cm === "split" || cm === "opacity") compareEffect = cm;
-  if (q.has("aoi")) { try { setAoi(b64d(q.get("aoi")), false); } catch (e) { /* ignore a broken aoi */ } }
+  if (q.has("aoi")) {                           // LV95 geometry (WGS84 is detected and accepted too)
+    try { setAoi({ type: "MultiPolygon", coordinates: polysToWgs(polysOf(b64d(q.get("aoi")))).polys }, false); }
+    catch (e) { /* ignore a broken aoi */ }
+  }
   else if (q.has("aoiUrl")) aoiUrlPending = q.get("aoiUrl");
   if (q.has("maskUrl")) maskUrlPending = q.get("maskUrl");
 
-  const lat = parseFloat(q.get("lat")), lng = parseFloat(q.get("lng")), z = parseFloat(q.get("zoom"));
-  const hasView = isFinite(lat) && isFinite(lng) && isFinite(z);
-  if (hasView) setViewFrac([lat, lng], z);
+  const cen = (q.get("center") || "").split(",").map(Number), z = parseFloat(q.get("zoom"));
+  const hasView = cen.length === 2 && cen.every(v => isFinite(v)) && cen[0] > 2e6 && isFinite(z);
+  if (hasView) setViewFrac(lv95(cen[0], cen[1]), z);
   return { hasView, hasDate: DATE_RE.test(ft), compareMode: cm !== "off" && compare.length >= 2 };
 }
 
@@ -4665,12 +4737,12 @@ async function showSceneInfo(rec, ids) {
     try {
       const m = await (await fetch(metaUrl(id))).json();
       const P = m.PROPERTIES || {};
-      rows.push(["Cloud cover", (P.CLOUDPERCENTAGE ?? "—") + " %"],
-                ["Orbit", P.ORBIT_NR ?? "—"],
-                ["Co-registration GCPs", P.GCP_COUNT ?? "—"],
+      rows.push(["Cloud cover", (P.CLOUDPERCENTAGE ?? "n/a") + " %"],
+                ["Orbit", P.ORBIT_NR ?? "n/a"],
+                ["Co-registration GCPs", P.GCP_COUNT ?? "n/a"],
                 ["Mean shift (px)", (P.COREG_MEAN_SHIFT_PX_X ?? "?") + " / " + (P.COREG_MEAN_SHIFT_PX_Y ?? "?")],
                 ["Granules", Object.keys((m.SOURCE && m.SOURCE.GRANULES) || {}).length],
-                ["Processor", P.SWISSTOPO_RELEASE_VERSION ?? "—"]);
+                ["Processor", P.SWISSTOPO_RELEASE_VERSION ?? "n/a"]);
     } catch (e) { /* keep the basic rows */ }
     return html(rows) + '<div class="hint" style="margin-bottom:10px"><a target="_blank" ' +
       'href="https://data.geo.admin.ch/browser/index.html#/collections/' + COLL + "/items/" + id +
@@ -4692,7 +4764,7 @@ $("#btnInspect").onclick = () => {
 };
 $("#inspClose").onclick = () => $("#inspect").classList.remove("on");
 
-const TERRAIN_TXT = v => v == null ? "—" : v === 255 ? "255 · no data" : v === 200 ? "200 · shadow" : v + "° incidence";
+const TERRAIN_TXT = v => v == null ? "n/a" : v === 255 ? "255 · no data" : v === 200 ? "200 · shadow" : v + "° incidence";
 
 map.on("click", async e => {
   if (!inspecting || drawing) return;
@@ -4705,7 +4777,7 @@ map.on("click", async e => {
     const r = cfg.rec, v = await readPoint(r.cogUrl(cfg.scenes[0]), p.x, p.y).catch(() => null);
     const txt = v == null || v === r.cogFill ? "no data" : v === r.cogMissing ? "missing data" : !r.cogValid(v) ? v + " (no data)"
       : v + (r.cogScale !== 1 ? "  →  " + (v * r.cogScale).toFixed(3) : "");
-    $("#inspBody").innerHTML = "<table><tr><td>WGS84</td><td>" + e.latlng.lat.toFixed(5) + ", " + e.latlng.lng.toFixed(5) +
+    $("#inspBody").innerHTML = "<table><tr><td>LV95</td><td>" + p.x.toFixed(2) + ", " + p.y.toFixed(2) +
       "</td></tr><tr><td>Item</td><td>" + cfg.scenes[0] + "</td></tr><tr><td><b>" + r.name + "</b></td><td><b>" + txt + "</b></td></tr></table>";
     return;
   }
@@ -4735,17 +4807,17 @@ map.on("click", async e => {
 
     let rows = "";
     const tr = (a, b) => rows += "<tr><td>" + a + "</td><td>" + b + "</td></tr>";
-    tr("WGS84", e.latlng.lat.toFixed(5) + ", " + e.latlng.lng.toFixed(5));
+    tr("LV95", p.x.toFixed(2) + ", " + p.y.toFixed(2));
     tr("Scene", timeOf(id));
     list.forEach(b => {
       const dn = vals[b];
-      tr(BAND_LABEL[b], dn == null ? "—" : dn === 0 ? "no data"
+      tr(BAND_LABEL[b], dn == null ? "n/a" : dn === 0 ? "no data"
         : dn + "  →  " + (b === "aot" ? "AOT " : "ρ ") + phys(b, dn).toFixed(4));
     });
     if (rec.type === "index" || rec.type === "diff2") {
       const v = rec.bands.map(b => vals[b]);
       const ok = v.every(x => x != null && x !== 0), x0 = ok ? rec.fn(rec.bands.map(b => physIdx(b, vals[b])), cfg.s) : null;
-      tr("<b>" + (rec.type === "diff2" ? (rec.modal ? "NDVI" : "NDDI") + " " + cfg.date : rec.name) + "</b>", ok ? "<b>" + x0.toFixed(4) + "</b>" : "—");
+      tr("<b>" + (rec.type === "diff2" ? (rec.modal ? "NDVI" : "NDDI") + " " + cfg.date : rec.name) + "</b>", ok ? "<b>" + x0.toFixed(4) + "</b>" : "n/a");
       if (rec.type === "diff2") {
         const ref = await resolveRef(S(rec), cfg.date);
         let x1 = null, rd = "reference";
@@ -4753,23 +4825,30 @@ map.on("click", async e => {
           const w = await Promise.all(rec.bands.map(b => readPoint(assetUrl(sid, b), p.x, p.y).catch(() => null)));
           if (w.every(q => q)) { x1 = rec.fn(rec.bands.map((b, i) => physIdx(b, w[i])), cfg.s); rd = sid.slice(0, 10); break; }
         }
-        tr((rec.modal ? "NDVI" : "NDDI") + " " + rd + " (reference)", x1 == null ? "—" : x1.toFixed(4));
+        tr((rec.modal ? "NDVI" : "NDDI") + " " + rd + " (reference)", x1 == null ? "n/a" : x1.toFixed(4));
         tr("<b>" + unitOf(rec) + "</b>", ok && x1 != null ? "<b>" + (x0 - x1).toFixed(4) + "</b>" +
-          (rec.modal ? (x0 - x1 < S(rec).thr ? " · below threshold" : "") : "") : "—");
+          (rec.modal ? (x0 - x1 < S(rec).thr ? " · below threshold" : "") : "") : "n/a");
       }
+    }
+    if (rec.type === "fnclass") {
+      const v = rec.bands.map(b => vals[b]);
+      if (v.every(x => x)) {
+        const c = fdcPredict(await fdcModel(), v.map(x => Math.max(0, x - 1000)));
+        tr("<b>" + rec.name + "</b>", "<b>" + c + " · " + rec.palette[c][0] + "</b>");
+      } else tr("<b>" + rec.name + "</b>", "n/a");
     }
     if (rec.tci) {
       const t = await readPoint(assetUrl(id, "tci"), p.x, p.y, 3).catch(() => null);
-      tr("TCI (R, G, B)", t ? t.join(", ") : "—");
+      tr("TCI (R, G, B)", t ? t.join(", ") : "n/a");
     }
-    tr("SCL", scl == null ? "—" : scl + " · " + (P_SCL[scl] ? P_SCL[scl][0] : "?"));
-    tr("Cloud mask", cld == null ? "—" : cld + " · " + (P_CLOUD[cld] ? P_CLOUD[cld][0] : "?"));
+    tr("SCL", scl == null ? "n/a" : scl + " · " + (P_SCL[scl] ? P_SCL[scl][0] : "?"));
+    tr("Cloud mask", cld == null ? "n/a" : cld + " · " + (P_CLOUD[cld] ? P_CLOUD[cld][0] : "?"));
     tr("Terrain mask", TERRAIN_TXT(ter));
     const ref = await vegRef().catch(() => null);
     const [vf, vv] = ref ? await Promise.all(["forest", "vegetation"].map(kd =>
       readPoint(vhiUrl(ref, vegLayer(kd)), p.x, p.y).catch(() => null))) : [null, null];
-    tr("Forest / vegetation mask", (vf == null ? "—" : vf !== 255 ? "forest" : "no forest") + " / " +
-                                   (vv == null ? "—" : vv !== 255 ? "vegetation" : "no vegetation"));
+    tr("Forest / vegetation mask", (vf == null ? "n/a" : vf !== 255 ? "forest" : "no forest") + " / " +
+                                   (vv == null ? "n/a" : vv !== 255 ? "vegetation" : "no vegetation"));
     $("#inspBody").innerHTML = "<table>" + rows + "</table>";
   } catch (err) {
     $("#inspBody").innerHTML = '<div class="hint">Read failed: ' + err.message + "</div>";
@@ -4782,7 +4861,7 @@ map.on("click", async e => {
 const FONT = "Arial,Helvetica,'Noto Sans',sans-serif";
 
 /* Draws the tiles a layer currently holds, positioned from their tile coords.
-   Reuses exactly what is on screen — no refetching, no reprojection. */
+   Reuses exactly what is on screen: no refetching, no reprojection. */
 function drawTileLayer(ctx, layer, pxBounds, z, alpha) {
   subLayers(layer).forEach(lyr => {
     if (!lyr._tiles) return;
@@ -4921,7 +5000,7 @@ function drawCaption(ctx, W, H, desc, overlay) {
     title = "Compare: " + compare.map(it => LAYER[it.layerId].name + " " + it.date).join("  |  ");
     sub = "swissEO";
   } else {
-    title = currentRec.name + (currentRec.sub ? " — " + currentRec.sub : "");
+    title = currentRec.name + (currentRec.sub ? ": " + currentRec.sub : "");
     const ids = currentCfg ? currentCfg.scenes : [];
     sub = SOURCES[currentRec.source].name + " · " + (ids.length && currentRec.source !== "s2" ? ids[0].slice(0, 10) : state.date) +
           (currentRec.type === "diff2" && currentCfg && currentCfg.refInfo ? " vs. reference around " + currentCfg.refInfo.target : "") +
@@ -5198,7 +5277,7 @@ function analyticalGrid() {
   const W = Math.max(1, Math.ceil((b0[2] - x0) / rx)), H = Math.max(1, Math.ceil((y1 - b0[1]) / ry));
   const ok = W <= EXP_MAX_A && H <= EXP_MAX_A;
   return { bbox: [x0, y1 - H * ry, x0 + W * rx, y1], W, H, rx, ry, ok,
-           msg: ok ? "" : "Image width and height must be between 1px and " + EXP_MAX_A + "px — zoom in, crop to the AOI or lower the resolution." };
+           msg: ok ? "" : "Image width and height must be between 1px and " + EXP_MAX_A + "px. Zoom in, crop to the AOI or lower the resolution." };
 }
 const EXP_MAX_A = 2500;
 
@@ -5334,7 +5413,7 @@ function printGrid() {
   const W = Math.round(wIn * dpi), H = Math.round(W * (bbox[3] - bbox[1]) / (bbox[2] - bbox[0]));
   const ok = wIn > 0 && dpi >= 72 && W <= 12000 && H <= 12000 && W * H <= 60e6;
   return { bbox, W, H, k: dpi / 96, mpp: (bbox[2] - bbox[0]) / W, ok,
-           msg: ok ? "" : "The image is too large (max. 12000 px per side and 60 megapixels) — lower the size or DPI." };
+           msg: ok ? "" : "The image is too large (max. 12000 px per side and 60 megapixels). Lower the size or DPI." };
 }
 function printAspect() { const b = $("#exCropP").checked && aoi ? aoiBox(0.05) : viewBox(); return (b[3] - b[1]) / (b[2] - b[0]); }
 
@@ -5575,7 +5654,7 @@ async function tlSearch() {
       units = [...byDay.entries()].map(([d, ids]) => ({ date: d, scenes: ids.sort((a, b) => b.localeCompare(a)), label: d }));
     }
     units.sort((a, b) => a.label.localeCompare(b.label));
-    if (units.length > 400) throw new Error(units.length + " acquisitions — choose a shorter range or a coarser interval than " + per + ".");
+    if (units.length > 400) throw new Error(units.length + " acquisitions. Choose a shorter range or a coarser interval than " + per + ".");
     const g = tlGrid(tlArea().bbox, 48);
     let done = 0;
     await pool(units, 4, async u => {
@@ -5689,7 +5768,7 @@ async function tlFrame(it, area, W, H, o, signal) {
     ctx.fillStyle = "#DC0000"; ctx.fillRect(0, Hk - h, Wk, 3);
     ctx.textBaseline = "alphabetic";
     ctx.font = "700 13px " + FONT; ctx.fillStyle = "#003F6B";
-    ctx.fillText(rec.name + (rec.sub ? " — " + rec.sub : ""), 14, Hk - h + 21);
+    ctx.fillText(rec.name + (rec.sub ? ": " + rec.sub : ""), 14, Hk - h + 21);
     ctx.font = "11px " + FONT; ctx.fillStyle = "#555";
     ctx.fillText(SOURCES[rec.source].name + (rec.source === "s2" && VEG_LABEL[s.veg] ? " · " + VEG_LABEL[s.veg].toLowerCase() + " mask" : "") +
       "  |  © swisstopo · contains modified Copernicus Sentinel data" + (o.overlay ? " · overlay © ASIT VD" : ""), 14, Hk - h + 37);
@@ -5704,8 +5783,8 @@ async function tlBuild() {
   tl.abort = ctrl;
   tlStop();
   const use = tl.items.filter(it => it.selected && tlApplicable(it));
-  if (!use.length) { $("#tlProg").textContent = "No images to use — search first, or widen the cloud / coverage limits."; return false; }
-  if (use.length > 300) { $("#tlProg").textContent = "At most 300 frames — choose a coarser interval."; return false; }
+  if (!use.length) { $("#tlProg").textContent = "No images to use. Search first, or widen the cloud / coverage limits."; return false; }
+  if (use.length > 300) { $("#tlProg").textContent = "At most 300 frames. Choose a coarser interval."; return false; }
   const area = tlArea(), [W, H] = tlSize();
   const o = { legend: $("#tlLeg").checked, overlay: $("#tlOv").checked, caption: $("#tlCap").checked, autoGain: $("#tlAuto").checked };
   $("#tlPreview").disabled = $("#tlDl").disabled = true;
@@ -5821,7 +5900,7 @@ async function tlGif(prog) {
 async function tlVideo(prog) {
   const types = ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm"];
   const mime = window.MediaRecorder && types.find(t => MediaRecorder.isTypeSupported(t));
-  if (!mime) throw new Error("This browser cannot record video — choose GIF.");
+  if (!mime) throw new Error("This browser cannot record video. Choose GIF.");
   const seq = tlSequence(), W = tl.frames[0].cv.width, H = tl.frames[0].cv.height;
   const cv = makeCanvas(W, H), ctx = cv.getContext("2d"), stream = cv.captureStream(30);
   const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8e6 }), chunks = [];
