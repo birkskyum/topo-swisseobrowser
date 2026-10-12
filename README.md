@@ -199,6 +199,10 @@ The swissEO Browser therefore always uses the physical reflectance.
     (or of a chosen reference date, which goes first), clearest first; up to six days form a per-pixel
     composite, each pixel taking the first acquisition that covers it without clouds, so orbit gaps and
     clouds are filled. Clouds and cloud shadows are masked on both sides by default.
+- **Layer list**: clicking a layer shows it (check mark). Clicking the active layer again hides it, so
+  only the background map is shown (no check mark, a hint above the list); one more click shows it again.
+  The layer menu (legend, masks, effects) opens and closes with the chevron; on start it is closed unless
+  the link opens it.
 - **Layer pull-down**
   - the Copernicus Browser title, description and "More info" link (Sentinel Hub custom-scripts page;
     swisstopo product page for True color L2A and the swissEO-specific layers); `</>` shows the formula
@@ -290,7 +294,8 @@ The swissEO Browser therefore always uses the physical reflectance.
   (`center=2703331.08,1133878.99`, as on map.geo.admin.ch), the compare entries, the pixel inspector, the
   area of interest in the link and the defaults of the import dialog. Links with the former `lat` / `lng`
   parameters open on the whole of Switzerland.
-- **Permalink**: the URL is updated on every change (configuration, view, date, cloud filter, layer,
+- **Permalink**: the URL is updated on every change (configuration, view, date, cloud filter, layer and
+  whether it is shown, open layer menu,
   legend range, masks incl. the custom mask mode, look and effects, reference date, compare list, AOI);
   *Copy link* in the header copies it. Areas and custom masks loaded from a URL are shared as that URL;
   areas imported from a file only when they are small, masks from a file never.
@@ -396,6 +401,8 @@ Parameter names follow the Copernicus Browser where an equivalent exists.
 | `zoom` | `17` | Zoom level of the LV95 grid (8 to 27; about 17 to 18 for a region; fractional values, as written by the highlights, give resolutions between the grid levels) |
 | `fromTime`, `toTime` | `2026-10-05T00:00:00.000Z` | Selected date |
 | `cloudCoverage` | `30` | Maximum cloud coverage in % |
+| `layerMenu` | `open` | The menu of the active layer is open (default: closed) |
+| `showLayer` | `false` | The active layer is hidden, only the background map is shown |
 | `themeId` | `DROUGHT` | Configuration: `DEFAULT`, `AGRICULTURE`, `DROUGHT`, `DROUGHT2026`, `FOREST` (when missing or not containing the layer, the first configuration with the layer is used) |
 | `layerId` | `ndvi` | `true`, `nir`, `urban`, `swir`, `agri`, `geo`, `barren`, `hon`, `ndvi`, `ndwi`, `ndmi`, `ndsi`, `nbr`, `aot`, `evi`, `savi`, `mstress`, `nddi`, `nddichg`, `analyst`, `fdc`, `scl`, `cloud`, `terrain` (S2-SR); `vhi`, `vhiveg` (VHI); `ndvidiff`, `ndvidiff2` (v200 BETA), `ndviz` |
 | `valueRange` | `[0,0.9]` | Colour-scale min/max of index and continuous layers |

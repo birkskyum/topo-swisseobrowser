@@ -2416,7 +2416,8 @@ let currentRec = LAYER.true;
 let configId = "DEFAULT";          // the configuration (theme) whose layers are listed
 let current = null, currentCfg = null;
 let applyToken = 0;
-const expanded = new Set(["true"]);
+const expanded = new Set();        // layers whose menu (legend, masks, options) is open; closed on start
+let layerOff = false;               // the active layer is hidden: only the background map is shown
 const showCode = new Set();
 const advOpen = new Set();
 
@@ -2541,6 +2542,7 @@ async function applyLayer() {
   updateDateInfo(rec, scenes);
   updateDateGrey();
   showSceneInfo(rec, scenes);
+  if (layerOff) { setStatus(""); return; }     // hidden: the date and scene info stay, nothing is drawn
   if (!scenes.length) {
     setStatus(rec.source === "vhi"
       ? "No VHI product within ±45 days of " + state.date + "."
@@ -2576,6 +2578,7 @@ function selectLayer(rec) {
   const srcChanged = rec.source !== currentRec.source;
   if (compareMode && activeHl) {                 // choosing a layer leaves the highlight
     activeHl = null;
+    layerOff = false;
     compare = [];
     currentRec = rec;
     lastLayer[configId] = rec.id;
@@ -2585,11 +2588,14 @@ function selectLayer(rec) {
     setCompareMode(false, true);
     return;
   }
-  if (rec === currentRec) {
-    if (expanded.has(rec.id)) expanded.delete(rec.id); else expanded.add(rec.id);
+  if (rec === currentRec) {                      // the active layer: hide it (background only) or show it again
+    layerOff = !layerOff;
     renderLayerList();
+    applyLayer();
+    writeUrlSoon();
     return;
   }
+  layerOff = false;
   currentRec = rec;
   lastLayer[configId] = rec.id;
   expanded.add(rec.id);
@@ -3130,6 +3136,7 @@ function renderLayerList() {
     box.append(el("div", "ghead", "Highlights"));
     conf.highlights.forEach(h => box.append(highlightCard(h)));
   }
+  if (layerOff && !compareMode) box.append(el("div", "hint", "No layer is shown, only the background map. Click a layer to show it."));
   conf.groups.forEach(([gname, ids]) => {
     if (gname || conf.highlights) box.append(el("div", "ghead", gname || "Layers"));
     ids.map(id => LAYER[id]).forEach(rec => layerItem(box, rec));
@@ -3152,9 +3159,10 @@ function verBadge(rec) {
 
 function layerItem(box, rec) {
   {
-    const on = rec.id === currentRec.id;
+    const active = rec.id === currentRec.id, on = active && !layerOff;
     const w = el("div", "lyr" + (on ? " on" : ""));
     const head = el("div", "lyr-head");
+    head.title = on ? "Click to hide this layer (only the background map stays)" : active ? "Click to show this layer again" : "Show this layer";
     head.innerHTML = swatchHtml(rec) +
       '<div class="lt"><div class="t">' + rec.name + verBadge(rec) + '</div><div class="sub2">' + rec.sub + "</div></div>" +
       (on ? '<span class="chk">' + UI.check + "</span>" : "");
@@ -3173,11 +3181,12 @@ function layerItem(box, rec) {
       code.onclick = () => {
         if (showCode.has(rec.id)) showCode.delete(rec.id); else { showCode.add(rec.id); expanded.add(rec.id); }
         renderLayerList();
+        writeUrlSoon();
       };
       const chev = el("button", "ib");
       chev.title = ex ? "Hide legend and options" : "Show legend and options";
       chev.innerHTML = ex ? UI.up : UI.down;
-      chev.onclick = () => { if (ex) expanded.delete(rec.id); else expanded.add(rec.id); renderLayerList(); };
+      chev.onclick = () => { if (ex) expanded.delete(rec.id); else expanded.add(rec.id); renderLayerList(); writeUrlSoon(); };
       bar.append(add, sp, code, chev);
       w.append(bar);
       if (ex) w.append(layerBody(rec));
@@ -3244,7 +3253,8 @@ function applyHighlight(h) {
   state.date = h.right;
   $("#dateTxt").value = h.right;
   $("#dNext").disabled = h.right >= todayStr;
-  if (currentRec !== rec) { currentRec = rec; lastLayer[configId] = rec.id; expanded.add(rec.id); }
+  layerOff = false;
+  if (currentRec !== rec) { currentRec = rec; lastLayer[configId] = rec.id; }
   renderLayerList();
   if (compareMode) { rebuildCompare(); renderCompare(); writeUrlSoon(); }
   else setCompareMode(true, true);              // the story list stays open
@@ -4636,6 +4646,8 @@ function writeUrl() {
   if (currentRec.source === "s2" || state.cc !== 100) p.set("cloudCoverage", state.cc);
   p.set("themeId", configId);
   p.set("layerId", currentRec.id);
+  if (layerOff) p.set("showLayer", "false");
+  else if (expanded.has(currentRec.id)) p.set("layerMenu", "open");
   Object.entries(settingsToObj(currentRec, S(currentRec)))
     .forEach(([k, v]) => p.set(k, Array.isArray(v) ? JSON.stringify(v) : String(v)));
   if (basemap !== "pixelkarte") p.set("basemap", basemap);
@@ -4672,7 +4684,9 @@ function readUrl() {
   const o = {};
   SETTING_KEYS.forEach(k => { if (q.has(k)) o[k] = q.get(k); });
   settings[currentRec.id] = objToSettings(currentRec, o);
-  expanded.clear(); expanded.add(currentRec.id);
+  expanded.clear();
+  if (q.get("layerMenu") === "open") expanded.add(currentRec.id);      // the layer menu is closed unless the link opens it
+  layerOff = q.get("showLayer") === "false";
 
   setBasemap(q.get("basemap") || "pixelkarte");
   setLabels(q.get("labels") === "true" || q.get("labels") === "1");
@@ -5000,7 +5014,7 @@ function drawCaption(ctx, W, H, desc, overlay) {
     title = "Compare: " + compare.map(it => LAYER[it.layerId].name + " " + it.date).join("  |  ");
     sub = "swissEO";
   } else {
-    title = currentRec.name + (currentRec.sub ? ": " + currentRec.sub : "");
+    title = layerOff ? "Background map (no data layer shown)" : currentRec.name + (currentRec.sub ? ": " + currentRec.sub : "");
     const ids = currentCfg ? currentCfg.scenes : [];
     sub = SOURCES[currentRec.source].name + " · " + (ids.length && currentRec.source !== "s2" ? ids[0].slice(0, 10) : state.date) +
           (currentRec.type === "diff2" && currentCfg && currentCfg.refInfo ? " vs. reference around " + currentCfg.refInfo.target : "") +
