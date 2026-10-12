@@ -261,14 +261,25 @@ The swissEO Browser therefore always uses the physical reflectance.
 - **Timelapse**: as in the Copernicus Browser, for the current layer over the area of interest (data
   clipped to it, no outline drawn) or the current view:
   - time range, *Select 1 image per* orbit / day / week / month / year, month filter, Search;
-  - list of images with thumbnail, cloud cover and coverage of the timelapse area (AOI or view, computed
-    from the cloud mask and the data footprint, not the cloud cover of the whole scene); per interval the image with the best coverage × clear sky is chosen; Max. cloud
-    coverage and Min. tile coverage filter the list, images can be (de)selected;
+  - **no hard limits**, e.g. one image per week over ten years. The search first reads the small scene
+    metadata (about 4 kB each) and keeps only acquisitions whose orbit reaches the area (footprint per
+    relative orbit); per week / month / year it then checks only the three clearest candidates (scene cloud
+    cover) over the area. Example: Aletsch, weekly 2017 to 2026: 2,345 acquisitions, 1,304 checked, 505
+    images in about two minutes. Above 600 checks or 300 frames the dialog warns that it takes a while
+    and estimates the GIF size;
+  - list of images with thumbnail (rendered only when the row scrolls into view), cloud cover and coverage
+    of the timelapse area (AOI or view, computed from the cloud mask and the data footprint, not the cloud
+    cover of the whole scene); per interval the image with the best coverage × clear sky is chosen; Max.
+    cloud coverage and Min. tile coverage filter the list, images can be (de)selected;
+  - frames are kept as JPEG (about 0.05 MB at 320 px, 0.2 to 0.5 MB at 1024 px instead of 4 MB of pixels)
+    and decoded a few at a time, so hundreds of frames fit into memory;
   - preview player with speed (fps), transition None / Fade with fade duration, delay last frame,
     adaptive gain per frame for the band composites (snowy winter frames), legend, map overlays and captions (date label,
     scale bar, source);
   - download as GIF or as video (MP4 or WebM, depending on the browser), default 1024 px (up to 2048).
-    VHI layers work too (via the WMS).
+    For long series a video is much smaller than a GIF (a GIF takes roughly 0.4 byte per pixel and frame);
+    the video is recorded in real time, so 500 frames at 8 fps take about a minute. VHI layers work too
+    (via the WMS).
 - **Loading indicator**: at the bottom left, the number of tiles still rendering and of requests in flight; after
   6 s of continuous loading it says that the connection is slow.
 - **Pixel inspector**: the LV95 position, band values (DN and physical value), index value, SCL, cloud

@@ -5565,6 +5565,23 @@ L.DomEvent.disableClickPropagation($("#tlModal"));
 L.DomEvent.disableScrollPropagation($("#tlModal"));
 
 const tl = { items: [], frames: [], idx: 0, playing: false, timer: null, abort: null, key: "", base: null };
+/* No hard limits: per interval only TL_CANDIDATES acquisitions are checked over the area, and the list warns
+   above TL_WARN_CHECKS checks or TL_WARN_FRAMES frames. Frames are kept as JPEG (about 0.2 to 0.5 MB at
+   1024 px instead of 4 MB as pixels), so hundreds of frames fit in memory; a few are decoded at a time. */
+const TL_CANDIDATES = 3, TL_WARN_CHECKS = 600, TL_WARN_FRAMES = 300;
+const tlCache = new Map();          // frame index -> ImageBitmap, least recently used first
+function tlSetFrames(frames) {
+  tlCache.forEach(b => { if (b.close) b.close(); });
+  tlCache.clear();
+  tl.frames = frames;
+}
+async function tlBitmap(i) {
+  if (tlCache.has(i)) { const b = tlCache.get(i); tlCache.delete(i); tlCache.set(i, b); return b; }
+  const b = await createImageBitmap(tl.frames[i].blob);
+  tlCache.set(i, b);
+  while (tlCache.size > 8) { const k = tlCache.keys().next().value; const o = tlCache.get(k); tlCache.delete(k); if (o.close) o.close(); }
+  return b;
+}
 const TL_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 $("#tlMonths").innerHTML = TL_MONTHS.map((m, i) => '<button class="on" data-m="' + (i + 1) + '">' + m + "</button>").join("");
 $$("#tlMonths button").forEach(b => { b.onclick = () => b.classList.toggle("on"); });
@@ -5639,13 +5656,28 @@ async function tlSearch() {
   const from = $("#tlFrom").value, to = $("#tlTo").value;
   const months = new Set($$("#tlMonths button.on").map(b => +b.dataset.m));
   if (!DATE_RE.test(from) || !DATE_RE.test(to) || from > to) { $("#tlListInfo").textContent = "Choose a valid time range."; return; }
-  tl.items = []; tl.frames = []; tlShowFrame(); $("#tlList").innerHTML = "";
-  $("#tlListInfo").textContent = "Searching…";
+  tl.items = []; tlSetFrames([]); tlShowFrame(); $("#tlList").innerHTML = ""; tlQ.length = 0;
+  const info = t => { if (!ctrl.signal.aborted) $("#tlListInfo").textContent = t; };
+  info("Searching…");
   try {
     const yms = [];
     for (let ym = from.slice(0, 7); ym <= to.slice(0, 7); ym = shiftMonth(ym, 1)) if (months.has(+ym.slice(5))) yms.push(ym);
-    const fs = (await Promise.all(yms.map(m => loadMonth(src, m)))).flat()
+    let fs = (await Promise.all(yms.map(m => loadMonth(src, m)))).flat()
       .filter(f => { const d = f.id.slice(0, 10); return d >= from && d <= to; });
+    const g = tlGrid(tlArea().bbox, 48);
+    // 1. only acquisitions whose orbit reaches the area: footprint per relative orbit and cloud cover from the
+    //    scene metadata (about 4 kB each), much cheaper than reading the COGs of every acquisition
+    if (src === "s2" && fs.length) {
+      const keep = new Set();
+      let n = 0;
+      await pool(fs, 8, async f => {
+        if (ctrl.signal.aborted) return;
+        if (await itemCovers(f.id, g.bbox)) keep.add(f.id);
+        if (++n % 20 === 0) info("Reading the scene metadata (orbit footprint, cloud cover): " + n + " / " + fs.length + "…");
+      });
+      if (ctrl.signal.aborted) return;
+      fs = fs.filter(f => keep.has(f.id));
+    }
     let units;
     if (per === "orbit") units = fs.map(f => ({ date: f.id.slice(0, 10), scenes: [f.id], label: f.id.slice(0, 10) + " " + timeOf(f.id) }));
     else {
@@ -5654,20 +5686,27 @@ async function tlSearch() {
       units = [...byDay.entries()].map(([d, ids]) => ({ date: d, scenes: ids.sort((a, b) => b.localeCompare(a)), label: d }));
     }
     units.sort((a, b) => a.label.localeCompare(b.label));
-    if (units.length > 400) throw new Error(units.length + " acquisitions. Choose a shorter range or a coarser interval than " + per + ".");
-    const g = tlGrid(tlArea().bbox, 48);
+    // 2. per week / month / year only the clearest candidates (scene cloud cover) are checked over the area
+    const sceneCloud = u => Math.min(...u.scenes.map(id => { const c = cloudPct.get(id); return c == null ? 101 : c; }));
+    let cand = units;
+    if (per !== "orbit" && per !== "day") {
+      const groups = new Map();
+      units.forEach(u => { const k = tlKeyOf(u.date, per); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(u); });
+      cand = [...groups.values()].flatMap(gr => gr.sort((a, b) => sceneCloud(a) - sceneCloud(b)).slice(0, TL_CANDIDATES));
+    }
+    const slow = cand.length > TL_WARN_CHECKS ? " (" + cand.length + " acquisitions: this takes a while; a coarser interval or a month filter is faster)" : "";
     let done = 0;
-    await pool(units, 4, async u => {
+    await pool(cand, 4, async u => {
       if (ctrl.signal.aborted) return;
       Object.assign(u, await tlStats(rec, u, g, ctrl.signal));
-      $("#tlListInfo").textContent = "Checking coverage and clouds: " + (++done) + " / " + units.length + "…";
+      info("Checking coverage and clouds over the area: " + (++done) + " / " + cand.length + slow + "…");
     });
     if (ctrl.signal.aborted) return;
     // one image per interval: best coverage x clear sky, as in the Copernicus Browser
-    let chosen = units;
+    let chosen = cand;
     if (per !== "orbit" && per !== "day") {
       const best = new Map();
-      units.forEach(u => {
+      cand.forEach(u => {
         const k = tlKeyOf(u.date, per), sc = u.coverage * (100 - u.cloud), b = best.get(k);
         if (!b || sc > b.coverage * (100 - b.cloud)) best.set(k, u);
       });
@@ -5675,16 +5714,33 @@ async function tlSearch() {
     }
     tl.items = chosen.map(u => Object.assign(u, { selected: true, thumb: null }));
     tlRenderList();
-    tlThumbs(rec, ctrl.signal);
   } catch (e) {
     if (e && e.name === "AbortError") return;
     $("#tlListInfo").textContent = "Search failed: " + (e.message || e);
   }
 }
 
+/* Thumbnails are rendered only for the rows that scroll into view (three at a time). */
+const tlQ = [];
+let tlQRun = 0, tlObs = null;
+function tlPump() {
+  while (tlQRun < 3 && tlQ.length) {
+    const it = tlQ.shift();
+    if (it.thumb || it.thumbBusy || !tl.items.includes(it)) continue;
+    tlQRun++; it.thumbBusy = true;
+    tlThumb(currentRec, it, (tl.abort || new AbortController()).signal)
+      .finally(() => { tlQRun--; it.thumbBusy = false; tlPump(); });
+  }
+}
 function tlRenderList() {
   const box = $("#tlList");
   box.innerHTML = "";
+  if (tlObs) tlObs.disconnect();
+  tlObs = window.IntersectionObserver ? new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    tlObs.unobserve(e.target);
+    if (e.target._it) { tlQ.push(e.target._it); tlPump(); }
+  })) : null;
   tl.items.forEach((it, i) => {
     const row = el("div", "tl-item" + (tlApplicable(it) ? "" : " na"));
     const cb = el("input");
@@ -5693,6 +5749,8 @@ function tlRenderList() {
     const th = el("img", "th");
     th.alt = "";
     if (it.thumb) th.src = it.thumb;
+    else if (tlObs) { th._it = it; tlObs.observe(th); }
+    else { tlQ.push(it); tlPump(); }
     it.img = th;
     const t = el("div");
     t.innerHTML = "<b>" + it.label + "</b><br><small>" +
@@ -5704,29 +5762,30 @@ function tlRenderList() {
   tlListInfo();
 }
 function tlListInfo() {
-  const use = tl.items.filter(it => it.selected && tlApplicable(it)).length;
-  $("#tlListInfo").textContent = tl.items.length ? tl.items.length + " images · " + use + " used (selected, within the cloud and coverage limits)"
-                                                  : "No images in this range.";
+  const use = tl.items.filter(it => it.selected && tlApplicable(it)).length, [W, H] = tlSize();
+  let t = tl.items.length ? tl.items.length + " images · " + use + " used (selected, within the cloud and coverage limits)" : "No images in this range.";
+  if (use > TL_WARN_FRAMES) t += ". Note: " + use + " frames take a while to render (often 1 to 3 s each), and a GIF gets very large " +
+    "(roughly " + Math.round(use * W * H * 0.4 / 1e6) + " MB at " + W + " × " + H + " px); a video is much smaller.";
+  $("#tlListInfo").textContent = t;
 }
-async function tlThumbs(rec, signal) {
+async function tlThumb(rec, it, signal) {
   const b = tlArea().bbox, asp = (b[3] - b[1]) / (b[2] - b[0]);
   const tw = 96, th = Math.max(16, Math.round(96 * asp));
-  await pool(tl.items.slice(), 3, async it => {
-    if (signal.aborted || it.thumb) return;
-    try {
-      const gf = $("#tlAuto").checked && rec.type === "rgb"
-        ? await autoGainFactor(rec, S(rec), it.scenes, b, signal, tlGrid(b, 32)) : 1;
-      const cv = await renderCfgCanvas({ rec, s: S(rec), scenes: it.scenes, gf, date: it.date }, b, tw, th, signal);
-      it.thumb = cv.toDataURL("image/png");
-      if (it.img) it.img.src = it.thumb;
-    } catch (e) { /* keep the empty thumbnail */ }
-  });
+  if (signal.aborted || it.thumb) return;
+  try {
+    const gf = $("#tlAuto").checked && rec.type === "rgb"
+      ? await autoGainFactor(rec, S(rec), it.scenes, b, signal, tlGrid(b, 32)) : 1;
+    const cv = await renderCfgCanvas({ rec, s: S(rec), scenes: it.scenes, gf, date: it.date }, b, tw, th, signal);
+    it.thumb = cv.toDataURL("image/png");
+    if (it.img) it.img.src = it.thumb;
+  } catch (e) { /* keep the empty thumbnail */ }
 }
 $("#tlCc").oninput = () => { $("#tlCcV").textContent = $("#tlCc").value + " %"; tlRenderList(); };
 $("#tlCov").oninput = () => { $("#tlCovV").textContent = $("#tlCov").value + " %"; tlRenderList(); };
 $("#tlAuto").onchange = () => {   // thumbnails follow the setting
-  tl.items.forEach(it => { it.thumb = null; if (it.img) it.img.removeAttribute("src"); });
-  if (tl.items.length) tlThumbs(currentRec, (tl.abort || new AbortController()).signal);
+  tl.items.forEach(it => { it.thumb = null; });
+  tlQ.length = 0;
+  tlRenderList();
 };
 $("#tlAll").onchange = () => { tl.items.forEach(it => { it.selected = $("#tlAll").checked; }); tlRenderList(); };
 $("#tlSearch").onclick = tlSearch;
@@ -5784,7 +5843,7 @@ async function tlBuild() {
   tlStop();
   const use = tl.items.filter(it => it.selected && tlApplicable(it));
   if (!use.length) { $("#tlProg").textContent = "No images to use. Search first, or widen the cloud / coverage limits."; return false; }
-  if (use.length > 300) { $("#tlProg").textContent = "At most 300 frames. Choose a coarser interval."; return false; }
+  const many = use.length > TL_WARN_FRAMES ? " (" + use.length + " frames: this takes a while)" : "";
   const area = tlArea(), [W, H] = tlSize();
   const o = { legend: $("#tlLeg").checked, overlay: $("#tlOv").checked, caption: $("#tlCap").checked, autoGain: $("#tlAuto").checked };
   $("#tlPreview").disabled = $("#tlDl").disabled = true;
@@ -5792,13 +5851,15 @@ async function tlBuild() {
     $("#tlProg").textContent = "Loading the basemap…";
     tl.base = baseLayer ? await renderWmts(baseLayer, area.bbox, W, H, ctrl.signal) : null;
     tl.overlay = o.overlay ? await renderWmts(asitLayer, area.bbox, W, H, ctrl.signal) : null;
-    tl.frames = [];
+    tlSetFrames([]);
     for (let i = 0; i < use.length; i++) {
       if (ctrl.signal.aborted) return false;
-      $("#tlProg").textContent = "Rendering frame " + (i + 1) + " / " + use.length + " (" + use[i].label + ")…";
-      tl.frames.push({ cv: await tlFrame(use[i], area, W, H, o, ctrl.signal), label: use[i].label });
+      $("#tlProg").textContent = "Rendering frame " + (i + 1) + " / " + use.length + " (" + use[i].label + ")" + many + "…";
+      const cv = await tlFrame(use[i], area, W, H, o, ctrl.signal);
+      tlPaint(cv, use[i].label);                                   // shown while rendering
+      tl.frames.push({ blob: await canvasBlob(cv, "jpg"), label: use[i].label, w: W, h: H });
       tl.idx = tl.frames.length - 1;
-      tlShowFrame();
+      tlSlider();
     }
     tl.key = JSON.stringify([use.map(u => u.label), W, H, o, currentRec.id, settingsToObj(currentRec, S(currentRec)), area.bbox]);
     tl.idx = 0; tlShowFrame();
@@ -5812,18 +5873,31 @@ async function tlBuild() {
 }
 
 /* ---- player ---- */
-function tlShowFrame(blendFrom, t) {
-  const cv = $("#tlCanvas"), f = tl.frames[tl.idx];
-  $("#tlEmpty").hidden = !!f;
+function tlSlider() {
   $("#tlFrame").max = Math.max(0, tl.frames.length - 1);
   $("#tlFrame").value = tl.idx;
+}
+function tlPaint(img, label) {                  // draws a canvas or bitmap into the player
+  const cv = $("#tlCanvas");
+  $("#tlEmpty").hidden = true;
+  $("#tlDate").textContent = label;
+  if (cv.width !== img.width || cv.height !== img.height) { cv.width = img.width; cv.height = img.height; }
+  cv.getContext("2d").drawImage(img, 0, 0);
+}
+let tlShowTok = 0;
+async function tlShowFrame(fromIdx, t) {
+  const cv = $("#tlCanvas"), f = tl.frames[tl.idx], tok = ++tlShowTok;
+  $("#tlEmpty").hidden = !!f;
+  tlSlider();
   $("#tlDate").textContent = f ? f.label : "";
   if (!f) { cv.width = cv.height = 10; cv.getContext("2d").clearRect(0, 0, 10, 10); return; }
-  if (cv.width !== f.cv.width || cv.height !== f.cv.height) { cv.width = f.cv.width; cv.height = f.cv.height; }
+  const [a, b] = await Promise.all([tlBitmap(tl.idx), fromIdx != null ? tlBitmap(fromIdx) : null]);
+  if (tok !== tlShowTok) return;
+  if (cv.width !== f.w || cv.height !== f.h) { cv.width = f.w; cv.height = f.h; }
   const ctx = cv.getContext("2d");
   ctx.globalAlpha = 1;
-  if (blendFrom) { ctx.drawImage(blendFrom.cv, 0, 0); ctx.globalAlpha = t; }
-  ctx.drawImage(f.cv, 0, 0);
+  if (b) { ctx.drawImage(b, 0, 0); ctx.globalAlpha = t; }
+  ctx.drawImage(a, 0, 0);
   ctx.globalAlpha = 1;
 }
 const tlFrameMs = () => 1000 / +$("#tlFps").value;
@@ -5836,9 +5910,10 @@ function tlStep() {
   if (!tl.playing || tl.frames.length < 2) return;
   const last = tl.idx === tl.frames.length - 1;
   const hold = tlFrameMs() * (last && $("#tlDelay").checked ? 3 : 1);
-  tl.timer = setTimeout(() => {
-    const from = tl.frames[tl.idx];
+  tl.timer = setTimeout(async () => {
+    const from = tl.idx;
     tl.idx = (tl.idx + 1) % tl.frames.length;
+    await tlBitmap(tl.idx).catch(() => null);                    // decoded before it is shown
     if ($("#tlTr").value === "fade") {
       const dur = tlFrameMs() * +$("#tlFade").value, t0 = performance.now();
       const anim = now => {
@@ -5847,7 +5922,7 @@ function tlStep() {
         if (t < 1 && tl.playing) tl.raf = requestAnimationFrame(anim); else tlStep();
       };
       tl.raf = requestAnimationFrame(anim);
-    } else { tlShowFrame(); tlStep(); }
+    } else { await tlShowFrame(); tlStep(); }
   }, hold);
 }
 $("#tlPlay").onclick = () => {
@@ -5869,26 +5944,27 @@ function tlSequence() {
   const ms = tlFrameMs(), fade = $("#tlTr").value === "fade", fr = +$("#tlFade").value, out = [];
   tl.frames.forEach((f, i) => {
     const last = i === tl.frames.length - 1;
-    out.push([f.cv, null, 1, ms * (last && $("#tlDelay").checked ? 3 : 1) * (fade && !last ? 1 - fr : 1)]);
+    out.push([i, null, 1, ms * (last && $("#tlDelay").checked ? 3 : 1) * (fade && !last ? 1 - fr : 1)]);
     if (fade && !last) {
       const steps = Math.max(2, Math.round(fr * ms / 80));
-      for (let s = 1; s <= steps; s++) out.push([tl.frames[i + 1].cv, f.cv, s / steps, fr * ms / steps]);
+      for (let s = 1; s <= steps; s++) out.push([i + 1, i, s / steps, fr * ms / steps]);
     }
   });
   return out;
 }
-function tlCompose(ctx, step) {
+async function tlCompose(ctx, step) {          // step: [frame index, blend-from index or null, blend t, delay]
+  const [a, b] = await Promise.all([tlBitmap(step[0]), step[1] != null ? tlBitmap(step[1]) : null]);
   ctx.globalAlpha = 1;
-  if (step[1]) { ctx.drawImage(step[1], 0, 0); ctx.globalAlpha = step[2]; }
-  ctx.drawImage(step[0], 0, 0);
+  if (b) { ctx.drawImage(b, 0, 0); ctx.globalAlpha = step[2]; }
+  ctx.drawImage(a, 0, 0);
   ctx.globalAlpha = 1;
 }
 async function tlGif(prog) {
   const { GIFEncoder, quantize, applyPalette } = await import("https://cdn.jsdelivr.net/npm/gifenc@1.0.3/+esm");
-  const seq = tlSequence(), W = tl.frames[0].cv.width, H = tl.frames[0].cv.height;
+  const seq = tlSequence(), W = tl.frames[0].w, H = tl.frames[0].h;
   const cv = makeCanvas(W, H), ctx = cv.getContext("2d", { willReadFrequently: true }), gif = GIFEncoder();
   for (let i = 0; i < seq.length; i++) {
-    tlCompose(ctx, seq[i]);
+    await tlCompose(ctx, seq[i]);
     const rgba = ctx.getImageData(0, 0, W, H).data, palette = quantize(rgba, 256);
     gif.writeFrame(applyPalette(rgba, palette), W, H, { palette, delay: Math.round(seq[i][3]) });
     prog("Encoding GIF frame " + (i + 1) + " / " + seq.length + "…");
@@ -5901,20 +5977,21 @@ async function tlVideo(prog) {
   const types = ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm"];
   const mime = window.MediaRecorder && types.find(t => MediaRecorder.isTypeSupported(t));
   if (!mime) throw new Error("This browser cannot record video. Choose GIF.");
-  const seq = tlSequence(), W = tl.frames[0].cv.width, H = tl.frames[0].cv.height;
+  const seq = tlSequence(), W = tl.frames[0].w, H = tl.frames[0].h;
   const cv = makeCanvas(W, H), ctx = cv.getContext("2d"), stream = cv.captureStream(30);
   const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8e6 }), chunks = [];
   rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
   const done = new Promise(r => { rec.onstop = r; });
-  tlCompose(ctx, seq[0]);
+  await tlCompose(ctx, seq[0]);
   rec.start(250);
   for (let i = 0; i < seq.length; i++) {
-    tlCompose(ctx, seq[i]);
+    await tlCompose(ctx, seq[i]);
+    if (seq[i + 1]) tlBitmap(seq[i + 1][0]).catch(() => null);  // decode the next frame while this one is held
     prog("Recording frame " + (i + 1) + " / " + seq.length + " (real time)…");
     const end = performance.now() + seq[i][3];
     while (performance.now() < end) {                  // keep the stream fed while a frame is held
       await new Promise(r => setTimeout(r, Math.min(33, end - performance.now())));
-      tlCompose(ctx, seq[i]);
+      await tlCompose(ctx, seq[i]);
     }
   }
   rec.stop();
