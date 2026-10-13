@@ -15,11 +15,12 @@
   `README.md`, `CLAUDE.md`, `.github/workflows/pages.yml` and the thumbnails it references in
   `public/previews/`. Everything else is the upstream Copernicus Browser, kept only as a reference:
   do not modify it.
-- **Git: push only to the remote `swisseo`** (github.com/davidoesch/swisseobrowser). Never commit for or
-  push to `origin` (eu-cdse/copernicus-browser); its push URL is disabled on purpose.
+- **Git: push only to the remote `origin`** (github.com/swisstopo/topo-swisseobrowser); local `main`
+  tracks `origin/main`. Never commit for or push to `upstream` (eu-cdse/copernicus-browser); its push URL
+  is disabled on purpose. `davidoesch` (github.com/davidoesch/swisseobrowser) is the former repository.
 - The upstream `.gitignore` ignores `.github`, so workflow changes need `git add -f`.
 - A push to `main` that changes the page or the README deploys GitHub Pages
-  (https://davidoesch.github.io/swisseobrowser/).
+  (https://swisstopo.github.io/topo-swisseobrowser/).
 
 ## Conventions
 

@@ -3,7 +3,7 @@
 A minimal, browser-only viewer for swisstopo's **swissEO** satellite products, modelled on the
 [Copernicus Browser](https://browser.dataspace.copernicus.eu/) workflow.
 
-**Live version: <https://davidoesch.github.io/swisseobrowser/>**
+**Live version: <https://swisstopo.github.io/topo-swisseobrowser/>**
 
 > **Not for operational use.** This is an experimental beta prototype: values, renderings and statistics
 > are computed in the browser, are not validated and may be wrong or incomplete. For authoritative data use
@@ -365,7 +365,7 @@ Firefox on a laptop:
 
 ## Running it
 
-Use the live version at <https://davidoesch.github.io/swisseobrowser/>, or run it locally by serving the
+Use the live version at <https://swisstopo.github.io/topo-swisseobrowser/>, or run it locally by serving the
 folder with any static web server:
 
 ```bash

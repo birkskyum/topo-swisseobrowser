@@ -1,5 +1,5 @@
 # Publishes the single-file swissEO Browser to GitHub Pages:
-#   https://davidoesch.github.io/swisseobrowser/
+#   https://swisstopo.github.io/topo-swisseobrowser/
 # Only swisseo-browser.html is deployed (as index.html); the upstream
 # Copernicus Browser sources in this repository are not built or published.
 name: Deploy swissEO Browser to GitHub Pages
