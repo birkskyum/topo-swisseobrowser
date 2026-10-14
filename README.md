@@ -27,7 +27,7 @@ the swisstopo WMS/WMTS services directly in the browser.
 | Product | Source | Used for |
 | --- | --- | --- |
 | [swissEO S2-SR v200](https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-s2-sr) | COGs on `data.geo.admin.ch`, catalogue via the STAC API `data.geo.admin.ch/api/stac/v0.9` (collection `ch.swisstopo.swisseo_s2-sr_v200`) | Sentinel-2 L2A surface reflectance mosaics (B01–B12, B8A, AOT, SCL, cloud mask, terrain mask, true color image TCI), 10/20/60 m, LV95 |
-| [swissEO VHI v100](https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-vhi) | Own collection: `wms.geo.admin.ch` (`ch.swisstopo.swisseo_vhi_v100`, `…_vegetation`) for display; for AOI statistics and analytical downloads the `forest-10m` / `vegetation-10m` COGs, addressed through the STAC items of `ch.swisstopo.swisseo_vhi_v100` | Vegetation Health Index for forest and all vegetation, relative to 1991–2020 |
+| [swissEO VHI v100](https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-vhi) | Own collection: `wms.geo.admin.ch` (`ch.swisstopo.swisseo_vhi_v100`, `…_vegetation`) for display; for AOI statistics and analytical downloads the `forest-10m` / `vegetation-10m` COGs, addressed through the STAC items of `ch.swisstopo.swisseo_vhi_v100` | Vegetation Health Index for forest and all vegetation, relative to 1991–2020; the daily `forest-10m` COGs also feed the VHI season layers (cumulative deficit, days in extreme stress) |
 | [swissEO NDVIdiff v100](https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-ndvidiff) | `forest-10m` COGs of the STAC collection `ch.swisstopo.swisseo_ndvi_diff_v100` | NDVI change of the current year compared to the previous year, forest perimeter, 10 m; one product for the end of July, August and September each year (since 2018) |
 | [swissEO NDVIz v100](https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-ndviz) | `forest-10m` COGs of the STAC collection `ch.swisstopo.swisseo_ndvi_z_v100` | NDVI anomaly as z-score, forest perimeter, 10 m; end of July, August and September (since 2017) |
 | swissEO NDVIdiff v200 **BETA** | 30 example COGs on `cms.geo.admin.ch/Topo/umweltbeobachtung/beispiele/NDVIDIFFV2/` (not in STAC; the item list is in the page) | Year-on-year NDVI change of two-month first-quartile cloud-free mosaics of S2-SR v200 (June/July, July/August, August/September, 2017–2026), forest, 10 m |
@@ -117,8 +117,9 @@ The swissEO Browser therefore always uses the physical reflectance.
     **swissEO NDVIdiff v200 BETA**, swissEO NDVIz, NDDI, NDDI change vs. the previous year and the NDVI Analyst;
   - *Drought 2026*: like the Copernicus Browser *Drought and Floods* theme, with true color, moisture index,
     NDWI, Moisture Stress, NDVI, SWIR, urban and Highlight Optimized Natural Color, plus **highlights**;
-  - *Forest*: true color (TCI), swissEO VHI forest, swissEO NDVIdiff, swissEO NDVIdiff v200 BETA, swissEO
-    NDVIz, NDVI Analyst, Normalized Burn Ratio, moisture index and the **Forest Disturbance Classification**.
+  - *Forest*: true color (TCI), swissEO VHI forest, **VHI cumulative deficit**, **VHI days in extreme
+    stress**, swissEO NDVIdiff, swissEO NDVIdiff v200 BETA, swissEO NDVIz, NDVI Analyst, Normalized Burn
+    Ratio, moisture index and the **Forest Disturbance Classification**.
 - **Highlights** (*Drought 2026*): story cards as in the Copernicus Browser (live thumbnail, title,
   dates, chevron). Clicking a card opens it on the map (the place at a fixed resolution and the TCI of the
   two dates as a split at 50 %, earlier date left, with a swipe handle) and the card turns blue; clicking
@@ -146,7 +147,8 @@ The swissEO Browser therefore always uses the physical reflectance.
   geology 12-8-2, Barren Soil, Highlight Optimized Natural Color); NDVI, NDWI, moisture index, NDSI, NBR,
   AOT, EVI, SAVI, Moisture Stress, NDDI, Forest Disturbance Classification; scene classification, cloud mask,
   terrain / solar incidence.
-  VHI: forest and vegetation (WMS). Layers are listed with the Copernicus Browser preview thumbnails as icons.
+  VHI: forest and vegetation (WMS), and the season sums VHI cumulative deficit and VHI days in extreme stress
+  (from the daily forest COGs). Layers are listed with the Copernicus Browser preview thumbnails as icons.
 - **Drought and forest layers**
   - *swissEO NDVIdiff* and *swissEO NDVIz* are read from their COGs with the colour ranges of the content
     information sheets (missing data grey). There are only three products per year (end of July, August,
@@ -179,6 +181,25 @@ The swissEO Browser therefore always uses the physical reflectance.
     So the all-red map comes from the green NDWI, not from the reflectance offset.
   - *NDDI change vs. previous year*: NDDI of the date minus NDDI one year earlier (notebook palette,
     −1…1). The notebook compares May–July means of two years; here single dates are compared.
+  - *VHI cumulative deficit* (Kumuliertes Gesundheitsdefizit) and *VHI days in extreme stress* (Forest): the
+    two season indicators of the [Waldtrockenheit dashboard](https://waldtrockenheit-dashboard.vercel.app/vhi.html),
+    which shows them per warning region, computed here **per pixel** from the daily swissEO VHI v100 forest
+    COGs (10 m). For every day from 1 April to the selected day (at most 31 October), a VHI below 40
+    (*stressed*) adds 40 − VHI to the deficit, and a VHI below 10 (*extremely stressed*) counts as a day in
+    extreme stress (in total, not consecutively). Only days with a VHI value count (110 and 255 are
+    skipped): after long cloudy periods the VHI is missing once its 7-day window has passed, so the deficit
+    can be underestimated; the pixel inspector and the statistics give the number of days with data. The
+    dashboard rates each region against its 2018–2025 climatology; per pixel this would need eight seasons
+    of daily maps, so the deficit uses a fixed colour scale (0 to 2500, adjustable) and the extreme days the
+    dashboard classes (0, 1–5, 6–15, 16–30, more than 30 days). The browser reads one COG per day: a
+    regional view (6 tiles at 50 m) takes about 25 s the first time, a 2 × 2 km area at 10 m about 15 s.
+    The sums are kept for the session, and a later day of the same season starts from those of an earlier
+    one, so stepping forward through the dates or a timelapse only reads the days in between (31 August
+    after 31 July: 4 s instead of 15 s; 27 weekly frames of a season at 480 px in 24 s). The AOI statistics
+    show the histogram and the season curve (mean cumulative value over the area per day) instead of a
+    time series. Checked against an independent rasterio read of the same 141 COGs (2 × 2 km near Aarau,
+    1 April to 31 August 2026): the same sums of deficit, extreme days and days with data over all 40,000
+    pixels, and the same values at the centre pixel (1509, 24 and 115).
   - *Forest Disturbance Classification*: the [Sentinel Hub custom script](https://custom-scripts.sentinel-hub.com/sentinel-2/forest_disturbance_classification/)
     by Jonas Viehweger and Martin Puhm (Joanneum Research, EvoLand project), run in the browser. A LightGBM
     model of 150 gradient-boosted trees classifies every pixel of a single date from B02, B05, B06, B8A, B11
@@ -258,7 +279,7 @@ The swissEO Browser therefore always uses the physical reflectance.
     vegetation (the share of valid pixels then refers to the masked area); a custom mask that is switched
     on for the layer restricts the area in the same way. VHI, NDVIdiff and NDVIz statistics are read from
     their COGs; the two-date layers report the difference (and the NDVI Analyst
-    report) instead of a time series.
+    report) instead of a time series, the VHI season layers the season curve.
   - *Spectral explorer*: mean surface reflectance of all 12 bands (± σ), with CSV download.
 - **Image download**: three tabs as in the Copernicus Browser:
   - *Basic*: the current view as PNG or JPG, with captions (datasource, date, scale bar) and an optional
@@ -291,7 +312,7 @@ The swissEO Browser therefore always uses the physical reflectance.
   - download as GIF or as video (MP4 or WebM, depending on the browser), default 1024 px (up to 2048).
     For long series a video is much smaller than a GIF (a GIF takes roughly 0.4 byte per pixel and frame);
     the video is recorded in real time, so 500 frames at 8 fps take about a minute. VHI layers work too
-    (via the WMS).
+    (via the WMS; the VHI season layers from the COGs, which shows how the deficit builds up over a season).
 - **Fast loading of the COGs**: JPEG tiles (the TCI) are decoded by the browser itself (about twice as
   fast as geotiff.js, off the main thread), decoded tiles are kept in a cache (up to 120 tiles), the map
   uses 512 px tiles like the COGs and keeps loading while panning, and a scene whose orbit misses a tile,
@@ -302,7 +323,8 @@ The swissEO Browser therefore always uses the physical reflectance.
 - **Pixel inspector**: the LV95 position, band values (DN and physical value), index value, SCL, cloud
   mask, terrain mask and forest / vegetation mask at a clicked location; for the two-date layers the index
   on both sides and the difference; for the Forest Disturbance Classification the class; for VHI,
-  NDVIdiff, NDVIdiff v200 BETA and NDVIz the product value.
+  NDVIdiff, NDVIdiff v200 BETA and NDVIz the product value; for the VHI season layers the cumulative
+  deficit, the days with VHI below 10 and the days with a VHI value.
 - **Coordinates**: positions are LV95 (EPSG:2056) everywhere: the map centre in the permalink
   (`center=2703331.08,1133878.99`, as on map.geo.admin.ch), the compare entries, the pixel inspector, the
   area of interest in the link and the defaults of the import dialog. Links with the former `lat` / `lng`
@@ -349,6 +371,8 @@ repository reads this README itself.
 - [x] `terrain`: Terrain / solar incidence *(Default)*
 - [ ] `vhi`: swissEO VHI forest *(Default, Drought, Forest)*
 - [ ] `vhiveg`: swissEO VHI vegetation *(Default, Drought)*
+- [ ] `vhidef`: VHI cumulative deficit *(Forest)*
+- [ ] `vhiext`: VHI days in extreme stress *(Forest)*
 - [ ] `evi`: EVI *(Agriculture)*
 - [ ] `savi`: SAVI *(Agriculture)*
 - [ ] `barren`: Barren Soil *(Agriculture)*
@@ -417,7 +441,7 @@ Parameter names follow the Copernicus Browser where an equivalent exists.
 | `layerMenu` | `open` | The menu of the active layer is open (default: closed) |
 | `showLayer` | `false` | The active layer is hidden, only the background map is shown |
 | `themeId` | `DROUGHT` | Configuration: `DEFAULT`, `AGRICULTURE`, `DROUGHT`, `DROUGHT2026`, `FOREST` (when missing or not containing the layer, the first configuration with the layer is used) |
-| `layerId` | `ndvi` | `true`, `nir`, `urban`, `swir`, `agri`, `geo`, `barren`, `hon`, `ndvi`, `ndwi`, `ndmi`, `ndsi`, `nbr`, `aot`, `evi`, `savi`, `mstress`, `nddi`, `nddichg`, `analyst`, `fdc`, `scl`, `cloud`, `terrain` (S2-SR); `vhi`, `vhiveg` (VHI); `ndvidiff`, `ndvidiff2` (v200 BETA), `ndviz` |
+| `layerId` | `ndvi` | `true`, `nir`, `urban`, `swir`, `agri`, `geo`, `barren`, `hon`, `ndvi`, `ndwi`, `ndmi`, `ndsi`, `nbr`, `aot`, `evi`, `savi`, `mstress`, `nddi`, `nddichg`, `analyst`, `fdc`, `scl`, `cloud`, `terrain` (S2-SR); `vhi`, `vhiveg` (VHI); `vhidef`, `vhiext` (VHI season sums); `ndvidiff`, `ndvidiff2` (v200 BETA), `ndviz` |
 | `valueRange` | `[0,0.9]` | Colour-scale min/max of index and continuous layers |
 | `threshold` | `0.5` | NDSI snow threshold (default 0.42; above it snow is shown in blue, otherwise true colour, as in the Copernicus Browser); NDVI Analyst change threshold (default −0.08) |
 | `refDate` | `2025-07-01` | Reference date of the two-date layers (default: the same day one year earlier) |
@@ -446,7 +470,10 @@ Example:
 - Not available compared with the Copernicus Browser: 3D, pins, product search and download, custom
   scripts, other satellite collections, sharing timelapses through a server; the image download has no
   OSM background and no choice of coordinate system (always LV95).
-- The VHI layers are rendered by the WMS with its published styling, so their colour scale cannot be changed.
+- The VHI forest and vegetation layers are rendered by the WMS with its published styling, so their colour scale cannot be changed.
+- The VHI season layers sum only the days with a VHI value, so long cloudy periods lead to an underestimated
+  deficit; they read one COG per day, so the first view of a season takes a while, and they are not
+  rated against a climatology as in the Waldtrockenheit dashboard.
 - NDVIdiff / NDVIz: see the note on their overviews above; zoomed out, implausible overview pixels are left out.
 - NDDI and NDDI change compare single acquisitions, not the May–July means of the openEO notebook. With the
   notebook's green NDWI the NDDI saturates (see above); the default SWIR NDWI does not.
@@ -473,7 +500,8 @@ Example:
   `main_cloudfree_mosaic.py`), [swisstopo/topo-drought-briefing](https://github.com/swisstopo/topo-drought-briefing)
   (colour scheme), [RaffiBienz/ndvi_analyst](https://github.com/RaffiBienz/ndvi_analyst) (NDVI Analyst of
   the Canton of Aargau), [Open-EO/openeo-community-examples](https://github.com/Open-EO/openeo-community-examples)
-  (NDDI drought notebook), [sentinel-hub/custom-scripts](https://github.com/sentinel-hub/custom-scripts)
+  (NDDI drought notebook), the [Waldtrockenheit dashboard](https://waldtrockenheit-dashboard.vercel.app/vhi.html)
+  (cumulative VHI deficit and days in extreme stress), [sentinel-hub/custom-scripts](https://github.com/sentinel-hub/custom-scripts)
   (index definitions and visualisations; Forest Disturbance Classification by Joanneum Research, EvoLand); libraries [Leaflet](https://github.com/Leaflet/Leaflet),
   [Proj4Leaflet](https://github.com/kartena/Proj4Leaflet), [proj4js](https://github.com/proj4js/proj4js),
   [Leaflet-Geoman](https://github.com/geoman-io/leaflet-geoman), [geotiff.js](https://github.com/geotiffjs/geotiff.js),

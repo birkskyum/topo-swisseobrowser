@@ -557,6 +557,11 @@ table.kv td:first-child{color:var(--muted)}
             <p><b>Configurations:</b> as the themes of the Copernicus Browser, a configuration lists the layers for a task:
               <i>Default</i>, <i>Agriculture</i>, <i>Drought</i>, <i>Drought 2026</i> with highlights, and <i>Forest</i>. Each layer keeps its own
               data source and dates.</p>
+            <p><b>VHI season sums (Forest):</b> per pixel, over the daily swissEO VHI forest maps from 1 April to the selected day
+              (at most 31 October): the cumulative deficit Σ max(0, 40 − VHI) and the days with VHI below 10, as in the
+              <a href="https://waldtrockenheit-dashboard.vercel.app/vhi.html" target="_blank" rel="noopener">Waldtrockenheit dashboard</a>
+              (which shows them per warning region). Only days with a VHI value count. They are computed in the browser from the daily
+              COGs, so the first view of a season takes a while.</p>
             <p><b>Forest Disturbance Classification:</b> the Sentinel Hub custom script of Joanneum Research (EvoLand), run in the
               browser on swissEO S2-SR: the model expects Sentinel Hub DN as 10000 × reflectance, which is swissEO DN − 1000.
               Its 150 trees are loaded on first use from jsDelivr, pinned to a commit.</p>
@@ -1120,7 +1125,7 @@ function trimTileCache() {
 function pyramid(url) {
   if (!pyrCache.has(url)) {
     pyrCache.set(url, (async () => {
-      const tiff = await GeoTIFF.fromUrl(url, { cache: true, blockSize: 131072, cacheSize: 300 });
+      const tiff = await GeoTIFF.fromUrl(url, { cache: true, blockSize: url.includes("swisseo_vhi") ? 65536 : 131072, cacheSize: 300 });
       const n = await tiff.getImageCount();
       const full = await tiff.getImage(0);
       const o = full.getOrigin(), r = full.getResolution();
@@ -1273,6 +1278,8 @@ const MISSING_RGB = hx(0xb3b6b7);
    difference: blue / white / red) */
 const R_NDDI = rampHex([[-1, 0xf2f5ef], [0, 0x63a3e7], [1, 0xb2182b]]);
 const R_NDDICHG = rampHex([[-1, 0x2166ac], [0, 0xf7f7f7], [1, 0xb2182b]]);
+/* cumulative VHI deficit: the colours of the Waldtrockenheit dashboard, from no deficit (light green) to dark red */
+const R_VHIDEF = rampHex([[0, 0xd4efdf], [400, 0xf4d03f], [1000, 0xe67e22], [1700, 0xcb4335], [2500, 0x7b241c]]);
 const CHANGE_RGB = hx(0xb71c1c), NOCHANGE_RGB = hx(0xdadada);
 /* Copernicus Browser Agriculture theme: EVI and SAVI colour steps (value < threshold), verbatim */
 const STEPS_EVI = { steps: [[-1.1, [0, 0, 0]], [-0.2, [191, 191, 255]], [-0.1, [219, 219, 219]], [0.0, [255, 255, 224]], [0.025, [255, 250, 204]], [0.05, [237, 232, 181]], [0.075, [222, 217, 156]], [0.1, [204, 199, 130]], [0.125, [189, 184, 107]], [0.15, [176, 194, 97]], [0.175, [163, 204, 89]], [0.2, [145, 191, 82]], [0.25, [128, 178, 71]], [0.3, [112, 163, 64]], [0.35, [97, 150, 54]], [0.4, [79, 138, 46]], [0.45, [64, 125, 36]], [0.5, [48, 110, 28]], [0.55, [33, 97, 18]], [0.6, [15, 84, 10]]], other: [0, 69, 0] };
@@ -1599,6 +1606,23 @@ const LAYERS = [
       "NDVI = (ρ(B08) − ρ(B04)) / (ρ(B08) + ρ(B04)), ρ = DN × 0.0001 − 0.1, of the first-quartile mosaic of the window\n" +
       "ΔNDVI = NDVI(window) − NDVI(same window one year earlier)" },
 
+  { id:"vhidef", group:"Indices", name:"VHI cumulative deficit", type:"vhiseason", source:"vhi", metric:"def",
+    ramp:R_VHIDEF, min:0, max:2500, lim:[0, 6000], unit:"Σ(40 − VHI)", icon:"tree",
+    sw:"linear-gradient(135deg,#d4efdf,#f4d03f,#e67e22,#7b241c)", fg:"#1a1206",
+    sub:"Kumuliertes Gesundheitsdefizit Σ(40 − VHI) since 1 April (forest)",
+    desc:"Cumulative forest health deficit per pixel: the sum of 40 − VHI over the days with a VHI below 40.",
+    formula:"per pixel, over the daily swissEO VHI v100 forest maps from 1 April to the selected day (at most 31 October):\n" +
+      "Σ max(0, 40 − VHI) over the days with a VHI value (0 to 100; 110 and 255 = no value)" },
+
+  { id:"vhiext", group:"Indices", name:"VHI days in extreme stress", type:"vhiseason", source:"vhi", metric:"ext",
+    classify:[[0, [212, 239, 223], "0 days"], [5, [244, 208, 63], "1 to 5 days"], [15, [230, 126, 34], "6 to 15 days"],
+              [30, [203, 67, 53], "16 to 30 days"], [Infinity, [123, 36, 28], "more than 30 days"]],
+    unit:"days", icon:"flame", sw:"linear-gradient(135deg,#f4d03f,#cb4335,#7b241c)", fg:"#ffffff",
+    sub:"Number of days with VHI below 10 since 1 April (forest)",
+    desc:"Days in extreme stress per pixel: the number of days with a VHI below 10.",
+    formula:"per pixel, over the daily swissEO VHI v100 forest maps from 1 April to the selected day (at most 31 October):\n" +
+      "number of days with VHI < 10 (days without a VHI value do not count)" },
+
   { id:"fdc", group:"Indices", name:"Forest Disturbance Classification", type:"fnclass", source:"s2",
     bands:["b02","b05","b06","b8a","b11","b12"], def:{ cloud:true, shadow:true, veg:"forest" }, palette:FDC_PALETTE,
     icon:"tree", sw:"linear-gradient(135deg,#ab6820,#b8b6b4,#7a2e01,#4c77ed)", fg:"#ffffff",
@@ -1675,6 +1699,10 @@ const COP_META = {
     cop: "# swissEO NDVIdiff v200 BETA\n\n**Beta version, not an official product.** Year-on-year NDVI change for the forest areas of Switzerland at 10 m, computed from **cloud-free two-month mosaics** of swissEO S2-SR v200 instead of single acquisitions. Three overlapping windows per year: June/July, July/August and August/September, each named after its end date (31 July, 31 August, 30 September); the window nearest to the selected date is shown.\n\n**Mosaic** ([main_cloudfree_mosaic_csde.py](https://github.com/swisstopo/topo-satromo-v2/blob/dev-20261006/main_functions/main_cloudfree_mosaic_csde.py)): for every pixel and band (B02, B03, B04, B08) all observations of the window are used; observations flagged by the cloud mask (1, 2, 3), outside the scene footprint or in terrain shadow (200) are discarded, and the **first quartile** of the remaining values is taken, following the Sentinel-2 quarterly mosaic algorithm of the Copernicus Data Space Ecosystem, more robust to cloud and haze residues than the first cloud-free value or the mean.\n\n**NDVI difference** ([test_reprocess_ndvidiff_csde.py](https://github.com/swisstopo/topo-satromo-v2/blob/dev-20261006/main_functions/test_reprocess_ndvidiff_csde.py)): NDVI = (NIR − Red) / (NIR + Red) from the reflectance of the mosaic (ρ = DN × 0.0001 − 0.1), minus the NDVI of the same window one year earlier; Int16, value / 1000, no data 32701. Negative values (red) mean less vital vegetation than a year ago, positive values (green) more.\n\nThe COGs are published as examples on cms.geo.admin.ch, not in the STAC catalogue." },
   nddi: { cop: "# Normalized Difference Drought Index (NDDI)\n\nThe NDDI (Gu et al. 2007) combines vegetation greenness (NDVI) and vegetation water content (NDWI): NDDI = (NDVI − NDWI) / (NDVI + NDWI). Vegetation under drought stress has less water and less green, which raises the NDDI (red). By default the NDWI is computed from NIR and SWIR (B08, B11), as in the original paper; values are clipped to −1…1.\n\nThe openEO drought notebook uses the Awesome Spectral Indices formula with an NDWI from green and NIR (B03, B08), selectable as *Green*. With it NDVI + NDWI is close to zero over vegetation, and almost every pixel ends up at −1 or +1 (99.8 % in a test over Aarau, independent of the reflectance offset), so the map is saturated.\n\nMore info [here](https://doi.org/10.1029/2006GL029127) and in the [openEO notebook](https://github.com/Open-EO/openeo-community-examples/blob/main/python/50_thematic-notebooks/drought-nddi/drought-nddi.ipynb)." },
   nddichg: { cop: "# NDDI change vs. previous year\n\nDifference between the NDDI of the selected date and the NDDI one year earlier, as in the openEO drought notebook, which compares a drought year with a baseline year. Positive values (red) mean drier conditions than a year ago, negative values (blue) wetter. The NDWI is computed from NIR and SWIR (Gu et al. 2007) by default; the notebook's green NDWI is selectable but saturates. The reference uses the acquisitions within ±20 days of the same day one year earlier (or of a reference date you choose), clearest first; each pixel takes the first one with clear data. Unlike the notebook, which averages May–July, single dates are compared, so clouds and cloud shadows are masked on both sides by default.\n\nMore info [here](https://github.com/Open-EO/openeo-community-examples/blob/main/python/50_thematic-notebooks/drought-nddi/drought-nddi.ipynb)." },
+  vhidef: { more: "https://waldtrockenheit-dashboard.vercel.app/vhi.html",
+    cop: "# VHI cumulative deficit (Kumuliertes Gesundheitsdefizit)\n\nThe cumulative forest health deficit of the [Waldtrockenheit dashboard](https://waldtrockenheit-dashboard.vercel.app/vhi.html), computed **per pixel** instead of per warning region. For every day from 1 April to the selected day (at most 31 October), the daily swissEO VHI forest map contributes 40 − VHI where the VHI is below 40, the threshold for *stressed*; a VHI of 40 or more adds nothing. A very low VHI therefore raises the sum strongly, and the sum can only grow during the season.\n\nOnly days with a VHI value count. In long periods without satellite images the VHI is missing once its 7-day window has passed, so those days add nothing and the deficit can be underestimated; the pixel inspector and the statistics show the number of days with data. The dashboard rates each region against its 2018 to 2025 climatology; per pixel this would need eight seasons of daily maps, so the colours use a fixed scale here (adjustable).\n\nThe sums are computed in the browser from the daily COGs (about 30 per month), so the first view of a season takes a while; the sums are kept for the session, and stepping forward through the dates (or a timelapse) only reads the days in between.\n\nMore info [here](https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-vhi)." },
+  vhiext: { more: "https://waldtrockenheit-dashboard.vercel.app/vhi.html",
+    cop: "# VHI days in extreme stress\n\nThe number of days in extreme stress of the [Waldtrockenheit dashboard](https://waldtrockenheit-dashboard.vercel.app/vhi.html), computed **per pixel**: the days from 1 April to the selected day (at most 31 October) on which the daily swissEO VHI forest map is below 10 (*extremely stressed*). As in the dashboard the days are counted in total, not consecutively, because a counter of consecutive days would reset at every short cool or wet spell without the forest actually recovering. Classes as in the dashboard: 0, 1 to 5, 6 to 15, 16 to 30 and more than 30 days.\n\nDays without a VHI value do not count (see *VHI cumulative deficit*).\n\nMore info [here](https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-vhi)." },
   fdc: { more: "https://custom-scripts.sentinel-hub.com/sentinel-2/forest_disturbance_classification/",
     cop: "# Forest Disturbance Classification\n\nA LightGBM classification of forest disturbances by Jonas Viehweger and Martin Puhm (Joanneum Research, EvoLand project), published as a Sentinel Hub custom script. From a single date it assigns every pixel to *bark beetle* (brown), *clear cut* (grey), *salvage logged* (grey too, low confidence), *wildfire* (dark brown) or *windthrow* (blue); *healthy* forest is not drawn. It was trained on samples from Germany, Sweden and Spain (macro F1 0.83), works best on recent, large disturbances and is only valid on forest, so the forest mask is on by default. Expect classification errors and validate the results.\n\n**Input scaling:** the trees split on Sentinel Hub L2A digital numbers in the convention DN = 10000 × reflectance (data before processing baseline 04.00, e.g. the script's 2019 example). swissEO stores DN = (ρ + 0.1) × 10000, so the script receives DN − 1000, clamped at 0. The Copernicus Browser feeds recent scenes without removing the offset (see the README on harmonizeValues), so its result can differ there. The 150 trees are loaded unchanged from the script on first use.\n\nMore info [here](https://custom-scripts.sentinel-hub.com/sentinel-2/forest_disturbance_classification/)." },
   analyst: { cop: "# NDVI Analyst (Canton of Aargau)\n\nPort of the NDVI Analyst by Raffael Bienz (Canton of Aargau): the NDVI difference between two dates (later minus earlier), using swissEO S2-SR reflectance with negative values set to 0, masked to forest. Changes are pixels with an NDVI drop below the threshold (default −0.08); a 3 × 3 majority filter removes edge effects. *Detected change* shows the binary result. The statistics of an area of interest report the forest area and the affected area in ha and %, with and without edge-effect removal, like the original script.\n\nMore info [here](https://github.com/RaffiBienz/ndvi_analyst)." }
@@ -1739,7 +1767,7 @@ const CONFIGS = {
         text: "By late July a brown-yellow belt stretched across much of Switzerland, above all the Mittelland and the Jura, where last year’s meadows and fields have visibly dried out. The 2026 image is from 24 July, when two cloud-free orbits covered the country; a narrow strip in the west lies between them. (Source: watson.ch, 10 August 2026)" }] }
 };
 CONFIGS.FOREST = { name: "Forest", groups: [
-  ["Layers", ["true", "vhi", "ndvidiff", "ndvidiff2", "ndviz", "analyst", "nbr", "ndmi", "fdc"]]] };
+  ["Layers", ["true", "vhi", "vhidef", "vhiext", "ndvidiff", "ndvidiff2", "ndviz", "analyst", "nbr", "ndmi", "fdc"]]] };
 const cfgLayers = id => CONFIGS[id].groups.flatMap(g => g[1]);
 
 /* Verification status of the layers: the checklist "Layer verification" in README.md (checked = verified).
@@ -2480,9 +2508,78 @@ async function renderDiff2(cfg, bbox, W, H, signal) {
   return img;
 }
 
+/* Season sums of the daily swissEO VHI forest maps per pixel, as in the Waldtrockenheit dashboard
+   (waldtrockenheit-dashboard.vercel.app/vhi.html): from 1 April to the selected day, at most 31 October, and only
+   over the days with a VHI value: deficit = Σ max(0, 40 − VHI), extreme days = days with VHI < 10, plus the number
+   of days with data. One read per daily COG; results are kept per area for the session, and a later day of the
+   same season starts from the sums of an earlier one over the same area, so stepping forward through the dates
+   or a timelapse only reads the days in between. */
+const SEASON = { start: "-04-01", end: "-10-31", stress: 40, extreme: 10 };
+const seasonItemsReq = new Map(), seasonCache = new Map();
+function seasonItems(endDay) {
+  const y = endDay.slice(0, 4), from = y + SEASON.start, to = endDay < y + SEASON.end ? endDay : y + SEASON.end;
+  if (to < from) return Promise.resolve([]);
+  const key = from + "|" + to;
+  if (!seasonItemsReq.has(key)) {
+    const q = stacAll(COLL_VHI, from, to).then(fs => fs.map(f => f.id).sort());
+    q.catch(() => seasonItemsReq.delete(key));
+    seasonItemsReq.set(key, q);
+  }
+  return seasonItemsReq.get(key);
+}
+async function vhiSeason(endDay, bbox, W, H, signal, onDay) {
+  const area = bbox.map(v => v.toFixed(1)).join(",") + "|" + W + "x" + H, key = endDay + "|" + area;
+  if (!onDay && seasonCache.has(key)) {
+    const hit = seasonCache.get(key);
+    seasonCache.delete(key); seasonCache.set(key, hit);           // most recently used last
+    return hit;
+  }
+  const ids = await seasonItems(endDay), last = ids[ids.length - 1];
+  let base = null;                                    // the sums of an earlier day of this season, if any
+  if (!onDay && last) for (const v of seasonCache.values())
+    if (v.area === area && v.first === ids[0] && v.last <= last && (!base || v.last > base.last)) base = v;
+  const n = W * H, def = base ? base.def.slice() : new Float32Array(n), ext = base ? base.ext.slice() : new Uint16Array(n),
+        days = base ? base.days.slice() : new Uint16Array(n), todo = base ? ids.filter(id => id > base.last) : ids;
+  let done = 0, failed = 0;
+  await pool(todo, 6, async id => {
+    const a = await readGrid(vhiUrl(id, LAYER.vhi), bbox, W, H, signal, 255)
+      .catch(e => { if (e && e.name === "AbortError") throw e; failed++; return null; });
+    if (a) for (let k = 0; k < n; k++) {
+      const v = a[k];
+      if (v > 100) continue;                      // 110 = no VHI that day, 255 = not forest
+      days[k]++;
+      if (v < SEASON.stress) def[k] += SEASON.stress - v;
+      if (v < SEASON.extreme) ext[k]++;
+    }
+    if (onDay) onDay(id, a, ++done, todo.length);
+  });
+  const res = { area, def, ext, days, nDays: ids.length, first: ids[0] || null, last: last || null, failed };
+  if (!failed) seasonCache.set(key, res);                        // a day that could not be read is retried next time
+  while (seasonCache.size > 32) seasonCache.delete(seasonCache.keys().next().value);
+  return res;
+}
+const seasonEnd = cfg => cfg.scenes && cfg.scenes[0] ? cfg.scenes[0].slice(0, 10) : cfg.date || state.date;
+async function renderSeason(cfg, bbox, W, H, signal) {
+  const rec = cfg.rec, s = cfg.s, r = await vhiSeason(seasonEnd(cfg), bbox, W, H, signal);
+  if (!r.nDays) return null;
+  const img = new ImageData(W, H), d = img.data, n = W * H, cg = cmaskOn(s) ? customMaskGrid(bbox, W, H) : null;
+  const d0 = rec.ramp ? rec.domain[0] : 0, k2 = rec.ramp ? (rec.domain[1] - d0) / ((s.max - s.min) || 1e-9) : 0;
+  let any = false;
+  for (let k = 0; k < n; k++) {
+    if (!r.days[k] || (cg && cmaskOut(s.cmask, cg, k))) continue;
+    const c = rec.metric === "def" ? rec.ramp(d0 + (r.def[k] - s.min) * k2)
+      : (rec.classify.find(x => r.ext[k] <= x[0]) || rec.classify[rec.classify.length - 1])[1];
+    if (!c) continue;
+    d[k * 4] = c[0]; d[k * 4 + 1] = c[1]; d[k * 4 + 2] = c[2]; d[k * 4 + 3] = 255;
+    any = true;
+  }
+  return any ? img : null;
+}
+
 /* Mosaic of every scene of the day: the first scene with data wins per pixel. */
 async function renderTile(cfg, bbox, W, H, signal) {
   if (cfg.rec.type === "diff2") return renderDiff2(cfg, bbox, W, H, signal);
+  if (cfg.rec.type === "vhiseason") return renderSeason(cfg, bbox, W, H, signal);
   const s = cfg.gf && cfg.gf !== 1 ? Object.assign({}, cfg.s, { gain: cfg.s.gain * cfg.gf }) : cfg.s;
   // scenes one after the other, most recent first: a scene whose orbit misses the tile (known footprint) is
   // skipped, and once every pixel is filled the remaining scenes are not read at all
@@ -2795,6 +2892,11 @@ function updateDateInfo(rec, scenes) {
   else if (rec.source === "vhi") {
     const day = scenes[0].slice(0, 10);
     t = "VHI day " + day + (day === state.date ? "" : " (nearest available to " + state.date + ")");
+    if (rec.type === "vhiseason") {
+      const y = day.slice(0, 4);
+      t += day < y + SEASON.start ? ". The season starts on 1 April: choose a later day." :
+        ". Season sums from 1 April to " + (day < y + SEASON.end ? day : y + SEASON.end) + ", over the daily VHI forest maps (the first view takes a while).";
+    }
   } else if (SOURCES[rec.source].sparse) {
     const day = scenes[0].slice(0, 10);
     t = SOURCES[rec.source].name + " " + day + (day === state.date ? "" : ": the product nearest to " + state.date +
@@ -4283,6 +4385,14 @@ async function sampleAoi(r, scenes, grid, o, signal) {
     const g = customMaskGrid(bbox, W, H);
     for (let k = 0; k < n; k++) if (mask[k] && !done[k] && cmaskOut(o.cmask, g, k)) { done[k] = 1; outside++; }
   }
+  if (r.type === "vhiseason") {                                         // season sums over the daily VHI maps
+    const ss = scenes.length ? await vhiSeason(scenes[0].slice(0, 10), bbox, W, H, signal) : null;
+    if (ss) for (let k = 0; k < n; k++) {
+      if (!mask[k] || done[k] || !ss.days[k]) continue;
+      cov[k] = 1; vals[0][k] = r.metric === "def" ? ss.def[k] : ss.ext[k]; done[k] = 1;
+    }
+    return { vals, cls, masked, shadow, covered: cov.reduce((t, v) => t + v, 0), total: Math.max(1, grid.n - outside), outside };
+  }
   for (const id of scenes) {
     let open = 0;
     for (let k = 0; k < n; k++) if (mask[k] && !done[k]) open++;
@@ -4472,10 +4582,11 @@ function openStats() {
   $("#stVeg").replaceChildren(vegSeg(stVeg, v => { stVeg = v; runCurrentStats(); }));
   $("#stTerr").checked = S(rec).terrain;
   $("#stDate").textContent = state.date;
-  const noTs = r.type === "class" || r.type === "fnclass" || rec.type === "diff2";
+  const noTs = r.type === "class" || r.type === "fnclass" || rec.type === "diff2" || rec.type === "vhiseason";
   $("#stTsCtl").hidden = noTs;
   $("#stProg").textContent = r.type === "class" || r.type === "fnclass" ? "Time series are not available for categorical layers." :
-    rec.type === "diff2" ? "Time series are not available for the two-date layers. Use the index itself (NDVI, NDDI) for a time series." : "";
+    rec.type === "diff2" ? "Time series are not available for the two-date layers. Use the index itself (NDVI, NDDI) for a time series." :
+    rec.type === "vhiseason" ? "The season curve above is the time series of this layer. Use swissEO VHI forest for the daily VHI." : "";
   $("#stChart").innerHTML = "";
   $("#stTo").value = state.date;
   $("#stFrom").value = SOURCES[r.source].sparse ? SOURCES[r.source].firstYear + "-01-01" : addDays(state.date, r.source === "vhi" ? -60 : -120);
@@ -4501,6 +4612,7 @@ async function runCurrentStats() {
     const opt = { maskClouds: $("#stCloud").checked, maskScl: $("#stScl").checked, maskTerrain: $("#stTerr").checked, veg: stVeg,
                   cmask: cmaskOn(S(rec)) ? S(rec).cmask : "off" };
     if (rec.type === "diff2") { await diffStats(rec, r, scenes, grid, opt, box); return; }
+    if (rec.type === "vhiseason") { await seasonStats(rec, scenes, grid, opt, box); return; }
     const res = await sampleAoi(r, scenes, grid, opt);
     if (stRec !== rec) return;
     const pct = v => (100 * v / res.total).toFixed(1) + " %";
@@ -4607,6 +4719,60 @@ async function diffStats(rec, r, scenes, grid, opt, box) {
   const d0 = r.domain[0], k2 = (r.domain[1] - d0) / ((s.max - s.min) || 1e-9);
   html += histChart(st.sorted, s.min, s.max, v => { const c = r.ramp(d0 + (v - s.min) * k2); return c ? rgbCss(c) : "#999"; },
                     unitOf(r) + " (legend range)");
+  box.innerHTML = html;
+}
+
+/* Season statistics over the AOI: the per-pixel sums with their histogram, and the season curve, i.e. the AOI mean
+   of the cumulative deficit and of the extreme days per day (as the dashboard curves, but from the per-pixel values). */
+async function seasonStats(rec, scenes, grid, opt, box) {
+  const end = scenes[0].slice(0, 10), n = grid.W * grid.H, inside = new Uint8Array(n);
+  let nIn = 0;
+  const cg = customMask && (opt.cmask === "in" || opt.cmask === "out") ? customMaskGrid(grid.bbox, grid.W, grid.H) : null;
+  for (let k = 0; k < n; k++) if (grid.mask[k] && !(cg && cmaskOut(opt.cmask, cg, k))) { inside[k] = 1; nIn++; }
+  const perDay = new Map();
+  const ss = await vhiSeason(end, grid.bbox, grid.W, grid.H, null, (id, a, done, total) => {
+    let sd = 0, se = 0, nv = 0, nf = 0;
+    if (a) for (let k = 0; k < n; k++) {
+      if (!inside[k] || a[k] === 255) continue;
+      nf++;
+      if (a[k] > 100) continue;
+      nv++; if (a[k] < SEASON.stress) sd += SEASON.stress - a[k]; if (a[k] < SEASON.extreme) se++;
+    }
+    perDay.set(id.slice(0, 10), { sd, se, nv, nf });
+    if (stRec === rec) box.innerHTML = '<div class="hint">Summing the daily VHI forest maps over the area: ' + done + " / " + total + "…</div>";
+  });
+  if (stRec !== rec) return;
+  const v = new Float32Array(n).fill(NaN);
+  let nForest = 0;
+  for (let k = 0; k < n; k++) if (inside[k] && ss.days[k]) { v[k] = rec.metric === "def" ? ss.def[k] : ss.ext[k]; nForest++; }
+  const st = summarize(v);
+  if (!st) { box.innerHTML = '<div class="hint">No forest with VHI values in the area of interest.</div>'; return; }
+  const days = [...perDay.keys()].sort();
+  let cumD = 0, cumE = 0, ptsD = [], ptsE = [], daysData = 0;
+  const forestCells = Math.max(1, nForest);
+  days.forEach(d => {
+    const e = perDay.get(d);
+    cumD += e.sd / forestCells; cumE += e.se / forestCells;      // AOI mean of the per-pixel cumulative values
+    if (e.nv) daysData++;
+    const x = Date.parse(d + "T12:00:00Z"), cov = e.nf ? 100 * e.nv / e.nf : 0;
+    ptsD.push({ x, y: cumD, label: d + " · mean deficit " + cumD.toFixed(0) + " · VHI available on " + cov.toFixed(0) + " % of the forest" });
+    ptsE.push({ x, y: cumE, label: d + " · mean days VHI < 10: " + cumE.toFixed(1) });
+  });
+  const dSum = summarize(Float32Array.from(ss.days.filter((x, k) => inside[k] && x)));
+  let html = '<div class="hint" style="margin:0 0 8px">Season ' + (ss.first || "").slice(0, 10) + " to " + (ss.last || "").slice(0, 10) + ": " +
+    ss.nDays + " daily VHI forest maps; forest cells with data: " + nForest + ". Days with a VHI value per cell: " +
+    (dSum ? dSum.min + " to " + dSum.max + " (median " + dSum.median + ")" : "n/a") + "." +
+    (ss.failed ? " " + ss.failed + " daily maps could not be read and are missing in the sums." : "") + "</div>";
+  html += '<div class="stgrid">' +
+    "<div>Mean " + unitOf(rec) + "<b>" + fmtNum(st.mean) + "</b></div><div>Median<b>" + fmtNum(st.median) + "</b></div>" +
+    "<div>P10 / P90<b>" + fmtNum(st.p10) + " / " + fmtNum(st.p90) + "</b></div><div>Max<b>" + fmtNum(st.max) + "</b></div></div>";
+  const col = rec.metric === "def"
+    ? (() => { const s = S(rec), d0 = rec.domain[0], k2 = (rec.domain[1] - d0) / ((s.max - s.min) || 1e-9); return x => { const c = rec.ramp(d0 + (x - s.min) * k2); return c ? rgbCss(c) : "#999"; }; })()
+    : x => rgbCss((rec.classify.find(c => x <= c[0]) || rec.classify[rec.classify.length - 1])[1]);
+  html += histChart(st.sorted, 0, Math.max(st.max, rec.metric === "def" ? 100 : 31), col, unitOf(rec));
+  html += '<div class="sec" style="font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--blue);font-weight:700;margin:12px 0 6px">Season curve (mean over the area)</div>' +
+    lineChart([{ name: "", color: rec.metric === "def" ? "#cb4335" : "#7b241c", pts: rec.metric === "def" ? ptsD : ptsE }],
+      { time: true, yLabel: rec.metric === "def" ? "mean Σ(40 − VHI)" : "mean days VHI < 10" });
   box.innerHTML = html;
 }
 
@@ -4914,7 +5080,7 @@ async function showSceneInfo(rec, ids) {
 /* ============================================================
    16. Pixel inspector
    ============================================================ */
-let inspecting = false;
+let inspecting = false, inspSeq = 0;
 $("#btnInspect").onclick = () => {
   inspecting = !inspecting;
   $("#btnInspect").textContent = "Pixel inspector: " + (inspecting ? "on" : "off");
@@ -4932,7 +5098,19 @@ map.on("click", async e => {
   box.classList.add("on");
   const p = CRS2056.project(e.latlng);
   $("#inspTitle").textContent = "Pixel  " + Math.round(p.x) + " E / " + Math.round(p.y) + " N";
-  const cfg = compareMode ? null : currentCfg;
+  const cfg = compareMode ? null : currentCfg, seq = ++inspSeq;
+  if (cfg && cfg.rec.type === "vhiseason" && cfg.scenes.length) {   // season sums of the daily VHI maps at this pixel
+    $("#inspBody").innerHTML = '<div class="hint">Reading the daily VHI forest maps of the season…</div>';
+    const r = await vhiSeason(seasonEnd(cfg), [p.x - 5, p.y - 5, p.x + 5, p.y + 5], 1, 1).catch(() => null);
+    if (seq !== inspSeq) return;                              // a later click is being answered
+    $("#inspBody").innerHTML = "<table><tr><td>LV95</td><td>" + p.x.toFixed(2) + ", " + p.y.toFixed(2) + "</td></tr>" +
+      (r && r.days[0] ? "<tr><td><b>Cumulative deficit Σ(40 − VHI)</b></td><td><b>" + Math.round(r.def[0]) + "</b></td></tr>" +
+        "<tr><td><b>Days with VHI &lt; 10</b></td><td><b>" + r.ext[0] + "</b></td></tr>" +
+        "<tr><td>Days with a VHI value</td><td>" + r.days[0] + " of " + r.nDays + (r.failed ? " (" + r.failed + " could not be read)" : "") + "</td></tr>" +
+        "<tr><td>Season</td><td>" + r.first.slice(0, 10) + " to " + r.last.slice(0, 10) + "</td></tr>"
+        : "<tr><td>Forest VHI</td><td>no forest / no values</td></tr>") + "</table>";
+    return;
+  }
   if (cfg && cfg.rec.cogUrl && cfg.scenes.length) {        // VHI, NDVIdiff, NDVIz: the product value
     const r = cfg.rec, v = await readPoint(r.cogUrl(cfg.scenes[0]), p.x, p.y).catch(() => null);
     const txt = v == null || v === r.cogFill ? "no data" : v === r.cogMissing ? "missing data" : !r.cogValid(v) ? v + " (no data)"
@@ -5478,7 +5656,7 @@ async function runAnalytical(signal, prog) {
     const scenes = await resolveScenes(rec, state.date, state.cc);
     if (!scenes.length) { skipped.push(rec.name); continue; }
     const name = "swissEO_" + rec.id + "_" + tag;
-    if (fmt === "tiff32" && (rec.type === "index" || rec.type === "cont" || rec.type === "terrain" || rec.type === "diff2")) {
+    if (fmt === "tiff32" && (rec.type === "index" || rec.type === "cont" || rec.type === "terrain" || rec.type === "diff2" || rec.type === "vhiseason")) {
       // the index / physical value itself (two-date layers: the difference), with the layer's masks
       const grid = { bbox, W, H, mask: inAoi || new Uint8Array(n).fill(1), n };
       const o = { maskClouds: s.cloud || s.shadow, maskTerrain: s.terrain, cloudCodes: { 1: s.cloud, 2: s.cloud, 3: s.shadow }, veg: s.veg,
@@ -5781,10 +5959,11 @@ function tlGrid(bbox, maxCells) {
 async function tlStats(rec, unit, g, signal) {
   const { bbox, W, H, mask } = g, n = W * H, cov = new Uint8Array(n), cld = new Uint8Array(n);
   const soft = q => q.catch(e => { if (e && e.name === "AbortError") throw e; return null; });
-  if (rec.cogUrl) {
+  if (rec.cogUrl || rec.type === "vhiseason") {
     // VHI and the drought products cover all of Switzerland (masked to forest / vegetation): any data = covered
-    const a = await soft(readGrid(rec.cogUrl(unit.scenes[0]), bbox, W, H, signal, rec.cogFill));
-    if (a && mask.some((m, k) => m && a[k] !== rec.cogFill)) cov.set(mask);
+    const url = rec.cogUrl ? rec.cogUrl(unit.scenes[0]) : vhiUrl(unit.scenes[0], LAYER.vhi), fill = rec.cogUrl ? rec.cogFill : 255;
+    const a = await soft(readGrid(url, bbox, W, H, signal, fill));
+    if (a && mask.some((m, k) => m && a[k] !== fill)) cov.set(mask);
   } else {
     for (const id of unit.scenes) {
       const box = sceneBox(id);
