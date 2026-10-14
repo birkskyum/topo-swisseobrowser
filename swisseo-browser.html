@@ -1609,7 +1609,7 @@ const LAYERS = [
   { id:"vhidef", group:"Indices", name:"VHI cumulative deficit", type:"vhiseason", source:"vhi", metric:"def",
     ramp:R_VHIDEF, min:0, max:2500, lim:[0, 6000], unit:"Σ(40 − VHI)", icon:"tree",
     sw:"linear-gradient(135deg,#d4efdf,#f4d03f,#e67e22,#7b241c)", fg:"#1a1206",
-    sub:"Kumuliertes Gesundheitsdefizit Σ(40 − VHI) since 1 April (forest)",
+    sub:"Cumulative forest health deficit Σ(40 − VHI) since 1 April (forest)",
     desc:"Cumulative forest health deficit per pixel: the sum of 40 − VHI over the days with a VHI below 40.",
     formula:"per pixel, over the daily swissEO VHI v100 forest maps from 1 April to the selected day (at most 31 October):\n" +
       "Σ max(0, 40 − VHI) over the days with a VHI value (0 to 100; 110 and 255 = no value)" },
@@ -1700,7 +1700,7 @@ const COP_META = {
   nddi: { cop: "# Normalized Difference Drought Index (NDDI)\n\nThe NDDI (Gu et al. 2007) combines vegetation greenness (NDVI) and vegetation water content (NDWI): NDDI = (NDVI − NDWI) / (NDVI + NDWI). Vegetation under drought stress has less water and less green, which raises the NDDI (red). By default the NDWI is computed from NIR and SWIR (B08, B11), as in the original paper; values are clipped to −1…1.\n\nThe openEO drought notebook uses the Awesome Spectral Indices formula with an NDWI from green and NIR (B03, B08), selectable as *Green*. With it NDVI + NDWI is close to zero over vegetation, and almost every pixel ends up at −1 or +1 (99.8 % in a test over Aarau, independent of the reflectance offset), so the map is saturated.\n\nMore info [here](https://doi.org/10.1029/2006GL029127) and in the [openEO notebook](https://github.com/Open-EO/openeo-community-examples/blob/main/python/50_thematic-notebooks/drought-nddi/drought-nddi.ipynb)." },
   nddichg: { cop: "# NDDI change vs. previous year\n\nDifference between the NDDI of the selected date and the NDDI one year earlier, as in the openEO drought notebook, which compares a drought year with a baseline year. Positive values (red) mean drier conditions than a year ago, negative values (blue) wetter. The NDWI is computed from NIR and SWIR (Gu et al. 2007) by default; the notebook's green NDWI is selectable but saturates. The reference uses the acquisitions within ±20 days of the same day one year earlier (or of a reference date you choose), clearest first; each pixel takes the first one with clear data. Unlike the notebook, which averages May–July, single dates are compared, so clouds and cloud shadows are masked on both sides by default.\n\nMore info [here](https://github.com/Open-EO/openeo-community-examples/blob/main/python/50_thematic-notebooks/drought-nddi/drought-nddi.ipynb)." },
   vhidef: { more: "https://waldtrockenheit-dashboard.vercel.app/vhi.html",
-    cop: "# VHI cumulative deficit (Kumuliertes Gesundheitsdefizit)\n\nThe cumulative forest health deficit of the [Waldtrockenheit dashboard](https://waldtrockenheit-dashboard.vercel.app/vhi.html), computed **per pixel** instead of per warning region. For every day from 1 April to the selected day (at most 31 October), the daily swissEO VHI forest map contributes 40 − VHI where the VHI is below 40, the threshold for *stressed*; a VHI of 40 or more adds nothing. A very low VHI therefore raises the sum strongly, and the sum can only grow during the season.\n\nOnly days with a VHI value count. In long periods without satellite images the VHI is missing once its 7-day window has passed, so those days add nothing and the deficit can be underestimated; the pixel inspector and the statistics show the number of days with data. The dashboard rates each region against its 2018 to 2025 climatology; per pixel this would need eight seasons of daily maps, so the colours use a fixed scale here (adjustable).\n\nThe sums are computed in the browser from the daily COGs (about 30 per month), so the first view of a season takes a while; the sums are kept for the session, and stepping forward through the dates (or a timelapse) only reads the days in between.\n\nMore info [here](https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-vhi)." },
+    cop: "# VHI cumulative deficit\n\nThe cumulative forest health deficit of the [Waldtrockenheit dashboard](https://waldtrockenheit-dashboard.vercel.app/vhi.html), computed **per pixel** instead of per warning region. For every day from 1 April to the selected day (at most 31 October), the daily swissEO VHI forest map contributes 40 − VHI where the VHI is below 40, the threshold for *stressed*; a VHI of 40 or more adds nothing. A very low VHI therefore raises the sum strongly, and the sum can only grow during the season.\n\nOnly days with a VHI value count. In long periods without satellite images the VHI is missing once its 7-day window has passed, so those days add nothing and the deficit can be underestimated; the pixel inspector and the statistics show the number of days with data. Only pixels inside the VHI forest mask count (non-forest stays transparent). The dashboard rates each region against its 2018 to 2025 climatology; per pixel this would need eight seasons of daily maps, so the colours use a fixed scale here (adjustable).\n\nThe sums are computed in the browser from the daily COGs (about 30 per month), so the first view of a season takes a while; the sums are kept for the session, and stepping forward through the dates (or a timelapse) only reads the days in between.\n\nMore info [here](https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-vhi)." },
   vhiext: { more: "https://waldtrockenheit-dashboard.vercel.app/vhi.html",
     cop: "# VHI days in extreme stress\n\nThe number of days in extreme stress of the [Waldtrockenheit dashboard](https://waldtrockenheit-dashboard.vercel.app/vhi.html), computed **per pixel**: the days from 1 April to the selected day (at most 31 October) on which the daily swissEO VHI forest map is below 10 (*extremely stressed*). As in the dashboard the days are counted in total, not consecutively, because a counter of consecutive days would reset at every short cool or wet spell without the forest actually recovering. Classes as in the dashboard: 0, 1 to 5, 6 to 15, 16 to 30 and more than 30 days.\n\nDays without a VHI value do not count (see *VHI cumulative deficit*).\n\nMore info [here](https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-vhi)." },
   fdc: { more: "https://custom-scripts.sentinel-hub.com/sentinel-2/forest_disturbance_classification/",
@@ -2511,7 +2511,9 @@ async function renderDiff2(cfg, bbox, W, H, signal) {
 /* Season sums of the daily swissEO VHI forest maps per pixel, as in the Waldtrockenheit dashboard
    (waldtrockenheit-dashboard.vercel.app/vhi.html): from 1 April to the selected day, at most 31 October, and only
    over the days with a VHI value: deficit = Σ max(0, 40 − VHI), extreme days = days with VHI < 10, plus the number
-   of days with data. One read per daily COG; results are kept per area for the session, and a later day of the
+   of days with data. Only pixels inside the forest mask of VHI v100 (the same on every date, read from the most
+   recent item as for the vegetation mask) count: the overviews of some daily COGs (2026-04-26 to 2026-05-08) also
+   hold values outside the forest, which would otherwise show up as forest when zoomed out. One read per daily COG; results are kept per area for the session, and a later day of the
    same season starts from the sums of an earlier one over the same area, so stepping forward through the dates
    or a timelapse only reads the days in between. */
 const SEASON = { start: "-04-01", end: "-10-31", stress: 40, extreme: 10 };
@@ -2540,18 +2542,19 @@ async function vhiSeason(endDay, bbox, W, H, signal, onDay) {
     if (v.area === area && v.first === ids[0] && v.last <= last && (!base || v.last > base.last)) base = v;
   const n = W * H, def = base ? base.def.slice() : new Float32Array(n), ext = base ? base.ext.slice() : new Uint16Array(n),
         days = base ? base.days.slice() : new Uint16Array(n), todo = base ? ids.filter(id => id > base.last) : ids;
-  let done = 0, failed = 0;
+  const fm = todo.length ? await readVegMask("forest", endDay, bbox, W, H, signal) : null;
+  let done = 0, failed = todo.length && !fm ? 1 : 0;                // without the mask the result is not cached
   await pool(todo, 6, async id => {
     const a = await readGrid(vhiUrl(id, LAYER.vhi), bbox, W, H, signal, 255)
       .catch(e => { if (e && e.name === "AbortError") throw e; failed++; return null; });
     if (a) for (let k = 0; k < n; k++) {
       const v = a[k];
-      if (v > 100) continue;                      // 110 = no VHI that day, 255 = not forest
+      if (v > 100 || (fm && !fm[k])) continue;    // 110 = no VHI that day, 255 / outside the forest mask = not forest
       days[k]++;
       if (v < SEASON.stress) def[k] += SEASON.stress - v;
       if (v < SEASON.extreme) ext[k]++;
     }
-    if (onDay) onDay(id, a, ++done, todo.length);
+    if (onDay) onDay(id, a, ++done, todo.length, fm);
   });
   const res = { area, def, ext, days, nDays: ids.length, first: ids[0] || null, last: last || null, failed };
   if (!failed) seasonCache.set(key, res);                        // a day that could not be read is retried next time
@@ -4730,10 +4733,10 @@ async function seasonStats(rec, scenes, grid, opt, box) {
   const cg = customMask && (opt.cmask === "in" || opt.cmask === "out") ? customMaskGrid(grid.bbox, grid.W, grid.H) : null;
   for (let k = 0; k < n; k++) if (grid.mask[k] && !(cg && cmaskOut(opt.cmask, cg, k))) { inside[k] = 1; nIn++; }
   const perDay = new Map();
-  const ss = await vhiSeason(end, grid.bbox, grid.W, grid.H, null, (id, a, done, total) => {
+  const ss = await vhiSeason(end, grid.bbox, grid.W, grid.H, null, (id, a, done, total, fm) => {
     let sd = 0, se = 0, nv = 0, nf = 0;
     if (a) for (let k = 0; k < n; k++) {
-      if (!inside[k] || a[k] === 255) continue;
+      if (!inside[k] || a[k] === 255 || (fm && !fm[k])) continue;
       nf++;
       if (a[k] > 100) continue;
       nv++; if (a[k] < SEASON.stress) sd += SEASON.stress - a[k]; if (a[k] < SEASON.extreme) se++;

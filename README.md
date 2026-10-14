@@ -181,14 +181,18 @@ The swissEO Browser therefore always uses the physical reflectance.
     So the all-red map comes from the green NDWI, not from the reflectance offset.
   - *NDDI change vs. previous year*: NDDI of the date minus NDDI one year earlier (notebook palette,
     −1…1). The notebook compares May–July means of two years; here single dates are compared.
-  - *VHI cumulative deficit* (Kumuliertes Gesundheitsdefizit) and *VHI days in extreme stress* (Forest): the
+  - *VHI cumulative deficit* and *VHI days in extreme stress* (Forest): the
     two season indicators of the [Waldtrockenheit dashboard](https://waldtrockenheit-dashboard.vercel.app/vhi.html),
     which shows them per warning region, computed here **per pixel** from the daily swissEO VHI v100 forest
     COGs (10 m). For every day from 1 April to the selected day (at most 31 October), a VHI below 40
     (*stressed*) adds 40 − VHI to the deficit, and a VHI below 10 (*extremely stressed*) counts as a day in
     extreme stress (in total, not consecutively). Only days with a VHI value count (110 and 255 are
     skipped): after long cloudy periods the VHI is missing once its 7-day window has passed, so the deficit
-    can be underestimated; the pixel inspector and the statistics give the number of days with data. The
+    can be underestimated; the pixel inspector and the statistics give the number of days with data. Only
+    pixels inside the forest mask of VHI v100 count (the mask of the most recent item, as for the vegetation
+    mask; non-forest stays transparent): the overviews of the daily forest COGs of 2026-04-26 to 2026-05-08
+    also hold values outside the forest (at 10 m their mask is the usual one), which would otherwise colour
+    meadows and fields when zoomed out. The
     dashboard rates each region against its 2018–2025 climatology; per pixel this would need eight seasons
     of daily maps, so the deficit uses a fixed colour scale (0 to 2500, adjustable) and the extreme days the
     dashboard classes (0, 1–5, 6–15, 16–30, more than 30 days). The browser reads one COG per day: a
