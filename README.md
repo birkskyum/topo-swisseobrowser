@@ -141,7 +141,8 @@ The swissEO Browser therefore always uses the physical reflectance.
 - **Verification status**: behind every layer name a symbol shows whether the layer has been checked in
   depth (✓ *Verified*) or not yet (⏳ *To be verified*); see [Layer verification](#layer-verification).
 - **Layers**: for S2-SR the true color, i.e. the **TCI** delivered with each mosaic (`tci_10m`, 8-bit RGB,
-  JPEG / YCbCr) and shown as delivered, and the composites computed from the bands (false color, urban, SWIR, agriculture,
+  JPEG / YCbCr) and shown as delivered (its internal mask decides what is data, so black pixels stay black),
+  and the composites computed from the bands (false color, urban, SWIR, agriculture,
   geology 12-8-2, Barren Soil, Highlight Optimized Natural Color); NDVI, NDWI, moisture index, NDSI, NBR,
   AOT, EVI, SAVI, Moisture Stress, NDDI, Forest Disturbance Classification; scene classification, cloud mask,
   terrain / solar incidence.
@@ -209,6 +210,13 @@ The swissEO Browser therefore always uses the physical reflectance.
     and scaling;
   - legend with adjustable colour scale (min / max); NDSI is rendered as in the Copernicus Browser (snow
     above an adjustable threshold in blue, true color elsewhere);
+  - for the TCI, **Remove dark scene edges** (on by default): some orbits have a dark strip along one swath
+    edge, which covers the other scene of the day in a mosaic. As in
+    [main_cloudfree_mosaic.py](https://github.com/swisstopo/topo-satromo-v2/blob/main/main_functions/main_cloudfree_mosaic.py)
+    (edge margin 200 px, brightness 40), pixels within 2 km of the scene's real footprint edge whose mean
+    RGB is below 40 count as no data, plus one 10 m pixel around them against the JPEG ringing of the hard
+    transition; the next scene fills them. The footprint comes from the TCI's internal mask at about 160 m;
+    the edge zone is computed once per scene;
   - masks: clouds and cloud shadows (OmniCloudMask), terrain shadow (terrain mask 200), a vegetation
     mask (Off / Forest / All vegetation, from swissEO VHI v100) and a **custom mask**: your own polygons
     (e.g. a forest map) loaded from a file or URL with the same import and limits as the area of interest;
@@ -284,6 +292,11 @@ The swissEO Browser therefore always uses the physical reflectance.
     For long series a video is much smaller than a GIF (a GIF takes roughly 0.4 byte per pixel and frame);
     the video is recorded in real time, so 500 frames at 8 fps take about a minute. VHI layers work too
     (via the WMS).
+- **Fast loading of the COGs**: JPEG tiles (the TCI) are decoded by the browser itself (about twice as
+  fast as geotiff.js, off the main thread), decoded tiles are kept in a cache (up to 120 tiles), the map
+  uses 512 px tiles like the COGs and keeps loading while panning, and a scene whose orbit misses a tile,
+  or that the more recent scene already covers, is not read. Measured for the TCI of 2026-10-12: all tiles
+  of a view in 1.0 to 1.5 s instead of 1.7 to 2.7 s.
 - **Loading indicator**: at the bottom left, the number of tiles still rendering and of requests in flight; after
   6 s of continuous loading it says that the connection is slow.
 - **Pixel inspector**: the LV95 position, band values (DN and physical value), index value, SCL, cloud
@@ -409,6 +422,7 @@ Parameter names follow the Copernicus Browser where an equivalent exists.
 | `threshold` | `0.5` | NDSI snow threshold (default 0.42; above it snow is shown in blue, otherwise true colour, as in the Copernicus Browser); NDVI Analyst change threshold (default −0.08) |
 | `refDate` | `2025-07-01` | Reference date of the two-date layers (default: the same day one year earlier) |
 | `displayMode` | `change` | NDVI Analyst display: `diff` (default) or `change` |
+| `darkEdges` | `keep` | TCI: keep the dark strips along the swath edges (default: removed) |
 | `ndwi` | `green` | NDWI of the NDDI layers: `swir` (default, Gu et al. 2007) or `green` (openEO notebook) |
 | `gain`, `gamma` | `1.2` | Effects for the composites (1 = default) |
 | `autoGain` | `true` | Adaptive gain for the composites |
@@ -455,7 +469,8 @@ Example:
   themes, layer descriptions, preview thumbnails). This project is not affiliated with or endorsed by the
   Copernicus Data Space Ecosystem.
 - Builds on: [swisstopo/topo-satromo-v2](https://github.com/swisstopo/topo-satromo-v2) (processing of the
-  swissEO products; NDVIdiff v200 BETA from the `dev-20261006` branch), [swisstopo/topo-drought-briefing](https://github.com/swisstopo/topo-drought-briefing)
+  swissEO products; NDVIdiff v200 BETA from the `dev-20261006` branch; the dark-edge rule of
+  `main_cloudfree_mosaic.py`), [swisstopo/topo-drought-briefing](https://github.com/swisstopo/topo-drought-briefing)
   (colour scheme), [RaffiBienz/ndvi_analyst](https://github.com/RaffiBienz/ndvi_analyst) (NDVI Analyst of
   the Canton of Aargau), [Open-EO/openeo-community-examples](https://github.com/Open-EO/openeo-community-examples)
   (NDDI drought notebook), [sentinel-hub/custom-scripts](https://github.com/sentinel-hub/custom-scripts)

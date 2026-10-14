@@ -534,6 +534,10 @@ table.kv td:first-child{color:var(--muted)}
               <code>data.geo.admin.ch/api/stac/v0.9</code>. Cloud cover is <code>CLOUDPERCENTAGE</code> from each mosaic's
               <code>metadata.json</code> (OmniCloudMask). When several orbits were acquired on the same day, all of them are
               mosaicked, most recent on top.</p>
+            <p><b>True color (TCI):</b> the JPEG tiles are decoded by the browser itself and kept in a cache, so each COG
+              tile is decoded once; the map uses 512 px tiles like the COGs. The TCI's internal mask decides what is data, so
+              black pixels stay black. Dark strips along a swath edge (mean RGB below 40 within 2 km of the scene edge) count as
+              no data, as in the swissEO cloud-free mosaics, so the other scene of the day fills them.</p>
             <p><b>Spectral layers:</b> the band COGs are read straight from <code>data.geo.admin.ch</code> over HTTP range requests
               (geotiff.js). Only the overview matching the zoom and the tiles in view are fetched.</p>
             <p><b>Masks:</b> <i>Clouds</i> hides cloud-mask codes 1 and 2, <i>Cloud shadows</i> code 3, and <i>Terrain shadow</i>
@@ -1061,10 +1065,62 @@ const toRho = dn => dn * REFL.scale + REFL.offset;
    4. COG access: pyramid discovery + windowed tile reads
    ============================================================ */
 const pyrCache = new Map();
+/* Native JPEG decoding for the TCI: the browser decodes a JPEG tile (the TIFF's JPEGTables put in front)
+   about twice as fast as geotiff.js and off the main thread. The result is already RGB, so these levels are
+   read with readRasters instead of readRGB. Other JPEG kinds, and any tile the browser cannot decode, go
+   through geotiff.js' own decoder, converted to RGB the same way. Reads wait until this is set up. */
+let NATIVE_JPEG = false;
+const jpegReady = (async () => {
+  try {
+    if (!window.createImageBitmap || !GeoTIFF.addDecoder || !GeoTIFF.getDecoder) return;
+    const JsJpeg = (await GeoTIFF.getDecoder({ Compression: 7 })).constructor;
+    class NativeJpeg {
+      constructor(fd) {
+        this.tables = fd.JPEGTables ? new Uint8Array(fd.JPEGTables) : null;
+        this.js = new JsJpeg(fd);
+        this.ycbcr = fd.PhotometricInterpretation === 6;
+      }
+      async jsRGB(fd, buffer) {                 // geotiff.js decoding, YCbCr converted to RGB
+        const out = await this.js.decode(fd, buffer);
+        return this.ycbcr ? GeoTIFF.rgb.fromYCbCr(new Uint8Array(out)).buffer : out;
+      }
+      async decode(fd, buffer) {
+        const w = fd.TileWidth, h = fd.TileLength;
+        if (!this.ycbcr || !w || !h) return this.jsRGB(fd, buffer);
+        try {
+          const tile = new Uint8Array(buffer);
+          const parts = this.tables ? [this.tables.subarray(0, this.tables.length - 2), tile.subarray(2)] : [tile];
+          const bmp = await createImageBitmap(new Blob(parts, { type: "image/jpeg" }), { colorSpaceConversion: "none", premultiplyAlpha: "none" });
+          const cv = window.OffscreenCanvas ? new OffscreenCanvas(w, h) : makeCanvas(w, h);
+          const ctx = cv.getContext("2d", { willReadFrequently: true });
+          ctx.drawImage(bmp, 0, 0);
+          bmp.close();
+          const d = ctx.getImageData(0, 0, w, h).data, rgb = new Uint8Array(w * h * 3);
+          for (let i = 0, j = 0; i < d.length; i += 4, j += 3) { rgb[j] = d[i]; rgb[j + 1] = d[i + 1]; rgb[j + 2] = d[i + 2]; }
+          return rgb.buffer;
+        } catch (e) { return this.jsRGB(fd, buffer); }
+      }
+    }
+    GeoTIFF.addDecoder(7, () => Promise.resolve(NativeJpeg));
+    NATIVE_JPEG = true;
+  } catch (e) { /* geotiff.js keeps its own decoder */ }
+})();
+
+/* Decoded tiles are cached (geotiff.js keeps them per image when image.tiles is an object), so neighbouring map
+   tiles and overzoom views decode each COG tile once. The cache is emptied when it holds more than 120 tiles
+   (about 100 MB at most). */
+const cachedImages = [];
+let cacheChecks = 0;
+function trimTileCache() {
+  if (++cacheChecks % 20) return;
+  let n = 0;
+  cachedImages.forEach(im => { n += Object.keys(im.tiles || {}).length; });
+  if (n > 120) cachedImages.forEach(im => { im.tiles = {}; });
+}
 function pyramid(url) {
   if (!pyrCache.has(url)) {
     pyrCache.set(url, (async () => {
-      const tiff = await GeoTIFF.fromUrl(url, { cache: true, blockSize: 131072 });
+      const tiff = await GeoTIFF.fromUrl(url, { cache: true, blockSize: 131072, cacheSize: 300 });
       const n = await tiff.getImageCount();
       const full = await tiff.getImage(0);
       const o = full.getOrigin(), r = full.getResolution();
@@ -1074,6 +1130,8 @@ function pyramid(url) {
       for (let i = 0; i < n; i++) {
         const im = i === 0 ? full : await tiff.getImage(i);
         const w = im.getWidth(), h = im.getHeight(), fd = im.fileDirectory;
+        im.tiles = {};
+        cachedImages.push(im);
         // GDAL internal masks (e.g. in the JPEG-compressed TCI) are separate IFDs: keep them per level
         // as validity masks instead of treating them as overviews.
         if (((fd.NewSubfileType || 0) & 4) || fd.PhotometricInterpretation === 4) { masks.push({ im, w, h }); continue; }
@@ -1098,6 +1156,7 @@ async function readGrid(url, bbox, W, H, signal, fill) {
 }
 /* Same as readGrid for the first `nb` samples of a multi-band COG (e.g. the 3-band TCI). */
 async function readGridBands(url, bbox, W, H, signal, fill, nb) {
+  await jpegReady;
   const p = await pyramid(url);
   const target = (bbox[2] - bbox[0]) / W, targetY = (bbox[3] - bbox[1]) / H;
 
@@ -1114,39 +1173,44 @@ async function readGridBands(url, bbox, W, H, signal, fill, nb) {
   if (x1 <= x0 || y1 <= y0) return null;                 // tile misses the mosaic entirely
 
   const samples = Array.from({ length: nb }, (_, i) => i), win = [x0, y0, x1, y1];
-  // YCbCr JPEG (TCI) needs the RGB conversion; the level's internal mask marks the valid pixels.
+  // YCbCr JPEG (TCI): the native decoder delivers RGB already, geotiff.js needs readRGB. The level's internal
+  // mask marks the valid pixels.
   const [raws, mk] = await Promise.all([
-    lv.ycbcr ? lv.im.readRGB({ window: win, interleave: false, signal }) : lv.im.readRasters({ window: win, samples, signal }),
+    lv.ycbcr && !NATIVE_JPEG ? lv.im.readRGB({ window: win, interleave: false, signal }) : lv.im.readRasters({ window: win, samples, signal }),
     lv.mask ? lv.mask.readRasters({ window: win, samples: [0], signal }).then(r => r[0]) : null]);
+  trimTileCache();
   if (mk) for (let k = 0; k < mk.length; k++) if (!mk[k]) for (const b of samples) raws[b][k] = 0;
   const sw = x1 - x0, sh = y1 - y0;
-
-  return samples.map(b => {
-    const raw = raws[b], out = new Float32Array(W * H);
-    if (fill) out.fill(fill);
-    for (let j = 0; j < H; j++) {
-      const gy = bbox[3] - (j + 0.5) * targetY;
-      const sr = Math.floor((p.oy - gy) / lv.ry) - y0;
-      if (sr < 0 || sr >= sh) continue;
-      for (let i = 0; i < W; i++) {
-        const gx = bbox[0] + (i + 0.5) * target;
-        const sc = Math.floor((gx - p.ox) / lv.rx) - x0;
-        if (sc < 0 || sc >= sw) continue;
-        out[j * W + i] = raw[sr * sw + sc];
-      }
+  const cols = new Int32Array(W), rows = new Int32Array(H);
+  for (let i = 0; i < W; i++) { const sc = Math.floor((bbox[0] + (i + 0.5) * target - p.ox) / lv.rx) - x0; cols[i] = sc >= 0 && sc < sw ? sc : -1; }
+  for (let j = 0; j < H; j++) { const sr = Math.floor((p.oy - (bbox[3] - (j + 0.5) * targetY)) / lv.ry) - y0; rows[j] = sr >= 0 && sr < sh ? sr * sw : -1; }
+  const outs = samples.map(() => { const o = new Float32Array(W * H); if (fill) o.fill(fill); return o; });
+  // with an internal mask the validity is returned too, so that a black pixel (0, 0, 0) is not taken for no data
+  const valid = mk ? new Uint8Array(W * H) : null;
+  for (let j = 0; j < H; j++) {
+    const rb = rows[j];
+    if (rb < 0) continue;
+    for (let i = 0; i < W; i++) {
+      const sc = cols[i];
+      if (sc < 0) continue;
+      const si = rb + sc, k = j * W + i;
+      for (let b = 0; b < nb; b++) outs[b][k] = raws[b][si];
+      if (valid) valid[k] = mk[si] ? 1 : 0;
     }
-    return out;
-  });
+  }
+  outs.valid = valid;
+  return outs;
 }
 const readTile = (url, bbox, S, signal, fill) => readGrid(url, bbox, S, S, signal, fill);
 
 async function readPoint(url, x, y, nb) {
+  await jpegReady;
   const p = await pyramid(url);
   const lv = p.levels[0];
   const c = Math.floor((x - p.ox) / lv.rx), r = Math.floor((p.oy - y) / lv.ry);
   if (c < 0 || r < 0 || c >= lv.w || r >= lv.h) return null;
   const win = [c, r, c + 1, r + 1];
-  const d = lv.ycbcr ? await lv.im.readRGB({ window: win, interleave: false })
+  const d = lv.ycbcr && !NATIVE_JPEG ? await lv.im.readRGB({ window: win, interleave: false })
                      : await lv.im.readRasters({ window: win, samples: Array.from({ length: nb || 1 }, (_, i) => i) });
   if (lv.mask && !(await lv.mask.readRasters({ window: win, samples: [0] }))[0][0]) return nb ? null : 0;
   return nb ? Array.from({ length: nb }, (_, i) => d[i][0]) : d[0][0];
@@ -1777,14 +1841,14 @@ const sRGB = c => c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.
 function defaults(rec) {
   return Object.assign({ gain: 1, gamma: 1, r: [0, 1], g: [0, 1], b: [0, 1], min: rec.min, max: rec.max, thr: rec.threshold,
            opacity: 100, cloud: false, shadow: false, terrain: false, veg: "off", autoGain: false, look: "standard",
-           refDate: "", mode: "diff", ndwi: "swir", cmask: "off" }, rec.def || {});
+           refDate: "", mode: "diff", ndwi: "swir", cmask: "off", edge: true }, rec.def || {});
 }
 const settings = {};
 const S = rec => settings[rec.id] || (settings[rec.id] = defaults(rec));
 
 const RNG_KEYS = [["r", "redRange"], ["g", "greenRange"], ["b", "blueRange"]];
 const SETTING_KEYS = ["gain", "gamma", "redRange", "greenRange", "blueRange", "valueRange", "threshold",
-                      "opacity", "cloudMask", "shadowMask", "terrainMask", "vegetationMask", "autoGain", "look", "refDate", "displayMode", "ndwi", "customMask"];
+                      "opacity", "cloudMask", "shadowMask", "terrainMask", "vegetationMask", "autoGain", "look", "refDate", "displayMode", "ndwi", "customMask", "darkEdges"];
 const r3 = v => +(+v).toFixed(4);
 
 /* Non-default settings as a flat object, named like the Copernicus Browser URL params. */
@@ -1800,6 +1864,7 @@ function settingsToObj(rec, s) {
   if (rec.type === "diff2" && s.refDate) o.refDate = s.refDate;
   if (rec.modal && s.mode !== d.mode) o.displayMode = s.mode;
   if (rec.ndwiOpt && s.ndwi !== d.ndwi) o.ndwi = s.ndwi;
+  if (rec.tci && s.edge === false) o.darkEdges = "keep";
   if (rec.type !== "wms" && (s.cmask === "in" || s.cmask === "out")) o.customMask = s.cmask;
   if (s.opacity !== 100) o.opacity = s.opacity;
   if (MASKABLE[rec.type]) {
@@ -1831,6 +1896,7 @@ function objToSettings(rec, o) {
   if (rec.type === "diff2" && DATE_RE.test(o.refDate || "")) s.refDate = o.refDate;
   if (rec.modal && (o.displayMode === "diff" || o.displayMode === "change")) s.mode = o.displayMode;
   if (rec.ndwiOpt && (o.ndwi === "swir" || o.ndwi === "green")) s.ndwi = o.ndwi;
+  if (rec.tci && o.darkEdges === "keep") s.edge = false;
   if (rec.type !== "wms" && (o.customMask === "in" || o.customMask === "out")) s.cmask = o.customMask;
   if (num(o.opacity) != null) s.opacity = clamp(Math.round(num(o.opacity)), 0, 100);
   if (o.cloudMask != null) s.cloud = bool(o.cloudMask);
@@ -2096,6 +2162,70 @@ function scenesLatLngBounds(ids) {
 }
 const timeOf = id => id.slice(11, 13) + ":" + id.slice(13, 15) + " UTC";
 
+/* Dark scene edges of the TCI: some orbits have a dark but not black strip along one swath edge. As in
+   topo-satromo-v2 main_cloudfree_mosaic.py (edge_margin_px 200, edge_brightness 40), pixels within 2 km of the
+   scene's real footprint edge whose mean RGB is below 40 count as no data, so the next scene of the day fills
+   them. The footprint is the TCI's internal mask at about 160 m; the edge zone (Chebyshev distance to no data
+   up to 2 km) is computed once per scene. */
+const EDGE_M = 2000, EDGE_DARK = 40;
+const edgeReq = new Map();
+function tciEdgeZone(id) {
+  if (!edgeReq.has(id)) {
+    edgeReq.set(id, (async () => {
+      await jpegReady;
+      const p = await pyramid(assetUrl(id, "tci"));
+      const lv = p.levels.filter(l => l.mask && l.rx <= 170).pop() || p.levels.find(l => l.mask);
+      if (!lv) return null;
+      const m = (await lv.mask.readRasters({ window: [0, 0, lv.w, lv.h], samples: [0] }))[0];
+      const W = lv.w, H = lv.h, d = new Float32Array(W * H), INF = 1e9;
+      for (let k = 0; k < W * H; k++) d[k] = m[k] ? INF : 0;
+      const at = (x, y) => x < 0 || y < 0 || x >= W || y >= H ? 0 : d[y * W + x];   // outside the image = no data
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const k = y * W + x;
+        if (d[k]) d[k] = Math.min(d[k], at(x - 1, y) + 1, at(x - 1, y - 1) + 1, at(x, y - 1) + 1, at(x + 1, y - 1) + 1);
+      }
+      for (let y = H - 1; y >= 0; y--) for (let x = W - 1; x >= 0; x--) {
+        const k = y * W + x;
+        if (d[k]) d[k] = Math.min(d[k], at(x + 1, y) + 1, at(x + 1, y + 1) + 1, at(x, y + 1) + 1, at(x - 1, y + 1) + 1);
+      }
+      const lim = EDGE_M / lv.rx, zone = new Uint8Array(W * H);
+      for (let k = 0; k < W * H; k++) zone[k] = d[k] <= lim ? 1 : 0;
+      return { zone, W, H, rx: lv.rx, ry: lv.ry, ox: p.ox, oy: p.oy };
+    })());
+    edgeReq.get(id).catch(() => edgeReq.delete(id));
+  }
+  return edgeReq.get(id);
+}
+
+/* The pixels of a tile that belong to the dark edge: in the edge zone and darker than EDGE_DARK, plus one 10 m
+   pixel around them, which removes the JPEG ringing at the hard transition from the scene to its dark strip. */
+function tciDarkEdges(a, val, ez, bbox, W, H) {
+  const n = W * H, rx = (bbox[2] - bbox[0]) / W, ry = (bbox[3] - bbox[1]) / H;
+  const zc = new Int32Array(W), zr = new Int32Array(H), zone = new Uint8Array(n), drop = new Uint8Array(n);
+  for (let i = 0; i < W; i++) zc[i] = Math.floor((bbox[0] + (i + 0.5) * rx - ez.ox) / ez.rx);
+  for (let j = 0; j < H; j++) zr[j] = Math.floor((ez.oy - (bbox[3] - (j + 0.5) * ry)) / ez.ry);
+  let any = false;
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+    const r = zr[j], c = zc[i], k = j * W + i;
+    if (r >= 0 && c >= 0 && r < ez.H && c < ez.W && !ez.zone[r * ez.W + c]) continue;
+    zone[k] = 1;
+    if ((!val || val[k]) && (a[0][k] + a[1][k] + a[2][k]) / 3 < EDGE_DARK) { drop[k] = 1; any = true; }
+  }
+  if (!any) return null;
+  const g = Math.max(1, Math.round(10 / rx)), h = new Uint8Array(n);       // one 10 m pixel, in tile pixels
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+    let v = 0;
+    for (let x = Math.max(0, i - g); x <= Math.min(W - 1, i + g) && !v; x++) v = drop[j * W + x];
+    h[j * W + i] = v;
+  }
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+    const k = j * W + i;
+    if (drop[k] || !zone[k]) continue;
+    for (let y = Math.max(0, j - g); y <= Math.min(H - 1, j + g); y++) if (h[y * W + i]) { drop[k] = 1; break; }
+  }
+  return drop;
+}
+
 /* ============================================================
    9. Rendering
    ============================================================ */
@@ -2124,10 +2254,14 @@ async function renderScene(rec, s, id, bbox, W, H, signal) {
   const put = (k, c) => { d[k*4] = c[0]; d[k*4+1] = c[1]; d[k*4+2] = c[2]; d[k*4+3] = 255; };
 
   if (rec.tci) {
-    // the delivered TCI; gain / gamma / RGB ranges on top (1 / 1 / [0, 1] = unchanged)
-    const ig = 1 / s.gamma, rg = [s.r, s.g, s.b];
+    // the delivered TCI; gain / gamma / RGB ranges on top (1 / 1 / [0, 1] = unchanged). The internal mask decides
+    // what is data, so black (0, 0, 0) stays black; dark pixels in the scene's edge zone count as no data.
+    const ig = 1 / s.gamma, rg = [s.r, s.g, s.b], val = a.valid;
+    const ez = s.edge !== false ? await tciEdgeZone(id).catch(() => null) : null;
+    const drop = ez ? tciDarkEdges(a, val, ez, bbox, W, H) : null;
     for (let k = 0; k < n; k++) {
-      if ((a[0][k] === 0 && a[1][k] === 0 && a[2][k] === 0) || masked(k)) continue;
+      if ((val ? !val[k] : a[0][k] === 0 && a[1][k] === 0 && a[2][k] === 0) || masked(k)) continue;
+      if (drop && drop[k]) continue;
       for (let c = 0; c < 3; c++) {
         let v = clamp(a[c][k] / 255 * s.gain, 0, 1);
         if (ig !== 1) v = Math.pow(v, ig);
@@ -2350,22 +2484,30 @@ async function renderDiff2(cfg, bbox, W, H, signal) {
 async function renderTile(cfg, bbox, W, H, signal) {
   if (cfg.rec.type === "diff2") return renderDiff2(cfg, bbox, W, H, signal);
   const s = cfg.gf && cfg.gf !== 1 ? Object.assign({}, cfg.s, { gain: cfg.s.gain * cfg.gf }) : cfg.s;
-  const imgs = await Promise.all(cfg.scenes.map(id => renderScene(cfg.rec, s, id, bbox, W, H, signal)));
+  // scenes one after the other, most recent first: a scene whose orbit misses the tile (known footprint) is
+  // skipped, and once every pixel is filled the remaining scenes are not read at all
   let out = null;
-  for (const im of imgs) {
+  for (const id of cfg.scenes) {
+    if (coversNow(id, bbox) === false) continue;
+    const im = await renderScene(cfg.rec, s, id, bbox, W, H, signal);
     if (!im) continue;
-    if (!out) { out = im; continue; }
-    const o = out.data, d = im.data;
-    for (let i = 3; i < o.length; i += 4) {
-      if (o[i] === 0 && d[i]) { o[i-3] = d[i-3]; o[i-2] = d[i-2]; o[i-1] = d[i-1]; o[i] = d[i]; }
+    if (!out) out = im;
+    else {
+      const o = out.data, d = im.data;
+      for (let i = 3; i < o.length; i += 4) {
+        if (o[i] === 0 && d[i]) { o[i-3] = d[i-3]; o[i-2] = d[i-2]; o[i-1] = d[i-1]; o[i] = d[i]; }
+      }
     }
+    let full = true;
+    for (let i = 3; i < out.data.length; i += 4) if (!out.data[i]) { full = false; break; }
+    if (full) break;
   }
   return out;
 }
 
 const CogLayer = L.GridLayer.extend({
   createTile(coords, done) {
-    const N = 256;
+    const N = this.getTileSize().x;                    // 512 px, the tile size of the COGs
     const tile = L.DomUtil.create("canvas");
     tile.width = tile.height = N;
     const res = RES[coords.z];
@@ -2402,7 +2544,7 @@ function makeLayer(cfg, pane) {
     lyr = ls.length === 1 ? ls[0] : L.layerGroup(ls);
   } else {
     lyr = new CogLayer({
-      cfg, tileSize: 256, opacity: op, updateWhenIdle: true, keepBuffer: 1, attribution: ATTR,
+      cfg, tileSize: 512, opacity: op, updateWhenIdle: false, keepBuffer: 2, attribution: ATTR,
       bounds: scenesLatLngBounds(cfg.scenes), pane: pane || "tilePane"
     });
     lyr.on("tileunload", e => { if (e.tile && e.tile._abort) e.tile._abort.abort(); });
@@ -3035,6 +3177,7 @@ function layerBody(rec) {
     tog("cloud", "Clouds", "OmniCloudMask thick (1) and thin (2) cloud");
     tog("shadow", "Cloud shadows", "OmniCloudMask cloud shadow (3)");
     tog("terrain", "Terrain shadow", "Terrain mask value 200: cast or self-shadow");
+    if (rec.tci) tog("edge", "Remove dark scene edges", "Dark strip along a swath edge: mean RGB below 40 within 2 km of the scene edge counts as no data");
   }
   if (rec.source === "s2") {
     const l = el("div", "tog");
