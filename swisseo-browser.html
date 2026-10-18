@@ -3607,9 +3607,9 @@ function renderLayerList() {
 }
 
 /* BETA behind the name of a layer that is not yet verified (see parseVerified); verified layers carry no label.
-   A name that already says BETA (swissEO NDVIdiff v200 BETA) gets no second one. */
+   Also behind swissEO NDVIdiff v200 BETA: its name says the data is beta, the label that the layer is not verified. */
 function verBadge(rec) {
-  if (VERIFIED.has(rec.id) || rec.ext || /\bBETA\b/.test(rec.name)) return "";
+  if (VERIFIED.has(rec.id) || rec.ext) return "";
   return '<span class="ver" title="' + VER_TXT + '">BETA</span>';
 }
 
