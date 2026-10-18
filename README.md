@@ -428,8 +428,8 @@ the copy next to the page when it is served from the repository, otherwise (e.g.
 - [x] `scl`: Scene classification map *(Default)*
 - [x] `cloud`: Cloud mask *(Default)*
 - [x] `terrain`: Terrain / solar incidence *(Default)*
-- [ ] `vhi`: swissEO VHI forest *(Default, Drought, Forest)*
-- [ ] `vhiveg`: swissEO VHI vegetation *(Default, Drought)*
+- [x] `vhi`: swissEO VHI forest *(Default, Drought, Forest)*
+- [x] `vhiveg`: swissEO VHI vegetation *(Default, Drought)*
 - [ ] `vhidef`: VHI cumulative deficit *(Forest)*
 - [ ] `vhiext`: VHI days in extreme stress *(Forest)*
 - [ ] `evi`: EVI *(Agriculture)*
@@ -437,9 +437,9 @@ the copy next to the page when it is served from the repository, otherwise (e.g.
 - [ ] `barren`: Barren Soil *(Agriculture)*
 - [ ] `mstress`: Moisture Stress *(Agriculture, Drought 2026)*
 - [ ] `hon`: Highlight Optimized Natural Color *(Drought 2026)*
-- [ ] `ndvidiff`: swissEO NDVIdiff *(Default, Drought, Forest)*
+- [x] `ndvidiff`: swissEO NDVIdiff *(Default, Drought, Forest)*
 - [ ] `ndvidiff2`: swissEO NDVIdiff v200 BETA *(Drought, Forest)*
-- [ ] `ndviz`: swissEO NDVIz *(Drought, Forest)*
+- [x] `ndviz`: swissEO NDVIz *(Drought, Forest)*
 - [ ] `nddi`: NDDI *(Drought)*
 - [ ] `nddichg`: NDDI change vs. previous year *(Drought)*
 - [ ] `analyst`: NDVI Analyst *(Drought, Forest)*
