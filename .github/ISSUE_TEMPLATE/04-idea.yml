@@ -1,0 +1,26 @@
+name: Suggest an improvement
+description: "An idea for a new layer, configuration, tool or a better workflow."
+title: "[IDEA] "
+labels: ["enhancement"]
+body:
+  - type: input
+    id: permalink
+    attributes:
+      label: Link to the view (permalink)
+      description: Filled in by the viewer. Otherwise press *Copy link* at the top left of the map and paste it here.
+      placeholder: "https://swisstopo.github.io/topo-swisseobrowser/?…"
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What should the viewer do, and what would you use it for?
+      placeholder: "Example: an NDVI time series for a whole canton, to compare the 2026 drought with 2018."
+    validations:
+      required: true
+  - type: textarea
+    id: reference
+    attributes:
+      label: Reference (optional)
+      description: A paper, script, product or another viewer that does it already.

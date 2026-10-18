@@ -1,0 +1,51 @@
+name: Report a general problem
+description: "Something does not work: loading, map, search, WMS / WMTS, area of interest, permalink, layout."
+title: "[PROBLEM] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Thank you for reporting this.** The link to your view and your browser are filled in by the viewer.
+  - type: input
+    id: permalink
+    attributes:
+      label: Link to the view (permalink)
+      description: Filled in by the viewer. Otherwise press *Copy link* at the top left of the map and paste it here.
+      placeholder: "https://swisstopo.github.io/topo-swisseobrowser/?…"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part?
+      options:
+        - Map, basemaps, zoom or layout
+        - Loading (slow, tiles missing, error message)
+        - Date selection or calendar
+        - Place search
+        - WMS / WMTS panel
+        - Compare
+        - Area of interest, statistics or import
+        - Image download or timelapse
+        - Link (permalink) does not reproduce the view
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: What happened, and what did you expect?
+      placeholder: "Example: after choosing a place in the search the map stays on the whole of Switzerland."
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and screen
+      description: Filled in by the viewer.
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot (optional)
+      description: Drag and drop an image here.

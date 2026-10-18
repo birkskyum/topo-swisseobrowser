@@ -32,8 +32,10 @@ the swisstopo WMS/WMTS services directly in the browser.
 | [swissEO NDVIz v100](https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-ndviz) | `forest-10m` COGs of the STAC collection `ch.swisstopo.swisseo_ndvi_z_v100` | NDVI anomaly as z-score, forest perimeter, 10 m; end of July, August and September (since 2017) |
 | swissEO NDVIdiff v200 **BETA** | 30 example COGs on `cms.geo.admin.ch/Topo/umweltbeobachtung/beispiele/NDVIDIFFV2/` (not in STAC; the item list is in the page) | Year-on-year NDVI change of two-month first-quartile cloud-free mosaics of S2-SR v200 (June/July, July/August, August/September, 2017–2026), forest, 10 m |
 | Vegetation masks | The `forest-10m` / `vegetation-10m` COGs of swissEO VHI v100 (STAC collection `ch.swisstopo.swisseo_vhi_v100`, most recent item): inside the mask = value ≠ 255 | Forest / all-vegetation mask for every S2-SR layer, statistics and exports |
-| Basemaps | `wmts.geo.admin.ch` (pixelkarte-farbe, swissimage, pixelkarte-grau) | Background maps on the native LV95 grid |
-| Label overlay | `wmts.asit-asso.ch` (`asitvd.fond_pourortho`) | Roads and place names above the data |
+| Basemaps | `wmts.geo.admin.ch` (pixelkarte-farbe, swissimage, pixelkarte-grau) | Background maps *Map*, *SWISSIMAGE* and *Map Grey* on the native LV95 grid |
+| Label overlay | `wmts.asit-asso.ch` (`asitvd.fond_pourortho`, OpenStreetMap and Canton of Vaud data) | *Labels OSM*: roads and place names above the data |
+| Place search | `api3.geo.admin.ch/rest/services/ech/SearchServer` with `type=locations`, as `searchLocation` in [web-mapviewer `search.api.js`](https://github.com/geoadmin/web-mapviewer/blob/3e5a2900/packages/mapviewer/src/api/search.api.js) | Municipalities, districts, cantons, place names and addresses |
+| WMS / WMTS | `wms.geo.admin.ch` (preset) and the external providers of map.geo.admin.ch ([`external-providers.json`](https://github.com/geoadmin/web-mapviewer/blob/3e5a2900/packages/mapviewer/src/modules/menu/components/advancedTools/ImportCatalogue/external-providers.json), read when the panel is opened), or any WMS / WMTS URL | Layers of other map services on the map and in the compare list |
 
 The map runs in **EPSG:2056 (CH1903+ / LV95)**, the native CRS of the tile grid and the COGs, so nothing
 is reprojected.
@@ -96,6 +98,24 @@ The swissEO Browser therefore always uses the physical reflectance.
 
 ## Features
 
+- **Layout as in the Copernicus Browser**: the menu on the left has the Confederation logo of map.geo.admin.ch
+  ([ConfederationFullLogo.vue](https://github.com/geoadmin/web-mapviewer/blob/3e5a2900/packages/mapviewer/src/modules/menu/components/header/ConfederationFullLogo.vue)),
+  the language (*EN* only for now), the collapse chevron and the title *swissEO Browser*; there is no header bar above the
+  map. The chevron collapses the menu and a round button at the top left of the map opens it again; on small screens
+  (up to 760 px) the menu starts collapsed and covers the map when opened. On the map:
+  - top left: the date and the number of acquisitions on the map, *Copy link* and the pixel inspector toggle;
+  - top right: the place search, the basemap switcher (the layer button) and below it the area of interest, image
+    download, compare and timelapse buttons;
+  - bottom right: the zoom buttons and, on one line, the mouse position (LV95 easting and northing, `E 2'661'150 N 1'187'175`)
+    and the scale bar; bottom left: the attribution and the loading indicator.
+- **Basemap switcher** as in the Copernicus Browser: the layer button at the top right opens (on hover) *Basemaps* (*Map* =
+  pixelkarte-farbe, *SWISSIMAGE*, *Map Grey* = pixelkarte-grau, *None*) and *Map overlays* (*Labels OSM*, the ASIT VD
+  roads and place names, always drawn above the data).
+- **Place search** ("Go to Place", left of the basemap switcher, the width of the Copernicus Browser search field): the
+  location search of map.geo.admin.ch, from two characters, results as you type (arrow keys and Enter work). A result
+  zooms to its extent (municipality, district, canton) or to its point at the zoom of the result (1:25,000 when it has
+  none, as on map.geo.admin.ch) and drops a pin; × clears the search and the pin. On small screens the field collapses
+  to its magnifier icon.
 - **Date selection as in Copernicus Browser**: a link without a date opens on the latest date with data;
   ‹ › jump to the previous / next date with data, the arrow button jumps to the latest one. The calendar,
   ‹ › and the grey "no data" date only consider acquisitions that **reach the map view**: the swath edge
@@ -117,7 +137,7 @@ The swissEO Browser therefore always uses the physical reflectance.
     **swissEO NDVIdiff v200 BETA**, swissEO NDVIz, NDDI, NDDI change vs. the previous year and the NDVI Analyst;
   - *Drought 2026*: like the Copernicus Browser *Drought and Floods* theme, with true color, moisture index,
     NDWI, Moisture Stress, NDVI, SWIR, urban and Highlight Optimized Natural Color, plus **highlights**;
-  - *Forest*: true color (TCI), swissEO VHI forest, **VHI cumulative deficit**, **VHI days in extreme
+  - *Forest*: true color (TCI), NDVI, swissEO VHI forest, **VHI cumulative deficit**, **VHI days in extreme
     stress**, swissEO NDVIdiff, swissEO NDVIdiff v200 BETA, swissEO NDVIz, NDVI Analyst, Normalized Burn
     Ratio, moisture index and the **Forest Disturbance Classification**.
 - **Highlights** (*Drought 2026*): story cards as in the Copernicus Browser (live thumbnail, title,
@@ -139,8 +159,9 @@ The swissEO Browser therefore always uses the physical reflectance.
   | All of Switzerland | 2025-08-08 ↔ 2026-07-24 | watson.ch |
 
   The Tages-Anzeiger article on the same topic could not be read (paywall, archive not reachable).
-- **Verification status**: behind every layer name a symbol shows whether the layer has been checked in
-  depth (✓ *Verified*) or not yet (⏳ *To be verified*); see [Layer verification](#layer-verification).
+- **Verification status**: every layer that has not yet been checked in depth carries the label **BETA** behind its name
+  (in the layer list and the compare list), and its pull-down says that it still needs to be verified and that its values may
+  be wrong; verified layers carry no label. See [Layer verification](#layer-verification).
 - **Layers**: for S2-SR the true color, i.e. the **TCI** delivered with each mosaic (`tci_10m`, 8-bit RGB,
   JPEG / YCbCr) and shown as delivered (its internal mask decides what is data, so black pixels stay black),
   and the composites computed from the bands (false color, urban, SWIR, agriculture,
@@ -235,8 +256,8 @@ The swissEO Browser therefore always uses the physical reflectance.
     and scaling;
   - legend with adjustable colour scale (min / max); NDSI is rendered as in the Copernicus Browser (snow
     above an adjustable threshold in blue, true color elsewhere);
-  - for the TCI, **Remove dark scene edges** (on by default): some orbits have a dark strip along one swath
-    edge, which covers the other scene of the day in a mosaic. As in
+  - for the TCI, **dark scene edges are removed** whenever the day has more than one scene (orbit), without an option:
+    some orbits have a dark strip along one swath edge, which covers the other scene of the day in a mosaic. As in
     [main_cloudfree_mosaic.py](https://github.com/swisstopo/topo-satromo-v2/blob/main/main_functions/main_cloudfree_mosaic.py)
     (edge margin 200 px, brightness 40), pixels within 2 km of the scene's real footprint edge whose mean
     RGB is below 40 count as no data, plus one 10 m pixel around them against the JPEG ringing of the hard
@@ -263,7 +284,29 @@ The swissEO Browser therefore always uses the physical reflectance.
   them with a split or opacity effect, going back to Layers shows the single layer again. Reorder,
   remove and zoom to each entry (each titled with its layer name, prefixed by the data source only for
   the S2-SR layers). With the split effect a handle on the map swipes the top layer, with the
-  date of each side next to it.
+  date of each side next to it. **Each entry shows the date of the data it actually shows**, not the date it was added
+  with: the nearest product for swissEO NDVIdiff, NDVIz and NDVIdiff v200 BETA (e.g. *2026-07-31* for a layer added on
+  2026-08-13), the VHI day (the nearest one if the chosen day has none; also the end of the VHI season sums) or the
+  S2-SR date (*no data* when there is none). The same date is used next to the swipe handle and in the image downloads.
+- **WMS / WMTS** (button next to Compare in the configuration card, as the Copernicus Browser *WMS / WMTS* collection):
+  - the swisstopo WMS (`https://wms.geo.admin.ch/?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities`, English titles) is
+    preset and loaded when the panel opens; the pull-down above it lists the external providers of map.geo.admin.ch
+    (`external-providers.json` of web-mapviewer, pinned to commit `3e5a2900`, fetched only when the panel is opened) and is
+    searched by typing; **+** adds any other WMS or WMTS URL (a service URL or its GetCapabilities; without a
+    type, `wmts` in the URL decides which protocol is tried first, then the other). The services you add are listed as
+    buttons (with a delete button) and remembered in this browser;
+  - the layers of the active service: search (*n of m layers*), pages of 10, 25, 50 or 100, a thumbnail (GetMap of the
+    layer's extent within Switzerland, or one WMTS tile), title, abstract, attribution and *Metadata* links. A click shows
+    the layer on the map instead of the swissEO layer (leaving the panel shows the swissEO layer again); the active layer
+    has *Add to Compare* and a chevron that shows its legend, full description and opacity. Clicking the active layer
+    again switches it off (the swissEO layer is shown again). The panel opens without an active layer (unless a link
+    names one), and leaving it switches the external layer off;
+  - drawing: from LV95 (EPSG:2056) when the service offers it, otherwise from LV03, Web Mercator, UTM 32N (EPSG:25832) or
+    WGS84, placed on the LV95 tiles with an affine transform per 512 px tile (LV03 by the 2,000,000 / 1,000,000 m offset);
+    WMS with one GetMap per tile, WMTS with the tiles of the tile matrix nearest to the resolution. Services that send no
+    CORS headers are shown on the map, but cannot be drawn into the image downloads and are left out there;
+  - permalink: `panel=wms` with `wmsUrl`, `wmsLayer` and `wmsOpacity`; external layers in the compare list keep their
+    service URL, type and layer name in `compareLayers`.
 - **Area of interest**: draw a rectangle (axis-aligned in LV95) or polygon, or import KML/KMZ, GPX, WKT,
   GeoJSON, a zipped Shapefile, an MGRS / GEOREF cell or a bounding box (WGS84, LV95 and LV03 coordinates
   are detected). Files can be uploaded or **loaded from a URL** (KML, KMZ, GPX, GeoJSON / JSON including API or
@@ -322,24 +365,34 @@ The swissEO Browser therefore always uses the physical reflectance.
   uses 512 px tiles like the COGs and keeps loading while panning, and a scene whose orbit misses a tile,
   or that the more recent scene already covers, is not read. Measured for the TCI of 2026-10-12: all tiles
   of a view in 1.0 to 1.5 s instead of 1.7 to 2.7 s.
-- **Loading indicator**: at the bottom left, the number of tiles still rendering and of requests in flight; after
-  6 s of continuous loading it says that the connection is slow.
+- **Loading indicator**: at the bottom left, above the attribution, the number of tiles still rendering and of
+  requests in flight; after 6 s of continuous loading it says that the connection is slow.
 - **Pixel inspector**: the LV95 position, band values (DN and physical value), index value, SCL, cloud
   mask, terrain mask and forest / vegetation mask at a clicked location; for the two-date layers the index
   on both sides and the difference; for the Forest Disturbance Classification the class; for VHI,
   NDVIdiff, NDVIdiff v200 BETA and NDVIz the product value; for the VHI season layers the cumulative
   deficit, the days with VHI below 10 and the days with a VHI value.
 - **Coordinates**: positions are LV95 (EPSG:2056) everywhere: the map centre in the permalink
-  (`center=2703331.08,1133878.99`, as on map.geo.admin.ch), the compare entries, the pixel inspector, the
-  area of interest in the link and the defaults of the import dialog. Links with the former `lat` / `lng`
+  (`center=2703331.08,1133878.99`, as on map.geo.admin.ch), the mouse position at the bottom right, the compare entries,
+  the pixel inspector, the area of interest in the link and the defaults of the import dialog. Links with the former `lat` / `lng`
   parameters open on the whole of Switzerland.
 - **Permalink**: the URL is updated on every change (configuration, view, date, cloud filter, layer and
   whether it is shown, open layer menu,
-  legend range, masks incl. the custom mask mode, look and effects, reference date, compare list, AOI);
-  *Copy link* in the header copies it. Areas and custom masks loaded from a URL are shared as that URL;
+  legend range, masks incl. the custom mask mode, look and effects, reference date, compare list including WMS / WMTS
+  layers, the open WMS / WMTS service and layer, basemap and label overlay, AOI); *Copy link* at the top left of the map
+  copies it. Areas and custom masks loaded from a URL are shared as that URL;
   areas imported from a file only when they are small, masks from a file never.
-- **Info tab**: the *not for operational use* notice, the acquisitions of the selected date with their
-  metadata, the scaling / no-data table, a description of the services used and links to all
+- **Feedback and issues** (Info tab, end of the *not for operational use* notice), as in
+  [topo-drought-briefing](https://github.com/swisstopo/topo-drought-briefing): every message carries the **permalink of the
+  current view** and a one-line summary of what is on the map (layer, id, date of its data, BETA; the compare list or the
+  WMS / WMTS layer), so a sentence or two is enough. A local copy links to the same view on the public website.
+  - *Feedback*: an e-mail to david.oesch@swisstopo.ch and joan.sturm@swisstopo.ch, in the mail app, Gmail or Outlook Web;
+  - *Report an issue / improvement*: a GitHub issue form of this repository
+    ([`.github/ISSUE_TEMPLATE`](.github/ISSUE_TEMPLATE)) with the permalink, the layer and the browser already filled in:
+    *Fix or change a layer*, *Change a text or translation*, *Report a general problem*, *Suggest an improvement*. Every
+    form has a required permalink field; blank issues are switched off. Issues need a GitHub account.
+- **Info tab**: the *not for operational use* notice (with the meaning of the BETA label, Feedback and issue links), the
+  acquisitions of the selected date with their metadata, the scaling / no-data table, a description of the services used and links to all
   repositories and libraries the website builds on.
 - Colours follow the Swiss Confederation scheme used by
   [swisstopo/topo-drought-briefing](https://github.com/swisstopo/topo-drought-briefing).
@@ -349,13 +402,15 @@ The swissEO Browser therefore always uses the physical reflectance.
 The layers are being checked one by one, in depth: data access (assets, dates, nearest product), scaling and
 no-data, the formula and its source, masks, rendering and legend, statistics and exports, compared with
 reference implementations where possible (GDAL / rasterio reads of the COGs, the original scripts). Until a
-layer has passed this check it is shown with ⏳ *To be verified*; afterwards with ✓ *Verified*.
+layer has passed this check it carries the label **BETA** behind its name, and its description and the Info tab say
+that it still needs to be verified; a verified layer carries no label.
 
-**This checklist is the source of the symbols.** Tick a box (`[x]`) when a layer is verified and push: the
+**This checklist is the source of the BETA labels.** Tick a box (`[x]`) to remove the label of a layer when it is verified and push: the
 Pages workflow reads the list between the two markers below on every deploy (also when only this README
 changed) and writes the checked layer ids into the published page. The workflow warns when a layer of the
-page is missing here or an id here is unknown. A local copy of `swisseo-browser.html` served from the
-repository reads this README itself.
+page is missing here or an id here is unknown. A local copy of `swisseo-browser.html` reads this README itself:
+the copy next to the page when it is served from the repository, otherwise (e.g. opened as a file) the README of
+`main` on GitHub.
 
 <!-- verification:start -->
 - [x] `true`: True color *(Default, Agriculture, Drought, Drought 2026, Forest)*
@@ -364,7 +419,7 @@ repository reads this README itself.
 - [x] `swir`: SWIR *(Default, Drought 2026)*
 - [ ] `agri`: Agriculture *(Default, Agriculture)*
 - [ ] `geo`: Geology 12, 8, 2 *(Default)*
-- [x] `ndvi`: NDVI *(Default, Agriculture, Drought, Drought 2026)*
+- [x] `ndvi`: NDVI *(Default, Agriculture, Drought, Drought 2026, Forest)*
 - [ ] `ndwi`: NDWI *(Default, Drought 2026)*
 - [ ] `ndmi`: Moisture index *(Default, Agriculture, Drought, Drought 2026, Forest)*
 - [ ] `ndsi`: NDSI *(Default)*
@@ -450,7 +505,6 @@ Parameter names follow the Copernicus Browser where an equivalent exists.
 | `threshold` | `0.5` | NDSI snow threshold (default 0.42; above it snow is shown in blue, otherwise true colour, as in the Copernicus Browser); NDVI Analyst change threshold (default −0.08) |
 | `refDate` | `2025-07-01` | Reference date of the two-date layers (default: the same day one year earlier) |
 | `displayMode` | `change` | NDVI Analyst display: `diff` (default) or `change` |
-| `darkEdges` | `keep` | TCI: keep the dark strips along the swath edges (default: removed) |
 | `ndwi` | `green` | NDWI of the NDDI layers: `swir` (default, Gu et al. 2007) or `green` (openEO notebook) |
 | `gain`, `gamma` | `1.2` | Effects for the composites (1 = default) |
 | `autoGain` | `true` | Adaptive gain for the composites |
@@ -459,8 +513,10 @@ Parameter names follow the Copernicus Browser where an equivalent exists.
 | `opacity` | `70` | Layer opacity in % |
 | `cloudMask`, `shadowMask`, `terrainMask` | `true` | Masks (written when they differ from the layer's default; the two-date layers mask clouds and shadows by default) |
 | `vegetationMask` | `forest` | Vegetation mask: `off`, `forest` or `vegetation` (S2-SR layers; from swissEO VHI v100; the NDVI Analyst defaults to `forest`) |
-| `basemap`, `labels` | `swissimage`, `true` | Basemap (`pixelkarte`, `swissimage`, `grey`, `none`) and label overlay |
-| `compareLayers`, `comparedOpacity`, `comparedClipping`, `compareMode` | | Compare list (base64url JSON, each entry with its LV95 view), per-layer opacity and split range; `compareMode` is `split` / `opacity` when comparing and `off` otherwise (links without it open in compare mode) |
+| `basemap`, `labels` | `swissimage`, `true` | Basemap (`pixelkarte` = *Map*, `swissimage`, `grey` = *Map Grey*, `none`) and the *Labels OSM* overlay |
+| `compareLayers`, `comparedOpacity`, `comparedClipping`, `compareMode` | | Compare list (base64url JSON, each entry with its LV95 view; WMS / WMTS entries as `{"l":"ext","x":{"u":service URL,"k":"WMS"/"WMTS","n":layer name,"t":title}}`), per-layer opacity and split range; `compareMode` is `split` / `opacity` when comparing and `off` otherwise (links without it open in compare mode) |
+| `panel` | `wms` | The WMS / WMTS panel is open |
+| `wmsUrl`, `wmsLayer`, `wmsOpacity` | `https://wms.geo.admin.ch/?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities`, `ch.bafu.bundesinventare-bln`, `70` | Service of the WMS / WMTS panel (default: the swisstopo WMS), the layer shown from it and its opacity in % |
 | `aoi` | | Area of interest as base64url GeoJSON geometry in LV95, 0.1 m (only areas up to about 270 vertices) |
 | `aoiUrl` | `https://…/area.geojson` | Area of interest loaded from this URL (written instead of `aoi` when the area came from a URL and was not edited) |
 | `maskUrl` | `https://…/forest.geojson` | Custom mask loaded from this URL |
@@ -489,20 +545,28 @@ Example:
   areas, long date ranges and large prints take a while. Imports and custom masks have size limits (see
   *Limits of the browser*); areas and masks from files are not shared through links.
 - swissEO NDVIdiff v200 BETA is beta data from example files outside STAC; its list of windows is fixed in the page.
+- WMS / WMTS: only services that allow cross-origin requests (CORS) can be read, and only over HTTPS; layers that the
+  service offers in none of LV95, LV03, Web Mercator, UTM 32N and WGS84 cannot be shown. Layers not in LV95 are placed on
+  the LV95 grid per tile (accurate to about a pixel), not reprojected per pixel. Image tiles without CORS headers are
+  left out of the image downloads; the timelapse, statistics and pixel inspector only work with the swissEO layers.
+  Only the default style and the default time of a layer are used.
+- The language is English only (the *EN* pull-down has no other language yet).
 
 ## Credits and terms
 
 - Data © [swisstopo](https://www.swisstopo.admin.ch),
   [open government data](https://www.swisstopo.admin.ch/ogd-conditions). swissEO S2-SR and swissEO VHI
-  contain modified Copernicus Sentinel data. Label overlay © [ASIT VD](https://www.asit-asso.ch).
+  contain modified Copernicus Sentinel data. Label overlay © [ASIT VD](https://www.asit-asso.ch),
+  © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors. Layers of other WMS / WMTS services © their providers.
 - User-interface workflow modelled on the [Copernicus Browser](https://browser.dataspace.copernicus.eu/)
   by the Copernicus Data Space Ecosystem ([eu-cdse/copernicus-browser](https://github.com/eu-cdse/copernicus-browser):
-  themes, layer descriptions, preview thumbnails). This project is not affiliated with or endorsed by the
+  themes, layer descriptions, preview thumbnails, layout, basemap switcher, WMS / WMTS panel and icons). This project is not affiliated with or endorsed by the
   Copernicus Data Space Ecosystem.
 - Builds on: [swisstopo/topo-satromo-v2](https://github.com/swisstopo/topo-satromo-v2) (processing of the
   swissEO products; NDVIdiff v200 BETA from the `dev-20261006` branch; the dark-edge rule of
   `main_cloudfree_mosaic.py`), [swisstopo/topo-drought-briefing](https://github.com/swisstopo/topo-drought-briefing)
-  (colour scheme), [RaffiBienz/ndvi_analyst](https://github.com/RaffiBienz/ndvi_analyst) (NDVI Analyst of
+  (colour scheme), [geoadmin/web-mapviewer](https://github.com/geoadmin/web-mapviewer) (map.geo.admin.ch: location
+  search, Confederation logo and Swiss flag, list of external WMS / WMTS providers), [RaffiBienz/ndvi_analyst](https://github.com/RaffiBienz/ndvi_analyst) (NDVI Analyst of
   the Canton of Aargau), [Open-EO/openeo-community-examples](https://github.com/Open-EO/openeo-community-examples)
   (NDDI drought notebook), the [Waldtrockenheit dashboard](https://waldtrockenheit-dashboard.vercel.app/vhi.html)
   (cumulative VHI deficit and days in extreme stress), [sentinel-hub/custom-scripts](https://github.com/sentinel-hub/custom-scripts)

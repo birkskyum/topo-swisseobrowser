@@ -12,13 +12,15 @@
 ## Repository
 
 - The app is the single file `swisseo-browser.html` (no build, no backend). It belongs together with
-  `README.md`, `CLAUDE.md`, `.github/workflows/pages.yml` and the thumbnails it references in
-  `public/previews/`. Everything else is the upstream Copernicus Browser, kept only as a reference:
+  `README.md`, `CLAUDE.md`, `.github/workflows/pages.yml`, the issue forms in `.github/ISSUE_TEMPLATE/` and the
+  thumbnails it references in `public/previews/`. Everything else is the upstream Copernicus Browser, kept only as a reference:
   do not modify it.
 - **Git: push only to the remote `origin`** (github.com/swisstopo/topo-swisseobrowser); local `main`
   tracks `origin/main`. Never commit for or push to `upstream` (eu-cdse/copernicus-browser); its push URL
   is disabled on purpose. `davidoesch` (github.com/davidoesch/swisseobrowser) is the former repository.
-- The upstream `.gitignore` ignores `.github`, so workflow changes need `git add -f`.
+- The upstream `.gitignore` ignores `.github`, so workflow and issue-form changes need `git add -f`.
+- Issue forms: every form keeps the required `permalink` field; the Info tab fills it (and `layer`, `browser`) through the
+  query of `issues/new?template=…`, so field ids must stay in sync with `feedbackLinks()` in the page.
 - A push to `main` that changes the page or the README deploys GitHub Pages
   (https://swisstopo.github.io/topo-swisseobrowser/).
 

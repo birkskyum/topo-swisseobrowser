@@ -1,0 +1,48 @@
+name: Change a text or translation
+description: A label, layer description, Info text or highlight story is wrong, unclear or should be translated.
+title: "[TEXT] "
+labels: ["text", "translation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **No coding needed:** copy the current text and write the new one. The link to your view is filled in by the viewer.
+  - type: input
+    id: permalink
+    attributes:
+      label: Link to the view (permalink)
+      description: Filled in by the viewer. Otherwise press *Copy link* at the top left of the map and paste it here.
+      placeholder: "https://swisstopo.github.io/topo-swisseobrowser/?…"
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Where is the text?
+      description: The part of the viewer, e.g. layer description of NDVI, Info tab, compare panel, highlight story.
+      placeholder: "Example: layer description of swissEO NDVIz"
+    validations:
+      required: true
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - English (current text)
+        - German (new translation)
+        - French (new translation)
+        - Italian (new translation)
+    validations:
+      required: true
+  - type: textarea
+    id: current_text
+    attributes:
+      label: Current text (copy and paste)
+    validations:
+      required: true
+  - type: textarea
+    id: new_text
+    attributes:
+      label: New text
+    validations:
+      required: true

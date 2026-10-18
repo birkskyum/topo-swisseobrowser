@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Feedback by e-mail
+    url: https://swisstopo.github.io/topo-swisseobrowser/
+    about: For general feedback, use Feedback in the Info tab of the swissEO Browser (opens an e-mail with the link to your view).
+  - name: swissEO products of swisstopo
+    url: https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-s2-sr
+    about: Questions about the swissEO data products themselves (S2-SR, VHI, NDVIdiff, NDVIz).

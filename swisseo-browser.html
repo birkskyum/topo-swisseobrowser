@@ -29,28 +29,39 @@ svg{display:block}
 
 #app{display:flex;flex-direction:column;height:100%}
 
-/* ---------- header (site-header of the drought briefing) ---------- */
-#topbar{display:flex;align-items:center;gap:14px;height:52px;flex:0 0 52px;background:var(--white);
-  border-top:4px solid var(--red);border-bottom:1px solid var(--border);padding:0 16px;z-index:1200}
-.site-brand{display:flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--blue);font-weight:700;font-size:1.05rem}
-.site-brand:hover{text-decoration:underline}
-.site-brand .logo{width:20px;height:20px;display:block}
 .beta-badge{color:var(--red);font-size:.6rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;
   border:1.5px solid var(--red);padding:.05rem .3rem;border-radius:2px;line-height:1;flex-shrink:0;align-self:center}
-#topbar .by{color:var(--muted);font-size:12px}
-#topbar .spacer{flex:1}
-#scenebadge{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);
-  border-radius:4px;padding:4px 10px;font-size:12px;max-width:46vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#scenebadge b{color:var(--blue)} #scenebadge span{color:var(--muted)}
-.action-btn{border:1px solid var(--border);background:var(--white);color:var(--blue);padding:.3rem .65rem;font-size:.82rem;
-  cursor:pointer;border-radius:4px;font-weight:700;transition:background .1s,color .1s;white-space:nowrap}
+.action-btn{border:1px solid var(--border);background:var(--white);color:var(--blue);padding:0 .65rem;font-size:.82rem;height:36px;
+  cursor:pointer;border-radius:4px;font-weight:700;transition:background .1s,color .1s;white-space:nowrap;box-shadow:var(--shadow)}
 .action-btn:hover,.action-btn.on{background:var(--blue);color:var(--white);border-color:var(--blue)}
 
-#main{flex:1;display:flex;min-height:0}
+#main{flex:1;display:flex;min-height:0;position:relative}
 
 /* ---------- sidebar ---------- */
 #side{width:400px;flex:0 0 400px;background:var(--bg);border-right:1px solid var(--border);
   display:flex;flex-direction:column;min-height:0}
+#app.collapsed #side{display:none}
+/* header of the menu: Confederation logo as on map.geo.admin.ch (ConfederationFullLogo.vue), language and collapse at the right */
+#sideHead{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;background:var(--white);
+  border-bottom:1px solid var(--border);padding:0 10px 0 0;flex:0 0 auto}
+.conf-logo{display:flex;gap:.8rem;margin:.8rem;text-decoration:none;color:#000;min-width:0}
+.conf-logo .swiss-flag{width:2rem;height:36px;flex:0 0 2rem}
+.conf-txt{display:flex;flex-direction:column;font-size:7.5pt;line-height:10.35pt;letter-spacing:.078em;white-space:nowrap}
+.side-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;padding-top:10px}
+.side-right .row{display:flex;align-items:center;gap:8px}
+#langSel{border:0;border-bottom:1px solid var(--blue);background:none;color:var(--blue);font-weight:700;font-size:12.5px;
+  padding:2px 2px;cursor:pointer;outline:none}
+#btnCollapse{width:28px;height:28px;border:0;background:none;padding:0;cursor:pointer}
+#btnCollapse svg{width:28px;height:28px}
+.app-title{display:flex;align-items:center;gap:6px;color:var(--blue);font-weight:700;font-size:15px;white-space:nowrap}
+/* round button that opens the collapsed menu (Copernicus Browser .open-tools) */
+#btnOpenSide{width:40px;height:40px;border-radius:50%;border:0;background:var(--blue);color:#fff;cursor:pointer;display:none;
+  align-items:center;justify-content:center;box-shadow:0 0 6px rgb(0 0 0 / 20%);flex:0 0 40px;padding:0}
+#btnOpenSide svg{width:18px;height:18px}
+#app.collapsed #btnOpenSide{display:flex}
+@media (max-width:760px){
+  #side{position:absolute;left:0;top:0;bottom:0;z-index:1300;width:100%;max-width:420px;box-shadow:0 0 10px rgb(0 0 0 / 35%)}
+}
 #tabs{display:flex;flex:0 0 auto;background:var(--white);border-bottom:1px solid var(--border)}
 #tabs button{flex:1;background:none;border:0;padding:12px 4px;cursor:pointer;color:var(--muted);
   font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border-bottom:3px solid transparent}
@@ -215,20 +226,62 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 #mapwrap{flex:1;position:relative;min-width:0}
 #map{position:absolute;inset:0;background:#e9ecef}
 .leaflet-container{font:inherit}
-#basemapbar{position:absolute;right:10px;top:10px;z-index:900;display:flex;gap:6px;
-  background:#ffffffeb;border:1px solid var(--border);border-radius:4px;padding:5px;box-shadow:var(--shadow)}
-#basemapbar button{background:var(--white);border:1px solid var(--border);border-radius:4px;
-  padding:5px 9px;font-size:11.5px;cursor:pointer;color:var(--blue);font-weight:700}
-#basemapbar button:hover{background:var(--hover)}
-#basemapbar button.on{background:var(--blue);border-color:var(--blue);color:#fff}
-#basemapbar .sep{width:1px;background:var(--border);margin:1px 2px}
+/* basemap switcher: the Leaflet layers control, as in the Copernicus Browser (title, Basemaps, Map overlays) */
+.leaflet-control-layers{border:1px solid var(--border)!important;border-radius:4px!important;box-shadow:var(--shadow)!important}
+/* the Copernicus Browser icon (src/Map/layers.svg) instead of the Leaflet one, also on high-DPI screens */
+.leaflet-control-layers-toggle,.leaflet-retina .leaflet-control-layers-toggle{width:36px!important;height:36px!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23003F6B'%3E%3Cpath d='M7.59156 13.8773L1.368 9.06974L0 10.1269L7.6 16L15.2 10.1269L13.8236 9.06135L7.59156 13.8773ZM7.6 11.7462L13.8151 6.93865L15.2 5.8731L7.6 0L0 5.8731L1.37644 6.93865L7.6 11.7462Z'/%3E%3C/svg%3E")!important;
+  background-size:20px 20px!important;background-position:center!important;background-repeat:no-repeat!important}
+.leaflet-control-layers-expanded{padding:8px 12px 10px 10px;color:var(--text);font-size:12.5px;min-width:170px}
+.leaflet-control-layers-list::before{content:"Layers";display:flex;justify-content:center;font-size:15px;font-weight:700;color:var(--blue);margin-bottom:6px}
+.leaflet-control-layers-base::before{content:"Basemaps";display:block;font-weight:700;font-size:13px;margin-bottom:2px}
+.leaflet-control-layers-overlays::before{content:"Map overlays";display:block;font-weight:700;font-size:13px;margin-bottom:2px}
+.leaflet-control-layers-base>label,.leaflet-control-layers-overlays>label{padding-left:5px;margin:2px 0;cursor:pointer}
+.leaflet-control-layers input{accent-color:var(--blue)}
+/* bottom right: zoom, then coordinates and scale on one line (Copernicus Browser LeafletControls) */
+.leaflet-bottom.leaflet-right .leaflet-control-zoom{border:0!important;box-shadow:var(--shadow)}
+.leaflet-control-zoom a{background:#fff!important;color:var(--blue)!important;border-radius:0!important;font-weight:700}
+.leaflet-control-zoom a:hover{background:var(--blue)!important;color:#fff!important}
+.leaflet-control-zoom-in{border-bottom:2px solid #eef1f4!important}
+.leaflet-bottom.leaflet-right .leaflet-control-scale{margin-bottom:0}
+.leaflet-control-scale-line{background:#ffffffd9;color:var(--text);border-color:var(--text);font-size:11px;box-shadow:1px 1px 4px #0005}
+.coords-ctl{clear:none!important;margin-bottom:0!important;background:#ffffffd9;color:var(--text);font-size:11px;padding:1px 8px;
+  min-width:190px;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media (max-width:700px){.leaflet-control-zoom{display:none}}
 .mapbtn{position:absolute;right:10px;z-index:900;width:36px;height:36px;display:flex;align-items:center;justify-content:center;
   cursor:pointer;background:#fff;border:1px solid var(--border);border-radius:4px;color:var(--blue);padding:0;box-shadow:var(--shadow)}
 .mapbtn:hover{background:var(--hover)}
 .mapbtn.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 .mapbtn svg{width:20px;height:20px}
-#mapTools{position:absolute;right:10px;top:96px;z-index:900;display:flex;flex-direction:column;gap:6px}
+#mapTools{position:absolute;right:10px;top:100px;z-index:900;display:flex;flex-direction:column;gap:6px}
 #mapTools .mapbtn{position:static}
+/* top left of the map: open-menu button, date and acquisitions, copy link, pixel inspector */
+#mapTL{position:absolute;left:10px;top:10px;z-index:905;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  max-width:calc(100% - 360px)}
+#scenebadge{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);box-shadow:var(--shadow);height:36px;
+  border-radius:4px;padding:0 10px;font-size:12px;max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#scenebadge b{color:var(--blue);overflow:hidden;text-overflow:ellipsis} #scenebadge span{color:var(--muted)}
+@media (max-width:700px){#mapTL{max-width:calc(100% - 120px)} #scenebadge{max-width:100%}}
+/* place search (geo.admin.ch SearchServer, type=locations), left of the basemap switcher */
+#placeSearch{position:absolute;right:58px;top:10px;z-index:950;width:260px;height:36px;background:#fff;
+  box-shadow:0 0 6px rgb(0 0 0 / 20%);border:1px solid var(--border);border-radius:4px}
+#placeSearch .ps-ico{position:absolute;left:0;top:0;width:36px;height:34px;display:flex;align-items:center;justify-content:center;
+  color:var(--blue);background:none;border:0;padding:0;cursor:pointer}
+#placeSearch .ps-ico svg{width:18px;height:18px}
+#psIn{width:100%;height:34px;border:0;outline:none;padding:0 28px 0 38px;font-size:14px;background:none;border-radius:4px}
+#psIn::placeholder{color:#1a1a1a55}
+#psClear{position:absolute;right:4px;top:5px;width:24px;height:24px;border:0;background:none;color:var(--muted);cursor:pointer;font-size:17px;line-height:1}
+#psRes{position:absolute;left:-1px;right:-1px;top:35px;background:#fff;border:1px solid var(--border);border-top:1px solid #ddd;
+  max-height:330px;overflow:auto;box-shadow:0 4px 10px rgb(0 0 0 / 15%)}
+#psRes div{padding:6px 9px;border-bottom:1px solid #eee;cursor:pointer;font-size:13px;line-height:1.35}
+#psRes div.hl,#psRes div:hover{background:var(--blue);color:#fff}
+#psRes div.none{cursor:default;color:var(--muted)} #psRes div.none:hover{background:none;color:var(--muted)}
+#psRes small{display:block;opacity:.7;font-size:11px}
+.ps-pin{color:var(--red)} .ps-pin svg{width:30px;height:30px;filter:drop-shadow(0 1px 1.5px #0007)}
+@media (max-width:700px){
+  #placeSearch{width:36px} #placeSearch #psIn,#placeSearch #psClear{display:none}
+  #placeSearch.open{width:45%} #placeSearch.open #psIn{display:block}
+}
 
 /* ---------- timelapse ---------- */
 .modal .box.xwide{width:min(1180px,97%);height:min(800px,95%);display:flex;flex-direction:column;padding-bottom:12px}
@@ -257,7 +310,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .tl-opts .chk{margin-top:6px}
 
 /* ---------- area of interest tool (expands to the left, as in Copernicus) ---------- */
-#aoiTool{position:absolute;right:10px;top:54px;z-index:910;display:flex;flex-direction:row-reverse;gap:6px;align-items:center}
+#aoiTool{position:absolute;right:10px;top:56px;z-index:910;display:flex;flex-direction:row-reverse;gap:6px;align-items:center}
 #aoiTool .mapbtn{position:static}
 .tgroup{display:flex;align-items:center;gap:2px;background:#fff;border:1px solid var(--border);border-radius:4px;
   box-shadow:var(--shadow);height:36px;padding:0 3px}
@@ -271,7 +324,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .cmrow{display:flex;gap:12px;align-items:center;margin:2px 0 4px;font-size:12px}
 .cmname{font-size:11px;color:var(--muted);overflow-wrap:anywhere;margin:-2px 0 4px}
 .tog > span{min-width:0;overflow-wrap:anywhere}
-#drawHint{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:905;background:var(--blue);color:#fff;
+#drawHint{position:absolute;left:50%;top:56px;transform:translateX(-50%);z-index:905;background:var(--blue);color:#fff;
   padding:6px 12px;border-radius:4px;font-size:12px;box-shadow:var(--shadow)}
 
 /* ---------- generic modal (import, statistics, spectral explorer) ---------- */
@@ -330,7 +383,7 @@ textarea.exdesc{height:46px;margin:4px 0 2px 24px;width:calc(100% - 24px);font-f
 .exl input{accent-color:var(--blue)}
 #expMsg{margin-top:10px;font-size:11.5px;color:var(--red);display:none}
 #expMsg.on{display:block}
-#mapmsg{position:absolute;left:10px;bottom:36px;z-index:900;display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+#mapmsg{position:absolute;left:10px;bottom:30px;z-index:900;display:flex;flex-direction:column;align-items:flex-start;gap:6px;
   max-width:60%;pointer-events:none}
 #status{background:#ffffffee;pointer-events:auto;
   border:1px solid var(--border);border-radius:4px;padding:6px 11px;font-size:12px;color:var(--text);display:none;box-shadow:var(--shadow)}
@@ -342,7 +395,7 @@ textarea.exdesc{height:46px;margin:4px 0 2px 24px;width:calc(100% - 24px);font-f
 @keyframes spin{to{transform:rotate(360deg)}}
 #status.on{display:block}
 #status b{color:var(--blue)}
-#inspect{position:absolute;right:10px;bottom:22px;z-index:900;width:300px;background:#fffffff5;
+#inspect{position:absolute;right:10px;bottom:112px;z-index:900;width:300px;background:#fffffff5;
   border:1px solid var(--border);border-top:3px solid var(--blue);border-radius:4px;padding:11px 12px;display:none;box-shadow:var(--shadow)}
 #inspect.on{display:block}
 #inspect h5{margin:0 0 7px;font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--blue)}
@@ -352,15 +405,12 @@ textarea.exdesc{height:46px;margin:4px 0 2px 24px;width:calc(100% - 24px);font-f
 #inspect .close{position:absolute;right:8px;top:5px;cursor:pointer;color:var(--muted);font-size:16px}
 .leaflet-control-attribution{background:#ffffffd0!important}
 #p-info p{margin:0 0 8px}
-/* verification badge behind each layer name */
-.ver{display:inline-flex;vertical-align:-3px;margin-left:6px;line-height:0}
-.ver svg{width:15px;height:15px}
-.ver.ok{color:#2e7d32}
-.ver.todo{color:#b07a00}
-.verrow{display:flex;align-items:center;gap:6px;font-size:11.5px;margin:10px 0 2px;padding:5px 8px;border-radius:3px}
-.verrow.ok{background:#e8f3e9;color:#1e5b22}
-.verrow.todo{background:#fff4dc;color:#6b4a00}
-.verrow .ver{margin:0}
+/* BETA badge behind the name of every layer that has not yet been verified (README checklist) */
+.ver{display:inline-block;vertical-align:1px;margin-left:6px;color:var(--red);font-size:9px;font-weight:900;letter-spacing:.08em;
+  border:1.5px solid var(--red);padding:1px 3px;border-radius:2px;line-height:1}
+.verrow{display:flex;align-items:flex-start;gap:7px;font-size:11.5px;margin:10px 0 2px;padding:5px 8px;border-radius:3px;
+  background:#fdecea;color:#5a1010}
+.verrow .ver{margin:1px 0 0;flex:0 0 auto}
 /* highlights (Copernicus Browser theme highlights) */
 .hl{background:var(--bg);border:1px solid #e1e5ea;margin-bottom:6px;cursor:pointer;color:var(--text)}
 .hl:hover{border-color:#b9cddc}
@@ -396,30 +446,77 @@ textarea.exdesc{height:46px;margin:4px 0 2px 24px;width:calc(100% - 24px);font-f
 .warn{border-left:4px solid var(--red)}
 .warnbox{background:#fdecea;border-left:3px solid var(--red);padding:7px 9px;margin:8px 0 2px;font-size:11.5px;line-height:1.45;color:#5a1010}
 .warn h4{color:var(--red)!important}
+/* Feedback (e-mail) and issue links in the Info tab, as the feedback popover of topo-drought-briefing */
+.fb-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.fb-wrap{position:relative}
+.fb-pop{position:absolute;top:calc(100% + 5px);left:0;z-index:50;background:#fff;border:1px solid var(--border);border-radius:5px;
+  box-shadow:0 6px 16px #0003;min-width:220px;padding:4px 0}
+.fb-pop a{display:block;padding:7px 12px;font-size:12.5px;color:var(--text);text-decoration:none;white-space:nowrap;cursor:pointer}
+.fb-pop a:hover{background:var(--hover);color:var(--blue)}
 ul.links{margin:0;padding-left:16px;font-size:12px;line-height:1.6}
 table.kv{width:100%;border-collapse:collapse;font-size:11.5px}
 table.kv td,table.kv th{padding:3px 6px 3px 0;border-bottom:1px solid #0000000d;text-align:left;vertical-align:top}
 table.kv th{color:var(--blue);font-weight:700}
 table.kv td:first-child{color:var(--muted)}
+/* WMS / WMTS panel (Copernicus Browser ExtraCollectionsPanel and ExternalWmsLayerContainer) */
+.xp-in{width:100%;border:0;border-bottom:1px solid var(--blue);padding:6px 4px;background:#fff;outline:none;font-size:12.5px}
+.xp-combo{position:relative;margin-top:4px}
+.xp-list{position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;border:1px solid var(--border);max-height:260px;overflow:auto;
+  box-shadow:0 6px 16px #0003}
+.xp-list div{padding:5px 8px;font-size:12px;cursor:pointer;border-bottom:1px solid #f0f0f0;overflow-wrap:anywhere}
+.xp-list div:hover,.xp-list div.hl{background:var(--blue);color:#fff}
+.xp-list div.info{cursor:default;color:var(--muted)} .xp-list div.info:hover{background:none;color:var(--muted)}
+.xp-list small{display:block;opacity:.75}
+.xp-url{display:flex;gap:6px;align-items:center;margin-top:10px}
+.xp-url .xp-in{flex:1}
+.xp-add{width:30px;height:30px;flex:0 0 30px;border:0;border-radius:50%;background:var(--blue);color:#fff;font-size:20px;line-height:1;cursor:pointer;padding:0}
+.xp-add:disabled{background:#9aa9b8;cursor:default}
+.xp-err{color:var(--red);font-size:12px;margin-top:6px} .xp-warn{color:#8a5a00;font-size:12px;margin-top:6px}
+.xp-srv{display:flex;flex-direction:column;gap:4px;margin-top:12px}
+.xp-srv .s{display:flex;align-items:center;gap:4px}
+.xp-srv .s>button.b{flex:1;min-width:0;text-align:left;border:1px solid var(--border);background:#fff;color:var(--blue);font-weight:700;
+  padding:6px 9px;border-radius:3px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px}
+.xp-srv .s>button.b span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xp-srv .s>button.b small{color:var(--muted);font-weight:400}
+.xp-srv .s>button.b.on{border-color:var(--blue);background:var(--blue-l)}
+.xp-srv .s>button.b svg{width:16px;height:16px;flex:0 0 16px}
+.xp-tools{display:flex;align-items:center;gap:10px;margin:4px 0 8px}
+.xp-tools .xp-in{flex:1}
+.xp-tools .cnt{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.lyr.na .lyr-head{opacity:.55}
+.xl-abs{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.xl-meta{display:flex;justify-content:space-between;gap:10px;padding:0 10px 6px 70px;font-size:11px;color:var(--muted)}
+.xl-meta a{font-size:11px}
+.xl-legend{max-width:100%;display:block;margin:4px 0 8px;background:#fff}
+.xp-pg{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;font-size:12px}
+.xp-pg .pgc{display:flex;align-items:center;gap:6px}
+.xp-pg button{border:1px solid var(--border);background:#fff;color:var(--blue);width:28px;height:26px;cursor:pointer;padding:0;
+  display:flex;align-items:center;justify-content:center}
+.xp-pg button:disabled{color:#bbb;cursor:default}
+.xp-pg button svg{width:14px;height:14px}
+.xp-pg select{border:0;border-bottom:1px solid var(--blue);background:none;color:var(--blue);padding:2px;outline:none;cursor:pointer}
 </style>
 </head>
 <body>
 <div id="app">
-  <header id="topbar">
-    <a class="site-brand" href="?">
-      <span class="beta-badge">BETA</span>
-      <img class="logo" alt="" width="20" height="20" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAFrUlEQVR4nO2bWWhcZRTHzznfd+fOktmSxrS2aU0x5qFVq3aJ4oOoFSlVBH0Q1BcRnxR8VHx0eRBEEMQ3RZ+KYqEiCEJVsESpta3W2trFpdpkkjSTzD53+b4jExVK683cO5nMZn5wX+Y733L+fMu5534DsMoq/2twJRvnvXvo0nfHUqFcvt/QOuUSJgzHiSrTTIZcx5CWtTgE1zTBktI2qtW8bYRKknXeknLBSaazg+O3L+BHH3DHCjC/fkNYFvLD0rLGQOtRBBglhi3IejMyDxGzAYvD5yu647pD4dpPiLZGnGai8xrgJAOcYyHO6FDojJWK/zlw4WK1pQJkh4bWxBZy46DVTmC4g1hvF0oloQ0oIRYY6QgDTLCkw5Vk8pv09MxcUwW4cO162Z/L3WzY1n2o+X7S+k5iTdCBaCStCQ+xoE8dw/wsm0j8sHFq0m2osZlUKlUNhV5whDiqELUG4G56FKB2SByxjNDzM4lEOrAA+Wj07nY70ZQHkQvR6L1efpJXgek4YegFmAFcZXoVk2dFRAE9glGbCx5IrwKHSBpNHAQbBui1axd3Xb5iB778gGSlQExONq9jBGAiEVgA4OYGSXpkBOTpU3UPHp2ZAr1+A1Bt6jYL9O5UetdpcpS4GNTUPz0R6aoQaVnUGmPwXAPkVaCxueNoK6p2igcUQDI3FkB0HAiuIA4sgNBaQa9AZHkWgQeulA70CIohuAAW6NLKviy3EMRqA3sAVlc4XdAaEMAlKgYWwEaR74VjQAOCJCwF3wQNWdSAXa8BI9hubTkH3gSBa3tAAboeXLBj8WrgSDDUv6aCxWItu5LwslE7dgAKf+9MenjY/zvDrvH/SJl52OfyIE795FmOCNmBTaNVyGQgMC6Jw54JB0TWxSK3G+fzg1xbql7jdIT4aikfaUl1EaaXVKg7DonZhgVAgCnodhAzDQugiC5CV4O1Y3CyYQE04m9dMs09YFCIvzcsgCPk+SbnRVpKbexayF8aFsDui51mAM8gouNBKKlY9GzDAqyZnb3ERL9Cl8JEfyT27plZyobqNoL4PXQpGvEkvvc+LEsAhXjEu1AD6ACP75GrAO16R4wa8Gi9rmQ9AzsSPmg6V+dGkBnU4CD4RY2OgnniRF07ncmAOzLiOyu8+NHOI2x2THMC3CbkdRwhzy33E5UzdoOv0FZPTbFbC7OX2Z9LYq6ybWvdFxXyI4BG+AS6DI34ReT4j6opAqiQ+SEjBljEbQZr57/42I8p+TEyxsa+1kTHoUtQiJlKMnmgeQIcO6qVEEufJx2EFmJfenYm58eW/DZaSg+8q4kuQYfDiLYVjb7l1578Gg5MT+WVMN6GDkdJuS+Ry53za09BGi/H+97QREuGlu2EEStVM/xqkDoUxDidnZu3Q6HXOjUV5BjynUSx8HOQOhS0k0Iq9aYS5J2FbBOKaKYSi78YtJ4MWmEok3EKsb6no+XSl8jsuz4rDTqX+3vuXHlf8rJrIzqfDzqkxVZs03wuPZ/1tfM3hWrIfD3obS1lmqzMcJ3HDBz2Woaxf2Hzptauy7l1wyFbymPtvgbnCHEx3z/QlpuqUIwnN7pEc+1yXiFWC/G+26CdlGJ9dylEq+XOA+hyJPoEdAKVSPQxhei2UoCqGQ68468olXD4KYWoWuF8xQy/Uth6S+cFI+Vw5EmF6KzktK+Ewy9nb7q185z/l3Ik+pCLmFuBDc+qhCPP8u57oOMpx6LjthBnm+W8QzRdiUQegG4i3z9wjS2NA//kbht3XsqJYiI5Ct3I3MiItEzzmUZiBZeobIXMl3KDQ1Hodkrx5PW2Yez35zyyLY1DxVjfdugleMdOKMViux1pfOvluCPkmXIk8mhubKwj/5PUFOY2XicrkciDtmFMXLbOf6yEI4/Pr13XG/9S8QM//AgUE8kbS4n4ruyWbZ17rq+yCvQ0fwHdHxy2M1Sf1AAAAABJRU5ErkJggg==">
-      <span>swissEO Browser</span>
-    </a>
-    <span class="by">swisstopo</span>
-    <div id="scenebadge"><span>Date</span><b id="badgeTxt">…</b></div>
-    <div class="spacer"></div>
-    <button class="action-btn" id="btnLink" title="Copy a link to exactly this view">Copy link</button>
-    <button class="action-btn" id="btnInspect">Pixel inspector: off</button>
-  </header>
 
   <div id="main">
     <aside id="side">
+      <div id="sideHead">
+        <a class="conf-logo" href="?" title="swissEO Browser: start view">
+          <!-- Swiss flag of web-mapviewer (assets/svg/swiss-flag.svg), as in ConfederationFullLogo.vue -->
+          <svg class="swiss-flag" viewBox="0 0 604 669" aria-hidden="true"><path fill="#D52B1E" d="M302,2 C 402,2 502,19 602,52 C 602,286 604,534 302,667 C 0,534 2,286 2,52 C 102,19 202,2 302,2 z"/><path fill="#fff" d="M102,242 h140 v-140 h120 v140 h140 v120 h-140 v140 h-120 v-140 h-140 z"/></svg>
+          <div class="conf-txt"><span>Schweizerische Eidgenossenschaft</span><span>Confédération suisse</span>
+            <span>Confederazione Svizzera</span><span>Confederaziun svizra</span></div>
+        </a>
+        <div class="side-right">
+          <div class="row">
+            <select id="langSel" title="Language"><option value="en">EN</option></select>
+            <button id="btnCollapse" title="Collapse the menu"></button>
+          </div>
+          <div class="app-title">swissEO Browser <span class="beta-badge">BETA</span></div>
+        </div>
+      </div>
       <div id="tabs">
         <button data-t="vis" class="on">Visualise</button>
         <button data-t="info">Info</button>
@@ -458,6 +555,7 @@ table.kv td:first-child{color:var(--muted)}
             <h4>Configuration:</h4>
             <button class="dc-ico on" data-v="layers" id="dcLayers" title="Layers"></button>
             <button class="dc-ico" data-v="compare" id="dcCompare" title="Compare"><span class="badge" id="cmpBadge" hidden></span></button>
+            <button class="dc-ico" data-v="external" id="dcExternal" title="WMS / WMTS: layers of other map services"></button>
           </div>
           <select class="dc-sel" id="cfgSel" title="Configuration: the set of layers for a task"></select>
         </div>
@@ -481,6 +579,22 @@ table.kv td:first-child{color:var(--muted)}
           <div id="cmpList"></div>
           <div class="hint" id="cmpHint"></div>
         </div>
+
+        <div class="card" id="v-external" hidden>
+          <h4>WMS / WMTS:</h4>
+          <div class="xp-combo">
+            <input class="xp-in" id="xpProv" type="text" spellcheck="false" autocomplete="off"
+              placeholder="Choose or search a service (geo.admin.ch providers)" title="Services: the swisstopo WMS and the external providers of map.geo.admin.ch">
+            <div class="xp-list" id="xpProvList" hidden></div>
+          </div>
+          <div class="xp-url">
+            <input class="xp-in" id="xpUrl" type="text" spellcheck="false" autocomplete="off" placeholder="Enter a WMS or WMTS URL">
+            <button class="xp-add" id="xpAdd" title="Load" disabled>+</button>
+          </div>
+          <div class="xp-err" id="xpErr" hidden></div>
+          <div class="xp-srv" id="xpSrv"></div>
+          <div id="xpLayers"></div>
+        </div>
       </div>
 
       <div class="panel" id="p-info">
@@ -491,12 +605,27 @@ table.kv td:first-child{color:var(--muted)}
               swisstopo products and services directly.</p>
             <p><b>Layer verification:</b> we will check every layer in depth: data access, scaling and no-data, formula,
               masks and rendering, compared with reference implementations (e.g. GDAL / rasterio reads and the original
-              scripts). A layer that passed this check carries the symbol
-              <span class="ver ok" title="Verified">VER_OK</span> <b>Verified</b>; all others show
-              <span class="ver todo" title="To be verified">VER_TODO</span> <b>To be verified</b>. The status is kept as a
-              checklist in the <a href="https://github.com/swisstopo/topo-swisseobrowser#layer-verification" target="_blank" rel="noopener">README</a>
+              scripts). Every layer that has <b>not yet</b> passed this check carries the label
+              <span class="ver">BETA</span> behind its name: it still needs to be verified, and its values may be wrong.
+              Verified layers carry no label. The status is kept as a checklist in the
+              <a href="https://github.com/swisstopo/topo-swisseobrowser#layer-verification" target="_blank" rel="noopener">README</a>
               and applied to the website on every deployment.</p>
-            <p style="margin:0">The website was developed with the help of <b>Claude Code</b> (Anthropic), an AI coding assistant.</p>
+            <p>The website was developed with the help of <b>Claude Code</b> (Anthropic), an AI coding assistant.</p>
+            <div class="fb-row">
+              <div class="fb-wrap"><button class="action-btn" id="btnFeedback" title="Write an e-mail with the link to your current view">Feedback</button>
+                <div class="fb-pop" id="fbMail" hidden>
+                  <a data-mail="app">Open the mail app</a><a data-mail="gmail" target="_blank" rel="noopener">Gmail</a>
+                  <a data-mail="outlook" target="_blank" rel="noopener">Outlook Web</a></div></div>
+              <div class="fb-wrap"><button class="action-btn" id="btnIssue" title="Open a GitHub issue with the link to your current view">Report an issue / improvement</button>
+                <div class="fb-pop" id="fbIssue" hidden>
+                  <a data-issue="01-layer.yml" target="_blank" rel="noopener">Fix or change a layer</a>
+                  <a data-issue="02-text.yml" target="_blank" rel="noopener">Change a text or translation</a>
+                  <a data-issue="03-problem.yml" target="_blank" rel="noopener">Report a general problem</a>
+                  <a data-issue="04-idea.yml" target="_blank" rel="noopener">Suggest an improvement</a>
+                  <a data-issue="" target="_blank" rel="noopener">All issue forms on GitHub</a></div></div>
+            </div>
+            <div class="hint" style="margin-top:6px">Both include the link to exactly the view you see now (layer, date,
+              place, settings), so a sentence or two is enough. Issues need a GitHub account.</div>
           </div></div>
         <div class="card"><h4>Selected date</h4>
           <div id="sceneInfo" style="font-size:12px;color:var(--muted)">No acquisition selected.</div></div>
@@ -525,9 +654,29 @@ table.kv td:first-child{color:var(--muted)}
         <div class="card"><h4>How this works</h4>
           <div style="font-size:12px">
             <p>Everything on screen comes from public swisstopo services. There is no other backend.</p>
-            <p><b>Basemaps:</b> <code>wmts.geo.admin.ch</code> (pixelkarte-farbe, swissimage, pixelkarte-grau) on the native LV95 tile grid.</p>
-            <p><b>Label overlay:</b> <code>wmts.asit-asso.ch</code> <code>asitvd.fond_pourortho</code>, published on the identical LV95 grid.
-              It sits in its own pane above the data layers.</p>
+            <p><b>Basemaps:</b> the layer button at the top right of the map (as in the Copernicus Browser) switches between
+              <i>Map</i>, <i>SWISSIMAGE</i>, <i>Map Grey</i> (<code>wmts.geo.admin.ch</code>: pixelkarte-farbe, swissimage,
+              pixelkarte-grau, on the native LV95 tile grid) and <i>None</i>.</p>
+            <p><b>Map overlay:</b> <i>Labels OSM</i> is <code>wmts.asit-asso.ch</code> <code>asitvd.fond_pourortho</code> (roads and
+              place names from OpenStreetMap and Canton of Vaud data), published on the identical LV95 grid. It sits in its own pane
+              above the data layers.</p>
+            <p><b>Map layout:</b> at the top left the date and acquisitions on the map, <i>Copy link</i> and the pixel inspector;
+              at the top right the place search, the layer button and the tools; at the bottom right the zoom buttons, the mouse
+              position (LV95 easting and northing) and the scale bar; the attribution at the bottom left. The chevron in the
+              menu header collapses the menu, the round button at the top left of the map opens it again (on small screens
+              the menu starts collapsed).</p>
+            <p><b>Place search:</b> the location search of map.geo.admin.ch (<code>api3.geo.admin.ch</code> SearchServer,
+              <code>type=locations</code>): municipalities, districts, cantons, place names and addresses. Choosing a result
+              zooms to its extent or to its point and drops a pin there.</p>
+            <p><b>WMS / WMTS:</b> the third button of the configuration card (next to Compare) opens layers of other map services,
+              as in the Copernicus Browser. The swisstopo WMS (<code>wms.geo.admin.ch</code>) is preset; the pull-down lists the
+              external providers of map.geo.admin.ch (loaded when the panel is opened) and can be searched, and <b>+</b> adds any
+              other WMS or WMTS URL (the service must allow cross-origin requests, CORS). The layers can be searched and paged;
+              a click shows a layer on the map and a second click hides it (the panel opens without an active layer), <i>Add to Compare</i> puts it into the compare list, the chevron shows its legend and
+              description, and <i>Metadata</i> opens its metadata. Layers are drawn from LV95 when the service offers it,
+              otherwise from LV03, Web Mercator, UTM 32N or WGS84, placed on the LV95 grid. Services without CORS headers are
+              shown on the map but left out of image downloads. The services you add are remembered in this browser; the
+              open service and layer, and the external layers in the compare list, are part of the link.</p>
             <p><b>Dates:</b> without a date in the link the latest date with data opens. The calendar and ‹ › only offer days whose
               acquisitions reach the map view: the data footprint of each relative orbit is read once from the coarsest B04 overview
               (the STAC geometry is only the rectangular extent). The calendar and the ‹ › buttons query the STAC API
@@ -536,8 +685,9 @@ table.kv td:first-child{color:var(--muted)}
               mosaicked, most recent on top.</p>
             <p><b>True color (TCI):</b> the JPEG tiles are decoded by the browser itself and kept in a cache, so each COG
               tile is decoded once; the map uses 512 px tiles like the COGs. The TCI's internal mask decides what is data, so
-              black pixels stay black. Dark strips along a swath edge (mean RGB below 40 within 2 km of the scene edge) count as
-              no data, as in the swissEO cloud-free mosaics, so the other scene of the day fills them.</p>
+              black pixels stay black. On days with more than one scene (orbit), dark strips along a swath edge (mean RGB below 40
+              within 2 km of the scene edge) always count as no data, as in the swissEO cloud-free mosaics, so the other scene of
+              the day fills them.</p>
             <p><b>Spectral layers:</b> the band COGs are read straight from <code>data.geo.admin.ch</code> over HTTP range requests
               (geotiff.js). Only the overview matching the zoom and the tiles in view are fetched.</p>
             <p><b>Masks:</b> <i>Clouds</i> hides cloud-mask codes 1 and 2, <i>Cloud shadows</i> code 3, and <i>Terrain shadow</i>
@@ -578,14 +728,17 @@ table.kv td:first-child{color:var(--muted)}
             <p><b>Loading:</b> the box at the bottom left counts the tiles still rendering and the requests in flight, and flags a
               slow connection after 6 s.</p>
             <p><b>NDVIdiff / NDVIz:</b> monthly products for the end of July, August and September (forest perimeter); the product
-              nearest to the selected date is shown, also in compare, timelapse and export. <b>NDVIdiff v200 BETA</b> (beta data, example
+              nearest to the selected date is shown, also in compare (each entry gives the date of its product), timelapse and export. <b>NDVIdiff v200 BETA</b> (beta data, example
               COGs on cms.geo.admin.ch, not in STAC): the NDVI change of two-month first-quartile cloud-free mosaics (June/July, July/August,
               August/September) against the same window one year earlier.</p>
             <p><b>Two-date layers:</b> <i>NDDI change</i> and the <i>NDVI Analyst</i> compare the selected date with a reference:
               the acquisitions within ±20 days of the same day one year earlier (or of a chosen date), clearest first, per pixel the
               first clear one.</p>
+            <p><b>Compare:</b> each entry shows the date of the data it actually shows: the nearest NDVIdiff, NDVIz or NDVIdiff v200
+              BETA product, the VHI day (the nearest one if the chosen day has none) or the S2-SR date.</p>
             <p><b>Permalink:</b> the address bar is rewritten on every change (view, date, cloud filter, layer, legend range, masks,
-              effects, compare list, area of interest), so copying the URL reproduces the view.</p>
+              effects, compare list including WMS / WMTS layers, the open WMS / WMTS service and layer, area of interest), so copying
+              the URL reproduces the view.</p>
             <p><b>Projection:</b> EPSG:2056 (CH1903+ / LV95), the native CRS of the tile grid and the COGs, so nothing is reprojected.</p>
           </div></div>
         <div class="card"><h4>Based on and uses</h4>
@@ -596,6 +749,8 @@ table.kv td:first-child{color:var(--muted)}
             <li><a href="https://github.com/swisstopo/topo-satromo-v2" target="_blank" rel="noopener">swisstopo/topo-satromo-v2</a>:
               processing of the swissEO products (S2-SR, VHI, NDVIdiff, NDVIz, vegetation masks)</li>
             <li><a href="https://github.com/swisstopo/topo-drought-briefing" target="_blank" rel="noopener">swisstopo/topo-drought-briefing</a>: colour scheme</li>
+            <li><a href="https://github.com/geoadmin/web-mapviewer" target="_blank" rel="noopener">geoadmin/web-mapviewer</a>
+              (map.geo.admin.ch): location search, Confederation logo and the list of external WMS / WMTS providers</li>
             <li><a href="https://github.com/RaffiBienz/ndvi_analyst" target="_blank" rel="noopener">RaffiBienz/ndvi_analyst</a>:
               NDVI Analyst of the Canton of Aargau (method of the NDVI Analyst layer)</li>
             <li><a href="https://github.com/Open-EO/openeo-community-examples/blob/main/python/50_thematic-notebooks/drought-nddi/drought-nddi.ipynb" target="_blank" rel="noopener">Open-EO/openeo-community-examples</a>:
@@ -615,7 +770,8 @@ table.kv td:first-child{color:var(--muted)}
         <div class="card"><h4>Terms</h4>
           <div style="color:var(--muted);font-size:11.5px">© swisstopo,
             <a href="https://www.swisstopo.admin.ch/ogd-conditions" target="_blank">open government data</a>.
-            The swissEO products contain modified Copernicus Sentinel data. Not for operational use.</div></div>
+            The swissEO products contain modified Copernicus Sentinel data. Label overlay © ASIT VD, © OpenStreetMap contributors.
+            Layers of other WMS / WMTS services: © their providers. Not for operational use.</div></div>
       </div>
     </aside>
 
@@ -625,14 +781,18 @@ table.kv td:first-child{color:var(--muted)}
         <div class="sw-lab l" id="swL"></div><div class="sw-lab r" id="swR"></div>
         <div class="sw-bar" id="swBar" title="Drag to swipe between the two images"><span class="sw-knob"></span></div>
       </div>
-      <div id="basemapbar">
-        <button data-b="pixelkarte" class="on">Pixelkarte</button>
-        <button data-b="swissimage">SWISSIMAGE</button>
-        <button data-b="grey">Grey</button>
-        <button data-b="none">None</button>
-        <span class="sep"></span>
-        <button class="tog" id="btnOverlay"
-          title="ASIT VD roads and place-name overlay: always drawn above the data layers">Labels</button>
+      <div id="mapTL">
+        <button id="btnOpenSide" title="Open the menu"></button>
+        <div id="scenebadge"><span>Date</span><b id="badgeTxt">…</b></div>
+        <button class="action-btn" id="btnLink" title="Copy a link to exactly this view">Copy link</button>
+        <button class="action-btn" id="btnInspect" title="Click the map to read the values of a pixel">Pixel inspector: off</button>
+      </div>
+      <div id="placeSearch">
+        <button class="ps-ico" id="psIco" title="Search a place"></button>
+        <input id="psIn" type="text" spellcheck="false" autocomplete="off" placeholder="Go to Place"
+          title="Search places, addresses, municipalities, cantons (geo.admin.ch location search)">
+        <button id="psClear" title="Clear the search" hidden>×</button>
+        <div id="psRes" hidden></div>
       </div>
       <div id="aoiTool">
         <button class="mapbtn" id="btnAoi" title="Create an area of interest"></button>
@@ -924,7 +1084,13 @@ const UI = {
   grip:    '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="5" r="2"/><circle cx="16" cy="5" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="19" r="2"/><circle cx="16" cy="19" r="2"/></svg>',
   plus:    svg('<path d="M12 5v14M5 12h14"/>', 2.2),
   export:  svg('<rect x="2.5" y="3.5" width="19" height="14" rx="2.5"/><circle cx="8" cy="8.5" r="1.6"/>' +
-               '<path d="M3.5 15l4.5-4.5 3 3 2.5-2.5 4 4"/><path d="M12 15.5v6M9 18.5l3 3 3-3"/>', 1.7)
+               '<path d="M3.5 15l4.5-4.5 3 3 2.5-2.5 4 4"/><path d="M12 15.5v6M9 18.5l3 3 3-3"/>', 1.7),
+  menu:    svg('<path d="M4 6.5h16M4 12h16M4 17.5h16"/>', 2.4),
+  search:  svg('<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/>', 2.4),
+  pin:     '<svg viewBox="0 0 24 24"><path fill="currentColor" stroke="#fff" stroke-width="1.2" d="M12 1.8a7 7 0 0 0-7 7c0 5.3 7 13.4 7 13.4s7-8.1 7-13.4a7 7 0 0 0-7-7z"/><circle cx="12" cy="8.8" r="2.6" fill="#fff"/></svg>',
+  // Copernicus Browser icons: chevron-collapse.svg of the menu header, DatasetLinked.svg of the WMS / WMTS collection
+  collapse: '<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#003F6B"/><path d="M17.83,10l-6,6M17.83,22l-6-6" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2"/></svg>',
+  linked:  '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 16V2H17V9.5H15.5V3.5H4.5V14.5H6.5C6.5 14.75 6.52083 15.0035 6.5625 15.2604C6.60417 15.5174 6.66667 15.7639 6.75 16H3ZM6 13H6.72917C6.9375 12.3333 7.27083 11.7361 7.72917 11.2083C8.1875 10.6806 8.72917 10.2778 9.35417 10H6V13ZM6 8H9V5H6V8ZM11.4921 18C10.5251 18 9.70139 17.6597 9.02083 16.9792C8.34028 16.2986 8 15.4722 8 14.5C8 13.5278 8.34028 12.7014 9.02083 12.0208C9.70139 11.3403 10.5251 11 11.4921 11H13.25V12.5H11.5C10.95 12.5 10.4792 12.6958 10.0875 13.0875C9.69583 13.4792 9.5 13.95 9.5 14.5C9.5 15.05 9.69583 15.5208 10.0875 15.9125C10.4792 16.3042 10.95 16.5 11.5 16.5H13.25V18H11.4921ZM11 8H14V5H11V8ZM11.75 15.25V13.75H16.25V15.25H11.75ZM14.75 18V16.5H16.5C17.05 16.5 17.5208 16.3056 17.9125 15.9167C18.3042 15.5278 18.5 15.0556 18.5 14.5C18.5 13.9444 18.3042 13.4722 17.9125 13.0833C17.5208 12.6944 17.05 12.5 16.5 12.5H14.75V11H16.5079C17.4749 11 18.2986 11.3401 18.9792 12.0202C19.6597 12.7003 20 13.5304 20 14.5104C20 15.4757 19.6597 16.2986 18.9792 16.9792C18.2986 17.6597 17.4749 18 16.5079 18H14.75Z"/></svg>'
 };
 
 /* ============================================================
@@ -947,11 +1113,31 @@ const CRS2056 = new L.Proj.CRS("EPSG:2056", DEF2056, {
 
 const map = L.map("map", {
   crs: CRS2056, minZoom: 8, maxZoom: 27,
-  zoomControl: true, attributionControl: true
+  zoomControl: false, attributionControl: false
 });
-L.control.scale({ imperial: false }).addTo(map);
-
 const lv95 = (x, y) => CRS2056.unproject(L.point(x, y));
+
+/* Map controls as in the Copernicus Browser: attribution at the bottom left; at the bottom right the zoom
+   buttons and, below them on one line, the mouse position (LV95 easting / northing) and the scale bar. */
+L.control.attribution({ position: "bottomleft" }).addTo(map);
+const fmtCH = v => Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");      // 2'661'150 as on map.geo.admin.ch
+const CoordsCtl = L.Control.extend({
+  options: { position: "bottomright" },
+  onAdd(m) {
+    const d = L.DomUtil.create("div", "leaflet-control coords-ctl");
+    d.title = "Mouse position in LV95 (EPSG:2056)";
+    const show = ll => { const p = CRS2056.project(ll); d.textContent = "E " + fmtCH(p.x) + "   N " + fmtCH(p.y); };
+    m.on("mousemove", e => show(e.latlng));
+    m.on("moveend", () => { if (!d.dataset.mouse) show(m.getCenter()); });
+    m.getContainer().addEventListener("mouseenter", () => { d.dataset.mouse = "1"; });
+    m.getContainer().addEventListener("mouseleave", () => { delete d.dataset.mouse; show(m.getCenter()); });
+    return d;
+  }
+});
+new CoordsCtl().addTo(map);
+L.control.scale({ imperial: false, position: "bottomright" }).addTo(map);
+L.control.zoom({ position: "bottomright", zoomInTitle: "Zoom in", zoomOutTitle: "Zoom out" }).addTo(map);
+
 /* Metres per pixel at any (also fractional) zoom; highlights open at the exact resolution of their
    map.geo.admin.ch link, between two levels of the tile grid. */
 const resAt = z => 1 / CRS2056.scale(z);
@@ -968,14 +1154,17 @@ map.fitBounds(CH_BOUNDS);
    2. Basemaps: swisstopo WMTS, native LV95
    ============================================================ */
 const ATTR = '&copy; <a href="https://www.swisstopo.admin.ch">swisstopo</a>';
-const ATTR_VD = '&copy; <a href="https://www.asit-asso.ch">ASIT VD</a>';
+const ATTR_VD = '&copy; <a href="https://www.asit-asso.ch">ASIT VD</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
+/* The basemaps get their own pane below the data layers, so the layer switcher can add them in any order. */
+map.createPane("basePane");
+map.getPane("basePane").style.zIndex = 150;
 /* crossOrigin is required so the PNG export can draw these tiles into a canvas
    without tainting it. Every service used here sends Access-Control-Allow-Origin: *. */
 function wmts(layer, fmt) {
   return L.tileLayer(
     "https://wmts.geo.admin.ch/1.0.0/" + layer + "/default/current/2056/{z}/{x}/{y}." + fmt,
-    { attribution: ATTR, minZoom: 8, maxZoom: 27, maxNativeZoom: 26,
+    { attribution: ATTR, minZoom: 8, maxZoom: 27, maxNativeZoom: 26, pane: "basePane",
       bounds: CH_BOUNDS, crossOrigin: "anonymous" }
   );
 }
@@ -985,9 +1174,10 @@ const BASEMAPS = {
   grey:       wmts("ch.swisstopo.pixelkarte-grau", "jpeg"),
   none:       null
 };
+const BASE_NAMES = { pixelkarte: "Map", swissimage: "SWISSIMAGE", grey: "Map Grey", none: "None" };
 let baseLayer = null, basemap = "pixelkarte";
 
-/* ASIT VD reference overlay, on the very same LV95 tile grid as swisstopo
+/* ASIT VD reference overlay (OpenStreetMap and Canton of Vaud data), on the very same LV95 tile grid as swisstopo
    (WMTS row/col path order {z}/{y}/{x}). Its own pane keeps it above the data layers. */
 map.createPane("refOverlay");
 map.getPane("refOverlay").style.zIndex = 550;
@@ -999,23 +1189,32 @@ const asitLayer = L.tileLayer(
     bounds: CH_BOUNDS, crossOrigin: "anonymous" }
 );
 
+/* Basemap switcher: the Leaflet layers control at the top right, as in the Copernicus Browser
+   (opens on hover; "None" is an empty group). */
+const noneLayer = L.layerGroup();
+const baseOf = name => BASEMAPS[name] || noneLayer;
+const layerCtl = L.control.layers(
+  Object.fromEntries(Object.keys(BASEMAPS).map(k => [BASE_NAMES[k], baseOf(k)])),
+  { "Labels OSM": asitLayer }, { position: "topright", collapsed: true }).addTo(map);
 function setBasemap(name) {
   if (!(name in BASEMAPS)) name = "pixelkarte";
   basemap = name;
-  $$("#basemapbar button[data-b]").forEach(x => x.classList.toggle("on", x.dataset.b === name));
-  if (baseLayer) map.removeLayer(baseLayer);
+  Object.keys(BASEMAPS).forEach(k => { if (k !== name && map.hasLayer(baseOf(k))) map.removeLayer(baseOf(k)); });
   baseLayer = BASEMAPS[name];
-  if (baseLayer) baseLayer.addTo(map).bringToBack();
+  if (!map.hasLayer(baseOf(name))) baseOf(name).addTo(map);
   writeUrlSoon();
 }
 function setLabels(on) {
   if (on && !map.hasLayer(asitLayer)) asitLayer.addTo(map);
   if (!on && map.hasLayer(asitLayer)) map.removeLayer(asitLayer);
-  $("#btnOverlay").classList.toggle("on", on);
   writeUrlSoon();
 }
-$$("#basemapbar button[data-b]").forEach(b => { b.onclick = () => setBasemap(b.dataset.b); });
-$("#btnOverlay").onclick = () => setLabels(!map.hasLayer(asitLayer));
+map.on("baselayerchange", e => {
+  basemap = Object.keys(BASEMAPS).find(k => baseOf(k) === e.layer) || "pixelkarte";
+  baseLayer = BASEMAPS[basemap];
+  writeUrlSoon();
+});
+map.on("overlayadd overlayremove", () => writeUrlSoon());
 
 /* ============================================================
    3. swissEO asset addressing and scaling
@@ -1767,7 +1966,7 @@ const CONFIGS = {
         text: "By late July a brown-yellow belt stretched across much of Switzerland, above all the Mittelland and the Jura, where last year’s meadows and fields have visibly dried out. The 2026 image is from 24 July, when two cloud-free orbits covered the country; a narrow strip in the west lies between them. (Source: watson.ch, 10 August 2026)" }] }
 };
 CONFIGS.FOREST = { name: "Forest", groups: [
-  ["Layers", ["true", "vhi", "vhidef", "vhiext", "ndvidiff", "ndvidiff2", "ndviz", "analyst", "nbr", "ndmi", "fdc"]]] };
+  ["Layers", ["true", "ndvi", "vhi", "vhidef", "vhiext", "ndvidiff", "ndvidiff2", "ndviz", "analyst", "nbr", "ndmi", "fdc"]]] };
 const cfgLayers = id => CONFIGS[id].groups.flatMap(g => g[1]);
 
 /* Verification status of the layers: the checklist "Layer verification" in README.md (checked = verified).
@@ -1782,7 +1981,7 @@ function parseVerified(md) {
   md.slice(a, b).split("\n").forEach(l => { const m = l.match(/^\s*[-*] \[([ xX])\] `([a-z0-9_]+)`/); if (m && m[1] !== " ") ids.push(m[2]); });
   return ids;
 }
-const VER_TXT = { ok: "Verified: checked in depth", todo: "To be verified: not yet checked in depth" };
+const VER_TXT = "BETA: this layer has not yet been verified in depth, its values may be wrong";
 const PREVIEWS = "public/previews/", PREVIEWS_CDSE = "https://browser.dataspace.copernicus.eu/previews/";
 
 /* Minimal Markdown for the descriptions: '# ' title, paragraphs, [links](url) and `code`. */
@@ -1869,14 +2068,14 @@ const sRGB = c => c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.
 function defaults(rec) {
   return Object.assign({ gain: 1, gamma: 1, r: [0, 1], g: [0, 1], b: [0, 1], min: rec.min, max: rec.max, thr: rec.threshold,
            opacity: 100, cloud: false, shadow: false, terrain: false, veg: "off", autoGain: false, look: "standard",
-           refDate: "", mode: "diff", ndwi: "swir", cmask: "off", edge: true }, rec.def || {});
+           refDate: "", mode: "diff", ndwi: "swir", cmask: "off" }, rec.def || {});
 }
 const settings = {};
 const S = rec => settings[rec.id] || (settings[rec.id] = defaults(rec));
 
 const RNG_KEYS = [["r", "redRange"], ["g", "greenRange"], ["b", "blueRange"]];
 const SETTING_KEYS = ["gain", "gamma", "redRange", "greenRange", "blueRange", "valueRange", "threshold",
-                      "opacity", "cloudMask", "shadowMask", "terrainMask", "vegetationMask", "autoGain", "look", "refDate", "displayMode", "ndwi", "customMask", "darkEdges"];
+                      "opacity", "cloudMask", "shadowMask", "terrainMask", "vegetationMask", "autoGain", "look", "refDate", "displayMode", "ndwi", "customMask"];
 const r3 = v => +(+v).toFixed(4);
 
 /* Non-default settings as a flat object, named like the Copernicus Browser URL params. */
@@ -1892,8 +2091,7 @@ function settingsToObj(rec, s) {
   if (rec.type === "diff2" && s.refDate) o.refDate = s.refDate;
   if (rec.modal && s.mode !== d.mode) o.displayMode = s.mode;
   if (rec.ndwiOpt && s.ndwi !== d.ndwi) o.ndwi = s.ndwi;
-  if (rec.tci && s.edge === false) o.darkEdges = "keep";
-  if (rec.type !== "wms" && (s.cmask === "in" || s.cmask === "out")) o.customMask = s.cmask;
+  if (rec.type !== "wms" && !rec.ext && (s.cmask === "in" || s.cmask === "out")) o.customMask = s.cmask;
   if (s.opacity !== 100) o.opacity = s.opacity;
   if (MASKABLE[rec.type]) {
     if (s.cloud !== d.cloud) o.cloudMask = s.cloud;
@@ -1924,8 +2122,7 @@ function objToSettings(rec, o) {
   if (rec.type === "diff2" && DATE_RE.test(o.refDate || "")) s.refDate = o.refDate;
   if (rec.modal && (o.displayMode === "diff" || o.displayMode === "change")) s.mode = o.displayMode;
   if (rec.ndwiOpt && (o.ndwi === "swir" || o.ndwi === "green")) s.ndwi = o.ndwi;
-  if (rec.tci && o.darkEdges === "keep") s.edge = false;
-  if (rec.type !== "wms" && (o.customMask === "in" || o.customMask === "out")) s.cmask = o.customMask;
+  if (rec.type !== "wms" && !rec.ext && (o.customMask === "in" || o.customMask === "out")) s.cmask = o.customMask;
   if (num(o.opacity) != null) s.opacity = clamp(Math.round(num(o.opacity)), 0, 100);
   if (o.cloudMask != null) s.cloud = bool(o.cloudMask);
   if (o.shadowMask != null) s.shadow = bool(o.shadowMask);
@@ -2116,6 +2313,7 @@ function productItems(src) {
 /* The item ids to draw for a layer on a date: every S2 mosaic of that day that passes the cloud
    filter (most recent first), the VHI day (nearest if missing) or the nearest NDVIdiff / NDVIz product. */
 async function resolveScenes(rec, date, cc) {
+  if (rec.source === "ext") return (await extPrepare(rec).catch(() => false)) ? ["ext"] : [];   // WMS / WMTS: no dates
   if (SOURCES[rec.source].sparse) {
     const ids = await productItems(rec.source), d = Date.parse(date + "T12:00:00Z");
     let best = null, bd = Infinity;
@@ -2285,7 +2483,7 @@ async function renderScene(rec, s, id, bbox, W, H, signal) {
     // the delivered TCI; gain / gamma / RGB ranges on top (1 / 1 / [0, 1] = unchanged). The internal mask decides
     // what is data, so black (0, 0, 0) stays black; dark pixels in the scene's edge zone count as no data.
     const ig = 1 / s.gamma, rg = [s.r, s.g, s.b], val = a.valid;
-    const ez = s.edge !== false ? await tciEdgeZone(id).catch(() => null) : null;
+    const ez = s.edge ? await tciEdgeZone(id).catch(() => null) : null;
     const drop = ez ? tciDarkEdges(a, val, ez, bbox, W, H) : null;
     for (let k = 0; k < n; k++) {
       if ((val ? !val[k] : a[0][k] === 0 && a[1][k] === 0 && a[2][k] === 0) || masked(k)) continue;
@@ -2583,7 +2781,9 @@ async function renderSeason(cfg, bbox, W, H, signal) {
 async function renderTile(cfg, bbox, W, H, signal) {
   if (cfg.rec.type === "diff2") return renderDiff2(cfg, bbox, W, H, signal);
   if (cfg.rec.type === "vhiseason") return renderSeason(cfg, bbox, W, H, signal);
-  const s = cfg.gf && cfg.gf !== 1 ? Object.assign({}, cfg.s, { gain: cfg.s.gain * cfg.gf }) : cfg.s;
+  let s = cfg.gf && cfg.gf !== 1 ? Object.assign({}, cfg.s, { gain: cfg.s.gain * cfg.gf }) : cfg.s;
+  // TCI: dark scene edges count as no data when the day has another scene (orbit) that fills them
+  if (cfg.rec.tci) s = Object.assign({}, s, { edge: cfg.scenes.length > 1 });
   // scenes one after the other, most recent first: a scene whose orbit misses the tile (known footprint) is
   // skipped, and once every pixel is filled the remaining scenes are not read at all
   let out = null;
@@ -2642,6 +2842,9 @@ function makeLayer(cfg, pane) {
       bounds: CH_BOUNDS, crossOrigin: "anonymous", pane: pane || "tilePane"
     }));
     lyr = ls.length === 1 ? ls[0] : L.layerGroup(ls);
+  } else if (rec.type === "ext") {
+    lyr = new ExtLayer({ rec, tileSize: 512, opacity: op, updateWhenIdle: false, keepBuffer: 1, pane: pane || "tilePane",
+                         attribution: escA(rec.ext.srv && rec.ext.srv.title || hostOf(rec.ext.u)) });
   } else {
     lyr = new CogLayer({
       cfg, tileSize: 512, opacity: op, updateWhenIdle: false, keepBuffer: 2, attribution: ATTR,
@@ -2697,7 +2900,7 @@ window.fetch = function (...args) {             // counts requests until their b
 map.on("layeradd", e => { if (e.layer && e.layer._tiles !== undefined) e.layer.on("tileloadstart tileload tileerror load", pendingSoon); });
 function refreshPending() {
   let n = 0, nb = 0;
-  (compareMode ? cmpLayers : [current]).forEach(l => subLayers(l).forEach(x => {
+  (compareMode ? cmpLayers : [current, xp.preview]).forEach(l => subLayers(l).forEach(x => {
     for (const k in x._tiles) if (!x._tiles[k].loaded) n++;
   }));
   if (baseLayer && baseLayer._tiles) for (const k in baseLayer._tiles) if (!baseLayer._tiles[k].loaded) nb++;
@@ -2787,7 +2990,8 @@ async function applyLayer() {
   updateDateInfo(rec, scenes);
   updateDateGrey();
   showSceneInfo(rec, scenes);
-  if (layerOff) { setStatus(""); return; }     // hidden: the date and scene info stay, nothing is drawn
+  const xpOn = () => xp.open && xp.sel;          // the WMS / WMTS panel shows its layer instead
+  if (layerOff || xpOn()) { setStatus(""); return; }     // hidden: the date and scene info stay, nothing is drawn
   if (!scenes.length) {
     setStatus(rec.source === "vhi"
       ? "No VHI product within ±45 days of " + state.date + "."
@@ -2801,6 +3005,7 @@ async function applyLayer() {
     if (tok !== applyToken) return;
     showAutoGain(currentCfg.gf);
   }
+  if (xpOn()) return;
   current = makeLayer(currentCfg).addTo(map);
 }
 
@@ -3028,6 +3233,11 @@ async function renderCal() {
    12. Layer list with Copernicus-style pull-down
    ============================================================ */
 function swatchHtml(rec, big) {
+  if (rec.ext) {                                  // WMS / WMTS: a GetMap thumbnail, or the service icon
+    const st = big ? ' style="width:100%;height:100%;border:0"' : "";
+    return rec.ext.thumb ? '<img class="sw th" alt="" loading="lazy" src="' + escA(rec.ext.thumb) + '"' + st + ' onerror="this.style.visibility=\'hidden\'">'
+      : '<div class="sw" style="background:#dfe5ea;color:#003F6B' + (big ? ";width:100%;height:100%;border:0" : "") + '">' + UI.linked + "</div>";
+  }
   if (rec.thumb) {
     return '<img class="sw th" alt="" loading="lazy" src="' + PREVIEWS + rec.thumb + '"' +
       (big ? ' style="width:100%;height:100%;border:0"' : "") +
@@ -3142,10 +3352,12 @@ function layerBody(rec) {
     : '<div class="dt">' + rec.name + "</div><p>" + rec.desc + "</p>" +
       (rec.more ? '<p>More info <a href="' + rec.more + '" target="_blank" rel="noopener">here</a>.</p>' : ""));
   body.append(d);
-  const vk = VERIFIED.has(rec.id) ? "ok" : "todo", vr = el("div", "verrow " + vk);
-  vr.innerHTML = verBadge(rec) + "<span>" + (vk === "ok" ? "<b>Verified</b>: this layer has been checked in depth."
-    : "<b>To be verified</b>: this layer has not yet been checked in depth (see Info).") + "</span>";
-  body.append(vr);
+  if (!VERIFIED.has(rec.id)) {                  // BETA: not yet verified in depth (README checklist)
+    const vr = el("div", "verrow");
+    vr.innerHTML = '<span class="ver">BETA</span><span>This layer has <b>not yet been verified</b> in depth (data access, ' +
+      "scaling, formula, masks, rendering, statistics): its values may be wrong. See Info.</span>";
+    body.append(vr);
+  }
   if (showCode.has(rec.id)) {
     const note = rec.note || (rec.type === "rgb" || rec.type === "index" ? SCALE_NOTE : "");
     body.append(el("code", "fx", rec.formula + (note ? "\n\n" + note : "")));
@@ -3282,7 +3494,6 @@ function layerBody(rec) {
     tog("cloud", "Clouds", "OmniCloudMask thick (1) and thin (2) cloud");
     tog("shadow", "Cloud shadows", "OmniCloudMask cloud shadow (3)");
     tog("terrain", "Terrain shadow", "Terrain mask value 200: cast or self-shadow");
-    if (rec.tci) tog("edge", "Remove dark scene edges", "Dark strip along a swath edge: mean RGB below 40 within 2 km of the scene edge counts as no data");
   }
   if (rec.source === "s2") {
     const l = el("div", "tog");
@@ -3395,17 +3606,11 @@ function renderLayerList() {
   $("#p-vis").scrollTop = scroll;
 }
 
-/* ✓ verified / ⏳ to be verified, see parseVerified */
-Object.assign(UI, {
-  verified: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-    '<path d="M12 2.8l2.5 1.9 3.1.2.9 3 2.5 1.9-1 3 1 3-2.5 1.9-.9 3-3.1.2L12 21.2l-2.5-1.9-3.1-.2-.9-3-2.5-1.9 1-3-1-3 2.5-1.9.9-3 3.1-.2z"/>' +
-    '<path d="M8.4 12.3l2.4 2.4 4.8-5"/></svg>',
-  todo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-    '<path d="M7 3h10M7 21h10M8 3v3.5c0 2 4 3.5 4 5.5s-4 3.5-4 5.5V21M16 3v3.5c0 2-4 3.5-4 5.5s4 3.5 4 5.5V21"/></svg>'
-});
+/* BETA behind the name of a layer that is not yet verified (see parseVerified); verified layers carry no label.
+   A name that already says BETA (swissEO NDVIdiff v200 BETA) gets no second one. */
 function verBadge(rec) {
-  const k = VERIFIED.has(rec.id) ? "ok" : "todo";
-  return '<span class="ver ' + k + '" title="' + VER_TXT[k] + '">' + (k === "ok" ? UI.verified : UI.todo) + "</span>";
+  if (VERIFIED.has(rec.id) || rec.ext || /\bBETA\b/.test(rec.name)) return "";
+  return '<span class="ver" title="' + VER_TXT + '">BETA</span>';
 }
 
 function layerItem(box, rec) {
@@ -3529,8 +3734,12 @@ $("#dcCompare").insertAdjacentHTML("afterbegin", UI.compare);
 function showView(v) {
   $("#dcLayers").classList.toggle("on", v === "layers");
   $("#dcCompare").classList.toggle("on", v === "compare");
+  $("#dcExternal").classList.toggle("on", v === "external");
   $("#v-layers").hidden = v !== "layers";
   $("#v-compare").hidden = v !== "compare";
+  $("#v-external").hidden = v !== "external";
+  if (v === "external") { xpOpen(); writeUrlSoon(); return; }
+  if (xp.open) { xpClose(); writeUrlSoon(); }
   if (v === "compare" && !compareMode && compare.length >= 2) setCompareMode(true);
   if (v === "layers" && compareMode && !activeHl) setCompareMode(false);     // a highlight keeps its comparison
 }
@@ -3551,6 +3760,7 @@ function setConfig(id) {
 }
 $("#cfgSel").onchange = e => setConfig(e.target.value);
 $("#dcCompare").onclick = () => showView("compare");
+$("#dcExternal").onclick = () => showView("external");
 
 /* ============================================================
    13. Compare mode (Copernicus Browser behaviour)
@@ -3646,8 +3856,26 @@ $("#btnCompare").onclick = () => setCompareMode(!compareMode);
 $("#cmpEffect").onchange = e => { compareEffect = e.target.value; renderCompare(); updateClips(); writeUrlSoon(); };
 $("#cmpClear").onclick = () => { compare = []; activeHl = null; setCompareMode(false, true); renderCompare(); writeUrlSoon(); };
 
+/* The date of the data a compare entry shows, instead of the date it was added with: the nearest product
+   (NDVIdiff, NDVIz, NDVIdiff v200 BETA), the VHI day (the nearest one if the day has none, also the end of
+   the VHI season sums) or the S2-SR date itself. Kept on the entry as it.day ("" = no data on that date). */
+const dataDayReq = new Map();
+function dataDay(it) {
+  const rec = LAYER[it.layerId];
+  if (!rec || rec.ext) return Promise.resolve(null);
+  const key = it.layerId + "|" + it.date + "|" + it.cc;
+  if (!dataDayReq.has(key)) {
+    dataDayReq.set(key, resolveScenes(rec, it.date, it.cc).then(sc => sc.length ? sc[0].slice(0, 10) : ""));
+    dataDayReq.get(key).catch(() => dataDayReq.delete(key));
+  }
+  return dataDayReq.get(key).then(d => { it.day = d; return d; }, () => null);
+}
+const cmpDay = it => it.day || it.date;
+const cmpDateTxt = it => LAYER[it.layerId].ext ? LAYER[it.layerId].ext.k + " · " + LAYER[it.layerId].sub
+  : "Date: " + (it.day === "" ? it.date + " (no data)" : cmpDay(it));
+
 /* Swipe handle for the split effect: moves the right edge of the top layer (first in the compare list). */
-const cmpLabel = it => LAYER[it.layerId].name + " · " + it.date;
+const cmpLabel = it => LAYER[it.layerId].name + (LAYER[it.layerId].ext ? "" : " · " + cmpDay(it));
 function updateSwipe() {
   const sw = $("#swipe"), on = compareMode && compareEffect === "split" && compare.length >= 2 && compare[0].clip[0] === 0;
   sw.hidden = !on;
@@ -3726,7 +3954,7 @@ function renderCompare() {
     const m = el("div", "ci-m");
     const t = el("div", "t");
     // the product layers already carry the product in their name (swissEO VHI forest, swissEO NDVIdiff …)
-    const nm = el("span", null, rec.name.startsWith("swissEO") ? rec.name : SOURCES[rec.source].name.replace(/ v\d+$/, "") + ": " + rec.name);
+    const nm = el("span", null, rec.name.startsWith("swissEO") || rec.ext ? rec.name : SOURCES[rec.source].name.replace(/ v\d+$/, "") + ": " + rec.name);
     nm.insertAdjacentHTML("beforeend", verBadge(rec));
     t.append(nm);
     const loc = el("button", "ib");
@@ -3734,7 +3962,14 @@ function renderCompare() {
     loc.innerHTML = UI.locate;
     loc.onclick = () => setViewFrac(lv95(it.view[0], it.view[1]), it.view[2]);
     t.append(loc);
-    m.append(t, el("div", null, "Date: " + it.date));
+    const dt = el("div", null, cmpDateTxt(it));
+    m.append(t, dt);
+    dataDay(it).then(d => {
+      if (d == null) return;
+      dt.textContent = cmpDateTxt(it);
+      dt.title = d && d !== it.date ? "Data of " + d + ", the product nearest to the selected " + it.date : "";
+      updateSwipe();
+    });
     m.append(el("div", null, "LV95: " + Math.round(it.view[0]) + ", " + Math.round(it.view[1]) + " | Zoom: " + it.view[2]));
     const sl = el("div", "sl");
     if (compareEffect === "split") {
@@ -4934,6 +5169,687 @@ $("#spCsv").onclick = () => downloadText("swissEO_aoi_spectrum_" + state.date + 
     .map(v => typeof v === "number" ? +v.toFixed(5) : v).join(",")).join("\n"), "text/csv");
 
 /* ============================================================
+   13c. Place search: the location search of map.geo.admin.ch (web-mapviewer search.api.js, searchLocation:
+        SearchServer with type=locations, results in LV95)
+   ============================================================ */
+const SEARCH_URL = "https://api3.geo.admin.ch/rest/services/ech/SearchServer";
+const GA_RES = [650, 500, 250, 100, 50, 20, 10, 5, 2.5, 2, 1, 0.5, 0.25, 0.1];   // zoomlevel of the results, in m/px
+const psIn = $("#psIn"), psRes = $("#psRes");
+let psTimer = null, psSeq = 0, psItems = [], psSel = -1, psPin = null;
+$("#psIco").innerHTML = UI.search;
+/* The labels are HTML with <b> and <i> (e.g. "<i>Populated Place</i> <b>Aarau</b> (AG)"): only these tags are kept. */
+const safeLabel = t => String(t || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  .replace(/&lt;(\/?)(b|i)&gt;/g, "<$1$2>");
+function parseLocation(r) {
+  const a = r.attrs, m = /BOX\(([\d.]+) ([\d.]+),([\d.]+) ([\d.]+)\)/.exec(a.geom_st_box2d || "");
+  let ext = null;
+  if (m) { const b = m.slice(1).map(Number); if (b[0] !== b[2] && b[1] !== b[3]) ext = b; }   // a point has no extent
+  const pre = a.origin === "district" ? "District " : a.origin === "kantone" ? "Canton " : "";
+  return { label: pre + safeLabel(a.label), detail: a.detail,
+           ext, z: Number.isInteger(a.zoomlevel) && a.zoomlevel < GA_RES.length ? a.zoomlevel : null,
+           pt: isFinite(a.y) && isFinite(a.x) ? [a.y, a.x] : null };          // with sr=2056: y = easting, x = northing
+}
+async function placeSearch(q) {
+  const seq = ++psSeq;
+  try {
+    const r = await fetch(SEARCH_URL + "?" + new URLSearchParams({ sr: 2056, searchText: q.trim(), lang: "en", type: "locations", limit: 10 }));
+    const j = await r.json();
+    if (seq !== psSeq) return;
+    psItems = (j.results || []).filter(x => x.attrs).map(parseLocation);
+    psSel = -1;
+    showPs();
+  } catch (e) { if (seq === psSeq) { psItems = []; showPs("The search is not available: " + e.message); } }
+}
+function showPs(msg) {
+  psRes.innerHTML = "";
+  if (msg || !psItems.length) psRes.append(el("div", "none", msg || "No place found"));
+  psItems.forEach((it, i) => {
+    const d = el("div", i === psSel ? "hl" : "");
+    d.innerHTML = it.label;
+    d.onmousedown = e => { e.preventDefault(); goPlace(it); };
+    psRes.append(d);
+  });
+  psRes.hidden = false;
+}
+/* Zooms to the extent of the place (municipality, district, canton) or to its point at the result's zoom level
+   (1:25,000 when it has none, as on map.geo.admin.ch) and drops a pin there. */
+function goPlace(it) {
+  const t = el("div"); t.innerHTML = it.label;
+  psIn.value = t.textContent;
+  psRes.hidden = true;
+  $("#psClear").hidden = false;
+  const c = it.pt || (it.ext ? [(it.ext[0] + it.ext[2]) / 2, (it.ext[1] + it.ext[3]) / 2] : null);
+  if (!c) return;
+  if (it.ext) map.fitBounds(L.latLngBounds(lv95(it.ext[0], it.ext[1]), lv95(it.ext[2], it.ext[3])), { animate: false });
+  else map.setView(lv95(c[0], c[1]), RES.indexOf(GA_RES[it.z != null ? it.z : 8]), { animate: false });
+  if (psPin) map.removeLayer(psPin);
+  psPin = L.marker(lv95(c[0], c[1]), { interactive: false, keyboard: false,
+    icon: L.divIcon({ className: "ps-pin", html: UI.pin, iconSize: [30, 30], iconAnchor: [15, 29] }) }).addTo(map);
+}
+psIn.oninput = () => {
+  const q = psIn.value;
+  $("#psClear").hidden = !q;
+  clearTimeout(psTimer);
+  if (q.trim().length < 2) { psSeq++; psItems = []; psRes.hidden = true; return; }
+  psTimer = setTimeout(() => placeSearch(q), 250);
+};
+psIn.onkeydown = e => {
+  if (e.key === "Escape") { psRes.hidden = true; return; }
+  if (psRes.hidden || !psItems.length) return;
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    psSel = (psSel + (e.key === "ArrowDown" ? 1 : psItems.length - 1)) % psItems.length;
+    showPs();
+  } else if (e.key === "Enter") { e.preventDefault(); goPlace(psItems[Math.max(0, psSel)]); }
+};
+psIn.onfocus = () => { if (psItems.length) showPs(); };
+psIn.onblur = () => setTimeout(() => {
+  psRes.hidden = true;
+  if (!psIn.value) $("#placeSearch").classList.remove("open");
+}, 150);
+$("#psClear").onclick = () => {
+  psIn.value = ""; psSeq++; psItems = []; psRes.hidden = true; $("#psClear").hidden = true;
+  if (psPin) { map.removeLayer(psPin); psPin = null; }
+  psIn.focus();
+};
+$("#psIco").onclick = () => { $("#placeSearch").classList.add("open"); psIn.focus(); };   // small screens: the icon opens the field
+
+/* ============================================================
+   13d. WMS / WMTS layers of other services (Copernicus Browser "WMS / WMTS" panel)
+   ============================================================ */
+const EXT_PRESET = "https://wms.geo.admin.ch/?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities";
+const EXT_PROVIDERS = "https://raw.githubusercontent.com/geoadmin/web-mapviewer/3e5a2900/packages/mapviewer/src/" +
+  "modules/menu/components/advancedTools/ImportCatalogue/external-providers.json";
+const EXT_STORE = "swisseo.wmsServices";
+proj4.defs("EPSG:25832", "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+/* The coordinate systems a service layer can be drawn from, in the order they are preferred. LV95 is drawn as it
+   is; the others are placed on the LV95 grid with an affine transform per map tile (see drawExt). */
+const EXT_CRS = ["EPSG:2056", "EPSG:21781", "EPSG:3857", "EPSG:25832", "EPSG:4326", "CRS:84"];
+SOURCES.ext = { coll: null, name: "WMS / WMTS", firstYear: 2015 };
+
+const hostOf = u => { try { return new URL(u).host; } catch (e) { return ""; } };
+const isHttp = u => /^https?:\/\/[^\s"'<>]+$/i.test(u || "");
+const escA = t => String(t).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+const geog = c => c === "EPSG:4326" || c === "CRS:84";
+function crsCode(c) {
+  c = String(c || "").trim();
+  if (/CRS:?84$/i.test(c)) return "CRS:84";
+  const m = /EPSG(?::[\d.]*)?:+(\d+)$|EPSG\/\d+\/(\d+)$/i.exec(c);
+  if (!m) return c.toUpperCase();
+  const n = m[1] || m[2];
+  return "EPSG:" + ({ 900913: 3857, 102100: 3857, 102113: 3857, 3785: 3857 }[n] || n);
+}
+/* LV95 [E, N] -> the service CRS ([lon, lat] for WGS84). LV03 by the 2,000,000 / 1,000,000 m offset, as accurate
+   as a map tile needs (the official transformation differs by at most about 1.6 m). */
+function extProj(c) {
+  if (c === "EPSG:2056") return p => p;
+  if (c === "EPSG:21781") return p => [p[0] - 2e6, p[1] - 1e6];
+  const f = proj4("EPSG:2056", c === "CRS:84" ? "EPSG:4326" : c);
+  return p => f.forward(p);
+}
+function addQuery(base, q) {
+  const u = new URL(base, location.href), keys = Object.keys(q).map(k => k.toLowerCase());
+  [...u.searchParams.keys()].forEach(k => { if (keys.includes(k.toLowerCase())) u.searchParams.delete(k); });
+  Object.entries(q).forEach(([k, v]) => u.searchParams.set(k, v));
+  return u.toString();
+}
+
+/* ---- GetCapabilities (namespace-agnostic) ---- */
+const xKids = (n, name) => n ? [...n.children].filter(c => c.localName === name) : [];
+const xKid = (n, name) => xKids(n, name)[0] || null;
+const xTxt = (n, name) => { const k = xKid(n, name); return k ? k.textContent.trim() : ""; };
+const xHref = n => n ? (n.getAttribute("xlink:href") || n.getAttributeNS("http://www.w3.org/1999/xlink", "href") || "") : "";
+
+function parseWms(doc, url) {
+  const root = doc.documentElement, ver = root.getAttribute("version") || "1.3.0";
+  const svc = xKid(root, "Service"), cap = xKid(root, "Capability"), gm = xKid(xKid(cap, "Request"), "GetMap");
+  const fmts = xKids(gm, "Format").map(f => f.textContent.trim());
+  const fmt = fmts.find(f => f === "image/png") || fmts.find(f => /png/i.test(f)) || fmts[0] || "image/png";
+  const getMap = xHref(xKid(xKid(xKid(xKid(gm, "DCPType"), "HTTP"), "Get"), "OnlineResource"));
+  const layers = [];
+  const walk = (n, inh) => {
+    const crs = [...new Set(inh.crs.concat(xKids(n, "CRS").concat(xKids(n, "SRS"))
+      .flatMap(c => c.textContent.trim().split(/\s+/)).map(crsCode)))];
+    const styles = xKids(n, "Style").map(st => ({ name: xTxt(st, "Name"), title: xTxt(st, "Title"),
+      legend: xHref(xKid(xKid(st, "LegendURL"), "OnlineResource")) }));
+    const g = xKid(n, "EX_GeographicBoundingBox"), ll = xKid(n, "LatLonBoundingBox");
+    let bb = g ? ["westBoundLongitude", "southBoundLatitude", "eastBoundLongitude", "northBoundLatitude"].map(k => +xTxt(g, k))
+      : ll ? ["minx", "miny", "maxx", "maxy"].map(k => +ll.getAttribute(k)) : null;
+    if (!bb || !bb.every(isFinite)) bb = inh.bb;
+    const at = xKid(n, "Attribution");
+    const me = { crs, styles: styles.length ? styles : inh.styles, bb,
+                 attr: at ? xTxt(at, "Title") || xHref(xKid(at, "OnlineResource")) : inh.attr };
+    const name = xTxt(n, "Name");
+    if (name) {
+      const md = xKids(n, "MetadataURL").map(m => ({ f: xTxt(m, "Format"), u: xHref(xKid(m, "OnlineResource")) })).filter(m => isHttp(m.u));
+      const html = md.filter(m => /html/i.test(m.f));
+      const tdim = xKids(n, "Dimension").find(d => /^time$/i.test(d.getAttribute("name") || ""));
+      layers.push({ name, title: xTxt(n, "Title") || name, abstract: xTxt(n, "Abstract"), crs: me.crs, styles: me.styles,
+                    bb: me.bb, attr: me.attr, meta: [...new Set((html.length ? html : md).map(m => m.u))],
+                    time: tdim ? tdim.getAttribute("default") || "" : "" });
+    }
+    xKids(n, "Layer").forEach(c => walk(c, me));
+  };
+  xKids(cap, "Layer").forEach(n => walk(n, { crs: [], styles: [], bb: null, attr: "" }));
+  return { kind: "WMS", version: ver, title: xTxt(svc, "Title") || hostOf(url), abstract: xTxt(svc, "Abstract"),
+           getMap: isHttp(getMap) ? getMap : url.split("?")[0], fmt, layers };
+}
+
+function parseWmts(doc, url) {
+  const root = doc.documentElement, cont = xKid(root, "Contents"), tms = {};
+  xKids(cont, "TileMatrixSet").forEach(t => {
+    const sc = xTxt(t, "SupportedCRS"), crs = crsCode(sc), mpu = geog(crs) ? 2 * Math.PI * 6378137 / 360 : 1;
+    const mats = xKids(t, "TileMatrix").map(m => {
+      const tl = xTxt(m, "TopLeftCorner").split(/\s+/).map(Number);
+      // EPSG:4326 corners are latitude first; a longitude beyond ±90 tells the order when a server does it differently
+      const swap = geog(crs) && (Math.abs(tl[1]) > 90 ? true : Math.abs(tl[0]) > 90 ? false : crs === "EPSG:4326");
+      return { id: xTxt(m, "Identifier"), res: +xTxt(m, "ScaleDenominator") * 0.00028 / mpu,
+               x0: swap ? tl[1] : tl[0], y0: swap ? tl[0] : tl[1], tw: +xTxt(m, "TileWidth") || 256, th: +xTxt(m, "TileHeight") || 256,
+               mw: +xTxt(m, "MatrixWidth") || 1e9, mh: +xTxt(m, "MatrixHeight") || 1e9 };
+    }).filter(m => m.res > 0 && isFinite(m.x0) && isFinite(m.y0));
+    tms[xTxt(t, "Identifier")] = { id: xTxt(t, "Identifier"), crs, mats };
+  });
+  const layers = xKids(cont, "Layer").map(n => {
+    const st = xKids(n, "Style"), ds = st.find(x => x.getAttribute("isDefault") === "true") || st[0];
+    const legend = ds ? xHref(xKid(ds, "LegendURL")) : "";
+    const fmts = xKids(n, "Format").map(f => f.textContent.trim());
+    const rs = xKids(n, "ResourceURL").filter(r => (r.getAttribute("resourceType") || "tile") === "tile")
+      .map(r => ({ f: r.getAttribute("format") || "", t: r.getAttribute("template") || "" })).filter(r => r.t);
+    const rt = rs.find(r => /png/i.test(r.f)) || rs.find(r => /jpe?g/i.test(r.f)) || rs[0];
+    const dims = {};
+    xKids(n, "Dimension").forEach(d => { dims[xTxt(d, "Identifier")] = xTxt(d, "Default") || xTxt(d, "Value"); });
+    const sets = xKids(n, "TileMatrixSetLink").map(l => xTxt(l, "TileMatrixSet")).filter(id => tms[id]);
+    const wb = xKid(n, "WGS84BoundingBox");
+    const bb = wb ? xTxt(wb, "LowerCorner").split(/\s+/).concat(xTxt(wb, "UpperCorner").split(/\s+/)).map(Number) : null;
+    const name = xTxt(n, "Identifier");
+    return { name, title: xTxt(n, "Title") || name, abstract: xTxt(n, "Abstract"), style: ds ? xTxt(ds, "Identifier") || "default" : "default",
+             styles: [{ name: "", legend }], fmt: rt ? rt.f : fmts.find(f => /png/i.test(f)) || fmts[0] || "image/png",
+             tpl: rt ? rt.t : "", dims, sets, crs: sets.map(id => tms[id].crs), bb: bb && bb.length === 4 && bb.every(isFinite) ? bb : null,
+             attr: "", meta: xKids(n, "Metadata").map(xHref).filter(isHttp), time: dims.Time || dims.time || "" };
+  });
+  const op = xKids(xKid(root, "OperationsMetadata"), "Operation").find(o => o.getAttribute("name") === "GetTile");
+  const kvp = op ? xHref(xKid(xKid(xKid(op, "DCP"), "HTTP"), "Get")) : "";
+  const si = xKid(root, "ServiceIdentification");
+  return { kind: "WMTS", version: "1.0.0", title: xTxt(si, "Title") || hostOf(url), abstract: xTxt(si, "Abstract"),
+           tms, layers, kvp: isHttp(kvp) ? kvp : url.split("?")[0] };
+}
+
+/* The capabilities URL of a service: as given when it is one, otherwise the service URL plus the request. */
+function capsUrl(u, kind) {
+  if (/request=getcapabilities/i.test(u) || /\.xml(\?|$)/i.test(u)) return u;
+  return addQuery(u, Object.assign({ SERVICE: kind, REQUEST: "GetCapabilities" }, kind === "WMS" ? { VERSION: "1.3.0" } : {}));
+}
+async function fetchCaps(u, kind) {
+  let url = capsUrl(u, kind);
+  if (/(^|\.)geo\.admin\.ch$/i.test(hostOf(url)) && !/[?&]lang=/i.test(url)) url = addQuery(url, { lang: "en" });   // English titles
+  let r;
+  try { r = await fetch(url); }
+  catch (e) { throw new Error("The service could not be reached, or it does not allow cross-origin requests (CORS)."); }
+  if (!r.ok) throw new Error("The service answered with HTTP " + r.status + ".");
+  const doc = new DOMParser().parseFromString(await r.text(), "text/xml"), root = doc.documentElement;
+  if (!root || doc.getElementsByTagName("parsererror").length) throw new Error("The answer is not a capabilities document (XML).");
+  if (/ExceptionReport$/.test(root.localName)) throw new Error("The service reported: " + root.textContent.trim().slice(0, 200));
+  if (root.localName === "Capabilities") return parseWmts(doc, url);
+  if (root.localName === "WMS_Capabilities" || root.localName === "WMT_MS_Capabilities") return parseWms(doc, url);
+  throw new Error("The answer is not a WMS or WMTS capabilities document.");
+}
+/* Cached per URL. Without a known type the URL decides which protocol is tried first ("wmts" in it), then the other. */
+const capsReq = new Map();
+function extCaps(u, kind) {
+  if (!capsReq.has(u)) {
+    const first = kind || (/wmts/i.test(u) ? "WMTS" : "WMS"), other = first === "WMS" ? "WMTS" : "WMS";
+    capsReq.set(u, fetchCaps(u, first).catch(e => kind || capsUrl(u, first) === capsUrl(u, other) ? Promise.reject(e)
+      : fetchCaps(u, other).catch(() => Promise.reject(e))));
+    capsReq.get(u).catch(() => capsReq.delete(u));
+  }
+  return capsReq.get(u);
+}
+
+/* How a layer is drawn: the first supported CRS (and for WMTS a tile matrix set in it), or null. */
+function extPlan(srv, Ly) {
+  if (srv.kind === "WMS") { const c = EXT_CRS.find(x => Ly.crs.includes(x)); return c ? { crs: c } : null; }
+  for (const c of EXT_CRS) {
+    const id = Ly.sets.find(x => srv.tms[x].crs === c && srv.tms[x].mats.length);
+    if (id) return { crs: c, set: srv.tms[id] };
+  }
+  return null;
+}
+function wmsGetMap(srv, Ly, crs, b, w, h) {             // b = [minx, miny, maxx, maxy] in crs (longitude first)
+  const v13 = !/^1\.[01]/.test(srv.version);
+  const bb = v13 && crs === "EPSG:4326" ? [b[1], b[0], b[3], b[2]] : b;   // WMS 1.3.0: EPSG:4326 is latitude first
+  const q = { SERVICE: "WMS", VERSION: v13 ? "1.3.0" : srv.version, REQUEST: "GetMap", LAYERS: Ly.name,
+              STYLES: (Ly.styles[0] && Ly.styles[0].name) || "", FORMAT: srv.fmt, TRANSPARENT: "TRUE",
+              WIDTH: w, HEIGHT: h, BBOX: bb.map(v => +v.toFixed(geog(crs) ? 7 : 2)).join(",") };
+  q[v13 ? "CRS" : "SRS"] = crs;
+  if (/(^|\.)geo\.admin\.ch$/i.test(hostOf(srv.getMap))) q.lang = "en";
+  return addQuery(srv.getMap, q);
+}
+function wmtsTileUrl(srv, Ly, set, m, row, col) {
+  if (Ly.tpl) {
+    let u = Ly.tpl.replace(/\{TileMatrixSet\}/gi, set.id).replace(/\{TileMatrix\}/gi, m.id).replace(/\{TileRow\}/gi, row)
+      .replace(/\{TileCol\}/gi, col).replace(/\{Style\}/gi, Ly.style);
+    Object.entries(Ly.dims).forEach(([k, v]) => { u = u.split("{" + k + "}").join(v); });
+    return u;
+  }
+  return addQuery(srv.kvp, { SERVICE: "WMTS", REQUEST: "GetTile", VERSION: "1.0.0", LAYER: Ly.name, STYLE: Ly.style, FORMAT: Ly.fmt,
+                             TILEMATRIXSET: set.id, TILEMATRIX: m.id, TILEROW: row, TILECOL: col });
+}
+
+/* Images of services that do not send CORS headers are still drawn on the map, but they taint a canvas, so such
+   tiles are left out of the image downloads. The hosts found without CORS are remembered. */
+const extNoCors = new Set();
+function extLoad(url, cors) {
+  return new Promise((res, rej) => {
+    const im = new Image();
+    if (cors) im.crossOrigin = "anonymous";
+    im.onload = () => res(im);
+    im.onerror = () => rej(new Error("image"));
+    im.src = url;
+  });
+}
+async function extImg(url, needClean) {
+  const h = hostOf(url);
+  if (!extNoCors.has(h)) {
+    try { return { im: await extLoad(url, true), clean: true }; } catch (e) { if (needClean) return null; }
+  } else if (needClean) return null;
+  try { const im = await extLoad(url, false); extNoCors.add(h); return { im, clean: false }; } catch (e) { return null; }
+}
+
+/* Draws an external layer for the LV95 box bbox into a W × H canvas: one WMS GetMap of the enclosing box in the
+   service CRS, or the WMTS tiles of the tile matrix nearest to the resolution, placed with the affine transform
+   that maps the box corners. In LV95 this is exact; LV03, Web Mercator, UTM and WGS84 line up within about a pixel.
+   Returns true when an image without CORS was drawn. */
+async function drawExt(ctx, rec, bbox, W, H, needClean) {
+  const x = rec.ext, srv = x.srv, Ly = x.L, plan = x.plan;
+  if (!srv || !Ly || !plan) return false;
+  const f = extProj(plan.crs), mx = (bbox[0] + bbox[2]) / 2, my = (bbox[1] + bbox[3]) / 2;
+  const P0 = f([bbox[0], bbox[3]]), P1 = f([bbox[2], bbox[3]]), P2 = f([bbox[0], bbox[1]]);
+  const pts = [P0, P1, P2, f([bbox[2], bbox[1]]), f([mx, bbox[3]]), f([mx, bbox[1]]), f([bbox[0], my]), f([bbox[2], my])];
+  if (!pts.every(p => isFinite(p[0]) && isFinite(p[1]))) return false;
+  const env = [Math.min(...pts.map(p => p[0])), Math.min(...pts.map(p => p[1])), Math.max(...pts.map(p => p[0])), Math.max(...pts.map(p => p[1]))];
+  const dx = [P1[0] - P0[0], P1[1] - P0[1]], dy = [P2[0] - P0[0], P2[1] - P0[1]], det = dx[0] * dy[1] - dx[1] * dy[0];
+  if (!det) return false;
+  // pixel = M · (service x − P0x, P0y − service y), relative to P0 so the canvas transform keeps its precision
+  const a = W * dy[1] / det, c = W * dy[0] / det, b = -H * dx[1] / det, d = -H * dx[0] / det;
+  const put = (im, x0, y0, x1, y1) => {             // an image covering [x0, y0, x1, y1] of the service CRS
+    ctx.setTransform(a, b, c, d, 0, 0);
+    ctx.drawImage(im, x0 - P0[0], P0[1] - y1, x1 - x0, y1 - y0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  };
+  const px = Math.hypot(dx[0], dx[1]) / W;            // service units per map pixel
+  if (srv.kind === "WMS") {
+    const w = clamp(Math.round((env[2] - env[0]) / px), 1, 4096), h = clamp(Math.round((env[3] - env[1]) / px), 1, 4096);
+    const r = await extImg(wmsGetMap(srv, Ly, plan.crs, env, w, h), needClean);
+    if (r) put(r.im, env[0], env[1], env[2], env[3]);
+    return !!(r && !r.clean);
+  }
+  const set = plan.set, cand = set.mats.filter(q => q.res >= px / 1.5);
+  const m = cand.length ? cand.reduce((p, q) => q.res < p.res ? q : p) : set.mats.reduce((p, q) => q.res > p.res ? q : p);
+  const tw = m.tw * m.res, th = m.th * m.res;
+  const c0 = Math.max(0, Math.floor((env[0] - m.x0) / tw)), c1 = Math.min(m.mw - 1, Math.floor((env[2] - m.x0) / tw));
+  const r0 = Math.max(0, Math.floor((m.y0 - env[3]) / th)), r1 = Math.min(m.mh - 1, Math.floor((m.y0 - env[1]) / th));
+  if (c1 < c0 || r1 < r0 || (c1 - c0 + 1) * (r1 - r0 + 1) > 100) return false;
+  let dirty = false;
+  const jobs = [];
+  for (let r = r0; r <= r1; r++) for (let cc = c0; cc <= c1; cc++) {
+    jobs.push(extImg(wmtsTileUrl(srv, Ly, set, m, r, cc), needClean).then(res => {
+      if (!res) return;
+      put(res.im, m.x0 + cc * tw, m.y0 - (r + 1) * th, m.x0 + (cc + 1) * tw, m.y0 - r * th);
+      if (!res.clean) dirty = true;
+    }));
+  }
+  await Promise.all(jobs);
+  return dirty;
+}
+const ExtLayer = L.GridLayer.extend({
+  createTile(coords, done) {
+    const N = this.getTileSize().x, tile = L.DomUtil.create("canvas"), res = RES[coords.z];
+    tile.width = tile.height = N;
+    const minX = ORIGIN[0] + coords.x * N * res, maxY = ORIGIN[1] - coords.y * N * res;
+    drawExt(tile.getContext("2d"), this.options.rec, [minX, maxY - N * res, minX + N * res, maxY], N, N, false)
+      .then(t => { tile._tainted = t; done(null, tile); }, () => done(null, tile));
+    return tile;
+  }
+});
+/* The layer for any box (downloads), in chunks of at most 1024 px; images without CORS are left out. */
+async function renderExtCanvas(cfg, bbox, W, H, signal) {
+  const cv = makeCanvas(W, H), ctx = cv.getContext("2d"), CH = 1024;
+  const rx = (bbox[2] - bbox[0]) / W, ry = (bbox[3] - bbox[1]) / H;
+  for (let y0 = 0; y0 < H; y0 += CH) for (let x0 = 0; x0 < W; x0 += CH) {
+    if (signal && signal.aborted) return cv;
+    const w = Math.min(CH, W - x0), h = Math.min(CH, H - y0), sub = makeCanvas(w, h);
+    await drawExt(sub.getContext("2d"), cfg.rec, [bbox[0] + x0 * rx, bbox[3] - (y0 + h) * ry, bbox[0] + (x0 + w) * rx, bbox[3] - y0 * ry], w, h, true);
+    ctx.drawImage(sub, x0, y0);
+  }
+  return cv;
+}
+
+/* A thumbnail: GetMap (or one WMTS tile) of the layer's extent within Switzerland. */
+function extThumb(srv, Ly, plan) {
+  if (!plan) return "";
+  let b = [2485000, 1075000, 2834000, 1296000];
+  if (Ly.bb) {
+    const sw = proj4("EPSG:4326", "EPSG:2056", [Math.max(Ly.bb[0], 5.9), Math.max(Ly.bb[1], 45.8)]);
+    const ne = proj4("EPSG:4326", "EPSG:2056", [Math.min(Ly.bb[2], 10.5), Math.min(Ly.bb[3], 47.85)]);
+    if (ne[0] > sw[0] && ne[1] > sw[1]) b = [sw[0], sw[1], ne[0], ne[1]];
+  }
+  const cx = (b[0] + b[2]) / 2, cy = (b[1] + b[3]) / 2, hw = Math.max(b[2] - b[0], b[3] - b[1]) / 2, f = extProj(plan.crs);
+  const p = [f([cx - hw, cy - hw]), f([cx + hw, cy + hw])];
+  if (srv.kind === "WMS") return wmsGetMap(srv, Ly, plan.crs, [p[0][0], p[0][1], p[1][0], p[1][1]], 64, 64);
+  const want = (p[1][0] - p[0][0]) / 256, c = f([cx, cy]), mats = plan.set.mats;
+  const m = mats.filter(q => q.res >= want).reduce((a, q) => !a || q.res < a.res ? q : a, null) || mats[0];
+  const col = Math.floor((c[0] - m.x0) / (m.tw * m.res)), row = Math.floor((m.y0 - c[1]) / (m.th * m.res));
+  return col >= 0 && row >= 0 && col < m.mw && row < m.mh ? wmtsTileUrl(srv, Ly, plan.set, m, row, col) : "";
+}
+
+/* External layers become layer records (type "ext"), so the compare list, the map and the downloads treat them
+   like the swissEO layers. x = { u: service URL, k: "WMS" | "WMTS", n: layer name, t: title }. */
+function extRec(x) {
+  const id = "ext:" + x.k + ":" + x.u + "#" + x.n;
+  if (!LAYER[id]) LAYER[id] = { id, type: "ext", source: "ext", name: x.t || x.n, sub: hostOf(x.u),
+                                ext: { u: x.u, k: x.k, n: x.n, t: x.t || x.n } };
+  return LAYER[id];
+}
+function extBind(rec, srv, Ly) {
+  const x = rec.ext;
+  x.srv = srv; x.L = Ly; x.plan = Ly ? extPlan(srv, Ly) : null; x.thumb = Ly ? extThumb(srv, Ly, x.plan) : "";
+  if (Ly) rec.name = x.t = Ly.title;
+  return rec;
+}
+/* Loads the capabilities of a record that came with a link; false when the layer cannot be drawn. */
+async function extPrepare(rec) {
+  const x = rec.ext;
+  if (!x.srv) {
+    const srv = await extCaps(x.u, x.k);
+    extBind(rec, srv, srv.layers.find(l => l.name === x.n) || null);
+  }
+  return !!(x.L && x.plan);
+}
+
+/* ---- the panel ---- */
+const xp = { open: false, init: false, servers: [], active: null, sel: null, filter: "", page: 0, size: 10,
+             details: false, preview: null, provs: null, boot: null };
+$("#dcExternal").innerHTML = UI.linked;
+function xpSave() {
+  try { localStorage.setItem(EXT_STORE, JSON.stringify(xp.servers.filter(s => s.url !== EXT_PRESET).map(s => ({ url: s.url, title: s.title, kind: s.kind })))); }
+  catch (e) { /* no storage: the services stay for this visit */ }
+}
+function xpInit() {
+  if (xp.init) return;
+  xp.init = true;
+  xp.servers = [{ url: EXT_PRESET, title: "swisstopo WMS (wms.geo.admin.ch)", kind: "WMS" }];
+  try {
+    (JSON.parse(localStorage.getItem(EXT_STORE) || "[]") || []).forEach(s => {
+      if (s && isHttp(s.url) && !xp.servers.some(x => x.url === s.url)) xp.servers.push({ url: s.url, title: String(s.title || hostOf(s.url)), kind: s.kind });
+    });
+  } catch (e) { /* ignore a broken store */ }
+  // the providers of map.geo.admin.ch, fetched only now that the panel is opened
+  xp.provs = fetch(EXT_PROVIDERS).then(r => r.json()).then(a => a.filter(isHttp)).catch(() => []);
+  xp.provs.then(() => { if (document.activeElement === $("#xpProv")) xpProvList(); });
+}
+function xpErr(msg, warn) {
+  const e = $("#xpErr");
+  e.hidden = !msg;
+  e.className = warn ? "xp-warn" : "xp-err";
+  e.textContent = msg || "";
+}
+const normUrl = u => u.trim().replace(/\/+$/, "").toLowerCase();
+/* Adds a service (or switches to it when it is already in the list) and loads its layers. */
+async function xpLoad(url, opts) {
+  url = url.trim();
+  xpErr("");
+  if (!isHttp(url)) { xpErr("Invalid URL: enter the http(s) address of a WMS or WMTS service."); return; }
+  if (location.protocol === "https:" && /^http:\/\//i.test(url)) { xpErr("This server must support HTTPS to be loaded here."); return; }
+  let srv = xp.servers.find(s => normUrl(s.url) === normUrl(url));
+  if (srv && opts && opts.own) xpErr("This server is already loaded as \"" + srv.title + "\".", true);
+  if (!srv) { srv = { url, title: hostOf(url), kind: null }; xp.servers.push(srv); }
+  await xpActivate(srv);
+}
+async function xpActivate(srv) {
+  xp.active = srv; xp.filter = ""; xp.page = 0;
+  if (!srv.caps) {
+    srv.loading = true; srv.err = "";
+    renderXp();
+    try {
+      srv.caps = await extCaps(srv.url, srv.kind);
+      srv.kind = srv.caps.kind;
+      if (srv.url !== EXT_PRESET) srv.title = srv.caps.title || srv.title;
+      xpSave();
+    } catch (e) { srv.err = e.message; }
+    srv.loading = false;
+  }
+  if (xp.boot && srv.caps && xp.boot.url === srv.url) {          // a link: select its layer
+    const Ly = srv.caps.layers.find(l => l.name === xp.boot.layer), b = xp.boot;
+    xp.boot = null;
+    if (Ly) { const i = srv.caps.layers.indexOf(Ly); xp.page = Math.floor(i / xp.size); xpSelect(srv, Ly, b.opacity); return; }
+  }
+  renderXp();
+  writeUrlSoon();
+}
+function xpRemove(srv) {
+  xp.servers = xp.servers.filter(s => s !== srv);
+  if (xp.sel && xp.sel.srv === srv) xpUnselect();
+  if (xp.active === srv) xp.active = null;
+  xpSave();
+  renderXp();
+  writeUrlSoon();
+}
+function xpShow() {                                   // the selected layer on the map, instead of the swissEO layer
+  if (xp.preview) { map.removeLayer(xp.preview); xp.preview = null; }
+  if (!xp.open || !xp.sel || compareMode) return;
+  removeCurrent();
+  if (statusKind) setStatus("");
+  xp.preview = makeLayer({ rec: xp.sel.rec, s: S(xp.sel.rec), scenes: ["ext"] }).addTo(map);
+}
+function xpSelect(srv, Ly, opacity) {
+  const rec = extBind(extRec({ u: srv.url, k: srv.caps.kind, n: Ly.name, t: Ly.title }), srv.caps, Ly);
+  if (opacity != null) S(rec).opacity = opacity;
+  xp.sel = { srv, L: Ly, rec };
+  xp.details = false;
+  xpShow();
+  renderXp();
+  writeUrlSoon();
+}
+function xpUnselect() {
+  xp.sel = null;
+  if (xp.preview) { map.removeLayer(xp.preview); xp.preview = null; }
+  if (xp.open) applyLayer();
+}
+function xpOpen() {
+  if (xp.open) return;
+  xp.open = true;
+  xpInit();
+  if (compareMode) setCompareMode(false, true);
+  if (xp.boot && isHttp(xp.boot.url)) xpLoad(xp.boot.url);
+  else if (!xp.active) xpActivate(xp.servers[0]);
+  else renderXp();
+}
+function xpClose() {
+  if (!xp.open) return;
+  xp.open = false;
+  xp.sel = null;                                  // the panel opens again without an active layer
+  xp.details = false;
+  if (xp.preview) { map.removeLayer(xp.preview); xp.preview = null; }
+  applyLayer();
+}
+
+/* Provider pull-down: the swisstopo WMS and the providers of map.geo.admin.ch, filtered by the text typed. */
+let xpProvSel = -1, xpProvItems = [];
+async function xpProvList() {
+  const box = $("#xpProvList"), q = $("#xpProv").value.toLowerCase().split(/\s+/).filter(Boolean);
+  const provs = await xp.provs;
+  const all = [{ url: EXT_PRESET, t: "swisstopo WMS (wms.geo.admin.ch)" }].concat(provs.filter(u => u !== EXT_PRESET)
+    .map(u => ({ url: u, t: hostOf(u) + new URL(u).pathname.replace(/\/$/, "") })));
+  xpProvItems = all.filter(p => q.every(w => (p.t + " " + p.url).toLowerCase().includes(w)));
+  box.innerHTML = "";
+  if (!provs.length) box.append(el("div", "info", "Loading the provider list of map.geo.admin.ch…"));
+  xpProvItems.slice(0, 200).forEach((p, i) => {
+    const d = el("div", i === xpProvSel ? "hl" : "", p.t);
+    d.title = p.url;
+    d.onmousedown = e => { e.preventDefault(); xpProvPick(p); };
+    box.append(d);
+  });
+  if (!xpProvItems.length && provs.length) box.append(el("div", "info", "No provider matches. Paste the service URL below and press +."));
+  box.append(el("div", "info", all.length + " services: the swisstopo WMS and the external providers of map.geo.admin.ch"));
+  box.hidden = false;
+}
+function xpProvPick(p) {
+  $("#xpProv").value = "";
+  $("#xpProvList").hidden = true;
+  $("#xpProv").blur();
+  xpLoad(p.url);
+}
+$("#xpProv").onfocus = () => { xpProvSel = -1; xpProvList(); };
+$("#xpProv").oninput = () => { xpProvSel = -1; xpProvList(); };
+$("#xpProv").onblur = () => setTimeout(() => { $("#xpProvList").hidden = true; }, 150);
+$("#xpProv").onkeydown = e => {
+  const n = Math.min(xpProvItems.length, 200);
+  if (e.key === "Escape") { $("#xpProvList").hidden = true; return; }
+  if ((e.key === "ArrowDown" || e.key === "ArrowUp") && n) {
+    e.preventDefault();
+    xpProvSel = (xpProvSel + (e.key === "ArrowDown" ? 1 : n - 1)) % n;
+    xpProvList();
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    const v = $("#xpProv").value.trim();
+    if (xpProvItems[Math.max(0, xpProvSel)]) xpProvPick(xpProvItems[Math.max(0, xpProvSel)]);
+    else if (isHttp(v)) xpProvPick({ url: v });
+  }
+};
+$("#xpUrl").oninput = () => { $("#xpAdd").disabled = !$("#xpUrl").value.trim(); xpErr(""); };
+const xpAddOwn = () => { const v = $("#xpUrl").value.trim(); if (!v) return; $("#xpUrl").value = ""; $("#xpAdd").disabled = true; xpLoad(v, { own: true }); };
+$("#xpAdd").onclick = xpAddOwn;
+$("#xpUrl").onkeydown = e => { if (e.key === "Enter") xpAddOwn(); };
+
+function renderXp() {
+  const sb = $("#xpSrv"), lb = $("#xpLayers");
+  sb.innerHTML = "";
+  xp.servers.forEach(srv => {
+    const row = el("div", "s"), b = el("button", "b" + (srv === xp.active ? " on" : ""));
+    b.title = (srv.caps && srv.caps.abstract ? srv.caps.abstract + "\n\n" : "") + srv.url;
+    const t = el("span", null, srv.title);
+    b.append(t);
+    if (srv.kind) b.append(el("small", null, srv.kind));
+    if (srv === xp.active && srv.caps) b.insertAdjacentHTML("beforeend", UI.check);
+    b.onclick = () => { if (srv !== xp.active) xpActivate(srv); };
+    row.append(b);
+    if (srv.url !== EXT_PRESET) {
+      const del = el("button", "ib");
+      del.title = "Remove this service";
+      del.innerHTML = UI.trash;
+      del.onclick = () => xpRemove(srv);
+      row.append(del);
+    }
+    sb.append(row);
+  });
+  lb.innerHTML = "";
+  const srv = xp.active;
+  if (!srv) { lb.append(el("div", "hint", "Choose a service above, or enter the URL of a WMS or WMTS service and press +.")); return; }
+  if (srv.loading) { lb.append(el("div", "hint", "Loading the capabilities of " + srv.title + "…")); return; }
+  if (srv.err || !srv.caps) {
+    lb.append(el("div", "xp-err", srv.err || "The service could not be read."));
+    const re = el("button", "lnk", "Retry");
+    re.onclick = () => xpActivate(srv);
+    lb.append(re);
+    return;
+  }
+  lb.append(el("div", "ghead", "Layers"));
+  const tools = el("div", "xp-tools"), inp = el("input", "xp-in"), cnt = el("span", "cnt");
+  inp.placeholder = "Search layers…"; inp.value = xp.filter; inp.spellcheck = false;
+  tools.append(inp, cnt);
+  lb.append(tools);
+  const list = el("div"), pg = el("div", "xp-pg");
+  lb.append(list, pg);
+  const fill = () => {
+    const terms = xp.filter.toLowerCase().split(/\s+/).filter(Boolean);
+    const all = srv.caps.layers, flt = terms.length ? all.filter(l => terms.every(w => (l.title + " " + l.name).toLowerCase().includes(w))) : all;
+    const pages = Math.max(1, Math.ceil(flt.length / xp.size));
+    xp.page = clamp(xp.page, 0, pages - 1);
+    cnt.textContent = terms.length ? flt.length + " of " + all.length + " layers" : all.length + " layers";
+    list.innerHTML = "";
+    flt.slice(xp.page * xp.size, (xp.page + 1) * xp.size).forEach(Ly => xpRow(list, srv, Ly));
+    if (!flt.length) list.append(el("div", "hint", "No layers match"));
+    pg.innerHTML = "";
+    const pc = el("div", "pgc"), prev = el("button"), next = el("button"), sel = el("select");
+    prev.innerHTML = UI.left; next.innerHTML = UI.right;
+    prev.title = "Previous page"; next.title = "Next page";
+    prev.disabled = xp.page === 0; next.disabled = xp.page >= pages - 1;
+    prev.onclick = () => { xp.page--; fill(); };
+    next.onclick = () => { xp.page++; fill(); };
+    pc.append(prev, el("span", null, (xp.page + 1) + " / " + pages), next);
+    [10, 25, 50, 100].forEach(n => { const o = el("option", null, n + " per page"); o.value = n; o.selected = n === xp.size; sel.append(o); });
+    sel.onchange = () => { xp.size = +sel.value; xp.page = 0; fill(); };
+    pg.append(pc, sel);
+  };
+  inp.oninput = () => { xp.filter = inp.value; xp.page = 0; fill(); };
+  fill();
+}
+
+function xpRow(box, srv, Ly) {
+  const plan = extPlan(srv.caps, Ly), on = !!(xp.sel && xp.sel.srv === srv && xp.sel.L === Ly);
+  const w = el("div", "lyr" + (on ? " on" : "") + (plan ? "" : " na")), head = el("div", "lyr-head");
+  head.title = !plan ? "Not available: the service offers this layer in none of the supported coordinate systems " +
+    "(LV95, LV03, Web Mercator, UTM 32N, WGS84)" : on ? "Click to hide this layer" : "Show this layer on the map";
+  const img = el("img", "sw th");
+  img.alt = ""; img.loading = "lazy";
+  img.onerror = () => { img.style.visibility = "hidden"; };
+  const tu = plan ? extThumb(srv.caps, Ly, plan) : "";
+  if (tu) img.src = tu; else img.style.visibility = "hidden";
+  const lt = el("div", "lt");
+  lt.append(el("div", "t", Ly.title));
+  if (Ly.abstract) lt.append(el("div", "sub2 xl-abs", Ly.abstract));
+  if (Ly.time) lt.append(el("div", "sub2", "Time: " + Ly.time));
+  head.append(img, lt);
+  if (on) head.insertAdjacentHTML("beforeend", '<span class="chk">' + UI.check + "</span>");
+  head.onclick = () => { if (on) { xpUnselect(); renderXp(); writeUrlSoon(); } else if (plan) xpSelect(srv, Ly); };
+  w.append(head);
+  if (Ly.attr || Ly.meta.length) {
+    const mr = el("div", "xl-meta"), at = el("span", null, isHttp(Ly.attr) ? hostOf(Ly.attr) : Ly.attr), ml = el("span");
+    Ly.meta.forEach((u, i) => {
+      const a = el("a", null, Ly.meta.length > 1 ? "Metadata " + (i + 1) : "Metadata");
+      a.href = u; a.target = "_blank"; a.rel = "noopener"; a.title = u;
+      if (i) ml.append(" · ");
+      ml.append(a);
+    });
+    mr.append(at, ml);
+    w.append(mr);
+  }
+  if (on) {
+    const rec = xp.sel.rec, s = S(rec), legend = Ly.styles.map(x => x.legend).find(isHttp) || "";
+    const bar = el("div", "lyr-bar"), add = el("button", "lnk"), chev = el("button", "ib");
+    add.innerHTML = UI.compare + "Add to Compare";
+    add.onclick = () => addToCompare(rec);
+    chev.title = xp.details ? "Hide legend and description" : "Show legend and description";
+    chev.innerHTML = xp.details ? UI.up : UI.down;
+    chev.onclick = () => { xp.details = !xp.details; renderXp(); };
+    bar.append(add, el("span", "spacer"), chev);
+    w.append(bar);
+    if (xp.details) {
+      const body = el("div", "lyr-body");
+      if (legend) {
+        body.append(el("div", "sec", "Legend"));
+        const li = el("img", "xl-legend");
+        li.alt = "Legend"; li.src = legend;
+        li.onerror = () => { li.replaceWith(el("div", "hint", "The legend could not be loaded.")); };
+        body.append(li);
+      }
+      if (Ly.abstract) { body.append(el("div", "sec", "Description")); body.append(el("div", "ldesc", Ly.abstract)); }
+      body.append(el("div", "hint", srv.caps.kind + " layer " + Ly.name + " · drawn from " + plan.crs +
+        (plan.crs === "EPSG:2056" ? "" : " (placed on the LV95 grid)") +
+        (extNoCors.has(hostOf(srv.caps.kind === "WMS" ? srv.caps.getMap : Ly.tpl || srv.caps.kvp))
+          ? " · this service sends no CORS headers, so it is left out of image downloads" : "")));
+      body.append(sliderRow("Opacity", 0, 100, 1, s.opacity, v => {
+        s.opacity = v;
+        if (xp.preview) setLayerOpacity(xp.preview, v / 100);
+        writeUrlSoon();
+      }));
+      w.append(body);
+    }
+  }
+  box.append(w);
+}
+
+/* ============================================================
    14. Permalink: the URL follows every change
    ============================================================ */
 let booted = false, urlTimer = null;
@@ -4968,10 +5884,11 @@ function writeUrl() {
   if (basemap !== "pixelkarte") p.set("basemap", basemap);
   if (map.hasLayer(asitLayer)) p.set("labels", "true");
   if (compare.length) {
-    p.set("compareLayers", b64e(compare.map(it => ({
-      l: it.layerId, d: it.date, c: it.cc, s: settingsToObj(LAYER[it.layerId], it.s),
-      v: [+it.view[0].toFixed(2), +it.view[1].toFixed(2), it.view[2]]
-    }))));
+    p.set("compareLayers", b64e(compare.map(it => {
+      const rec = LAYER[it.layerId], x = rec.ext;
+      return Object.assign(x ? { l: "ext", x: { u: x.u, k: x.k, n: x.n, t: x.t } } : { l: it.layerId }, {
+        d: it.date, c: it.cc, s: settingsToObj(rec, it.s), v: [+it.view[0].toFixed(2), +it.view[1].toFixed(2), it.view[2]] });
+    })));
     p.set("comparedOpacity", JSON.stringify(compare.map(it => r3(it.opacity))));
     p.set("comparedClipping", JSON.stringify(compare.map(it => it.clip.map(r3))));
     p.set("compareMode", compareMode ? compareEffect : "off");
@@ -4979,6 +5896,14 @@ function writeUrl() {
   const ap = aoiParam();
   if (ap) p.set(ap[0], ap[1]);
   else if (!aoi && aoiUrlPending) p.set("aoiUrl", aoiUrlPending);       // still loading
+  if (xp.open) {                                // WMS / WMTS panel: service, layer and its opacity
+    p.set("panel", "wms");
+    const b = xp.boot;
+    if (xp.active || b) p.set("wmsUrl", xp.active ? xp.active.url : b.url);
+    if (xp.sel || (b && b.layer)) p.set("wmsLayer", xp.sel ? xp.sel.L.name : b.layer);
+    const op = xp.sel ? S(xp.sel.rec).opacity : b && b.opacity;
+    if (op != null && op !== 100) p.set("wmsOpacity", op);
+  }
   if (customMask && customMask.url) p.set("maskUrl", customMask.url);
   else if (!customMask && maskUrlPending) p.set("maskUrl", maskUrlPending);
   history.replaceState(null, "", location.pathname + "?" + p.toString() + location.hash);
@@ -5012,9 +5937,12 @@ function readUrl() {
       let op = [], cl = [];
       try { op = JSON.parse(q.get("comparedOpacity") || "[]"); } catch (e) { /* defaults */ }
       try { cl = JSON.parse(q.get("comparedClipping") || "[]"); } catch (e) { /* defaults */ }
-      compare = items.filter(it => LAYER[it.l] && DATE_RE.test(it.d)).map((it, i) => ({
-        layerId: it.l, date: it.d, cc: isFinite(it.c) ? it.c : 100,
-        s: objToSettings(LAYER[it.l], it.s || {}),
+      const recOf = it => it.l === "ext"
+        ? (it.x && isHttp(it.x.u) && it.x.n ? extRec({ u: it.x.u, k: it.x.k === "WMTS" ? "WMTS" : "WMS", n: String(it.x.n), t: String(it.x.t || it.x.n) }) : null)
+        : LAYER[it.l];
+      compare = items.filter(it => recOf(it) && DATE_RE.test(it.d)).map((it, i) => ({
+        layerId: recOf(it).id, date: it.d, cc: isFinite(it.c) ? it.c : 100,
+        s: objToSettings(recOf(it), it.s || {}),
         view: Array.isArray(it.v) && it.v.length === 3 && +it.v[0] > 2e6 ? it.v.map(Number) : [2660000, 1190000, 9],
         opacity: isFinite(op[i]) ? clamp(+op[i], 0, 1) : 1,
         clip: Array.isArray(cl[i]) && cl[i].length === 2 ? [clamp(+cl[i][0], 0, 1), clamp(+cl[i][1], 0, 1)] : [0, 1]
@@ -5029,6 +5957,11 @@ function readUrl() {
   }
   else if (q.has("aoiUrl")) aoiUrlPending = q.get("aoiUrl");
   if (q.has("maskUrl")) maskUrlPending = q.get("maskUrl");
+  if (q.get("panel") === "wms") {
+    const op = parseFloat(q.get("wmsOpacity"));
+    xp.boot = { url: isHttp(q.get("wmsUrl")) ? q.get("wmsUrl") : EXT_PRESET, layer: q.get("wmsLayer") || "",
+                opacity: isFinite(op) ? clamp(Math.round(op), 0, 100) : null };
+  }
 
   const cen = (q.get("center") || "").split(",").map(Number), z = parseFloat(q.get("zoom"));
   const hasView = cen.length === 2 && cen.every(v => isFinite(v)) && cen[0] > 2e6 && isFinite(z);
@@ -5079,6 +6012,52 @@ async function showSceneInfo(rec, ids) {
   }));
   if (rec === currentRec) box.innerHTML = parts.join("");
 }
+
+/* ---- Feedback and issues: every message carries the permalink of the current view ---- */
+const FEEDBACK_TO = ["david.oesch@swisstopo.ch", "joan.sturm@swisstopo.ch"];
+const REPO = "https://github.com/swisstopo/topo-swisseobrowser";
+const PUBLIC_URL = "https://swisstopo.github.io/topo-swisseobrowser/";
+/* The link to the current view; a local copy (file, localhost) links to the same view on the public website. */
+function viewLink() {
+  writeUrl();
+  return /^https?:$/.test(location.protocol) && !/^(localhost|127\.|\[::1\])/.test(location.hostname)
+    ? location.href : PUBLIC_URL + location.search;
+}
+/* What is on the map, in one line: the layer (id) and the date of its data, the compare list or the WMS / WMTS layer. */
+function viewSummary() {
+  if (xp.open && xp.sel) return xp.sel.srv.caps.kind + ": " + xp.sel.L.title + " (" + xp.sel.L.name + ", " + hostOf(xp.sel.srv.url) + ")";
+  if (compareMode) return "Compare: " + compare.map(it => LAYER[it.layerId].name + (LAYER[it.layerId].ext ? "" : " " + cmpDay(it))).join(" | ");
+  const ids = currentCfg && currentCfg.rec === currentRec ? currentCfg.scenes : [];
+  const day = ids.length && currentRec.source !== "s2" && currentRec.source !== "ext" ? ids[0].slice(0, 10) : state.date;
+  return currentRec.name + " (" + currentRec.id + "), " + day + (layerOff ? ", layer hidden" : "") +
+    (VERIFIED.has(currentRec.id) ? "" : ", BETA");
+}
+function feedbackLinks() {
+  const link = viewLink(), sum = viewSummary(), subj = "Feedback swissEO Browser";
+  const body = "Link to my view: " + link + "\nOn the map: " + sum + "\n\nMy feedback:\n";
+  const e = encodeURIComponent, to = FEEDBACK_TO.join(",");
+  const href = {
+    app: "mailto:" + to + "?subject=" + e(subj) + "&body=" + e(body),
+    gmail: "https://mail.google.com/mail/?view=cm&fs=1&to=" + e(to) + "&su=" + e(subj) + "&body=" + e(body),
+    outlook: "https://outlook.office.com/mail/deeplink/compose?to=" + e(FEEDBACK_TO.join(";")) + "&subject=" + e(subj) + "&body=" + e(body)
+  };
+  $$("#fbMail a").forEach(a => { a.href = href[a.dataset.mail]; });
+  // GitHub issue forms take their fields from the query (field id = parameter)
+  const fields = { permalink: link, layer: sum, browser: navigator.userAgent + ", window " + innerWidth + " × " + innerHeight + " px" };
+  $$("#fbIssue a").forEach(a => {
+    const t = a.dataset.issue;
+    a.href = t ? REPO + "/issues/new?" + new URLSearchParams(Object.assign({ template: t }, fields)) : REPO + "/issues/new/choose";
+  });
+}
+["#btnFeedback", "#btnIssue"].forEach(id => {
+  $(id).onclick = e => {
+    e.stopPropagation();
+    const pop = $(id).nextElementSibling, open = pop.hidden;
+    $$(".fb-pop").forEach(p => { p.hidden = true; });
+    if (open) { feedbackLinks(); pop.hidden = false; }
+  };
+});
+document.addEventListener("click", e => { if (!e.target.closest(".fb-pop")) $$(".fb-pop").forEach(p => { p.hidden = true; }); });
 
 /* ============================================================
    16. Pixel inspector
@@ -5212,7 +6191,7 @@ function drawTileLayer(ctx, layer, pxBounds, z, alpha) {
     const tz = lyr._tileZoom != null ? lyr._tileZoom : z, f = map.getZoomScale(z, tz);
     for (const key in lyr._tiles) {
       const t = lyr._tiles[key];
-      if (!t.current || !t.loaded || !t.el) continue;
+      if (!t.current || !t.loaded || !t.el || t.el._tainted) continue;     // WMS / WMTS tiles without CORS
       if (t.coords.z !== tz) continue;
       // whole-pixel edges, so scaled neighbours meet without seams
       const x0 = Math.round(t.coords.x * ts.x * f - pxBounds.min.x), x1 = Math.round((t.coords.x + 1) * ts.x * f - pxBounds.min.x);
@@ -5338,7 +6317,7 @@ function drawCaption(ctx, W, H, desc, overlay) {
 
   let title, sub;
   if (compareMode) {
-    title = "Compare: " + compare.map(it => LAYER[it.layerId].name + " " + it.date).join("  |  ");
+    title = "Compare: " + compare.map(it => LAYER[it.layerId].name + (LAYER[it.layerId].ext ? "" : " " + cmpDay(it))).join("  |  ");
     sub = "swissEO";
   } else {
     title = layerOff ? "Background map (no data layer shown)" : currentRec.name + (currentRec.sub ? ": " + currentRec.sub : "");
@@ -5348,7 +6327,7 @@ function drawCaption(ctx, W, H, desc, overlay) {
           (ids.length && currentRec.source === "s2" ? " · " + ids.map(timeOf).join(", ") : "") +
           (currentRec.source === "s2" && VEG_LABEL[S(currentRec).veg] ? " · " + VEG_LABEL[S(currentRec).veg].toLowerCase() + " mask" : "");
   }
-  sub += "  |  © swisstopo · contains modified Copernicus Sentinel data" + (overlay ? " · overlay © ASIT VD" : "");
+  sub += "  |  © swisstopo · contains modified Copernicus Sentinel data" + (overlay ? " · overlay © ASIT VD, © OpenStreetMap contributors" : "");
   ctx.font = "700 13px " + FONT;
   ctx.fillStyle = "#003F6B";
   ctx.fillText(title, 14, H - h + 21);
@@ -5373,7 +6352,7 @@ function decorate(cv, o, mpp, k) {
       let y = 16;
       compare.slice(0, 3).forEach(it => {
         const rec = LAYER[it.layerId];
-        const h = drawLegendBox(ctx, rec, it.s, 16, y, rec.name + " · " + it.date);
+        const h = drawLegendBox(ctx, rec, it.s, 16, y, cmpLabel(it));
         if (h) y += h + 8;
       });
     } else drawLegendBox(ctx, currentRec, S(currentRec), 16, 16, currentRec.name);
@@ -5414,7 +6393,7 @@ async function buildExportCanvas(o) {
       } else drawTileLayer(ctx, l, pb, z, it.s.opacity / 100 * it.opacity);
       ctx.restore();
     }
-  } else drawTileLayer(ctx, current, pb, z);
+  } else { drawTileLayer(ctx, current, pb, z); drawTileLayer(ctx, xp.preview, pb, z); }
   ctx.restore();
   if (o.overlay) {
     if (map.hasLayer(asitLayer)) drawTileLayer(ctx, asitLayer, pb, z);
@@ -5528,6 +6507,7 @@ async function renderWmsCanvas(cfg, bbox, W, H, signal) {
 /* A layer configuration rendered from the COGs for any box, in 512 px chunks. */
 async function renderCfgCanvas(cfg, bbox, W, H, signal, onChunk) {
   if (cfg.rec.type === "wms") return renderWmsCanvas(cfg, bbox, W, H, signal);
+  if (cfg.rec.type === "ext") return renderExtCanvas(cfg, bbox, W, H, signal);
   const cv = makeCanvas(W, H), ctx = cv.getContext("2d"), CH = 512;
   const rx = (bbox[2] - bbox[0]) / W, ry = (bbox[3] - bbox[1]) / H, chunks = [];
   for (let y0 = 0; y0 < H; y0 += CH) for (let x0 = 0; x0 < W; x0 += CH)
@@ -5897,8 +6877,6 @@ Object.assign(UI, {
   pause: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4" height="15"/><rect x="14" y="4.5" width="4" height="15"/></svg>'
 });
 $("#btnTimelapse").innerHTML = UI.film;
-$$("#p-info .ver.ok").forEach(e => { e.innerHTML = UI.verified; });
-$$("#p-info .ver.todo").forEach(e => { e.innerHTML = UI.todo; });
 $("#tlPrev").innerHTML = UI.left;
 $("#tlNext").innerHTML = UI.right;
 $("#tlPlay").innerHTML = UI.play;
@@ -6172,7 +7150,7 @@ async function tlFrame(it, area, W, H, o, signal) {
     ctx.fillText(rec.name + (rec.sub ? ": " + rec.sub : ""), 14, Hk - h + 21);
     ctx.font = "11px " + FONT; ctx.fillStyle = "#555";
     ctx.fillText(SOURCES[rec.source].name + (rec.source === "s2" && VEG_LABEL[s.veg] ? " · " + VEG_LABEL[s.veg].toLowerCase() + " mask" : "") +
-      "  |  © swisstopo · contains modified Copernicus Sentinel data" + (o.overlay ? " · overlay © ASIT VD" : ""), 14, Hk - h + 37);
+      "  |  © swisstopo · contains modified Copernicus Sentinel data" + (o.overlay ? " · overlay © ASIT VD, © OpenStreetMap contributors" : ""), 14, Hk - h + 37);
   }
   ctx.restore();
   return cv;
@@ -6389,6 +7367,19 @@ $$("#tabs button").forEach(b => {
   };
 });
 
+/* Menu collapse as in the Copernicus Browser: the chevron in the menu header hides the menu, the round button at
+   the top left of the map opens it again. Small screens start with the menu collapsed (it then covers the map). */
+$("#btnCollapse").innerHTML = UI.collapse;
+$("#btnOpenSide").innerHTML = UI.menu;
+function setSideOpen(on) {
+  $("#app").classList.toggle("collapsed", !on);
+  map.invalidateSize();
+  updateClips();
+}
+$("#btnCollapse").onclick = () => setSideOpen(false);
+$("#btnOpenSide").onclick = () => setSideOpen(true);
+if (window.matchMedia("(max-width: 760px)").matches) setSideOpen(false);
+
 const boot = readUrl();
 $("#ccMax").value = state.cc;
 $("#dateTxt").value = state.date;
@@ -6398,15 +7389,20 @@ matchHighlight();
 updateCcBadge();
 renderLayerList();
 if (activeHl) { const e = $(".hl.on"); if (e) e.scrollIntoView({ block: "nearest" }); }
-if (!VERIFIED_IDS) {                     // not deployed: read the checklist from README.md next to the page
-  fetch("README.md").then(r => r.ok ? r.text() : "").then(md => {
-    const ids = parseVerified(md) || [];
-    ids.forEach(id => VERIFIED.add(id));
-    if (ids.length) { renderLayerList(); renderCompare(); }
-  }).catch(() => {});
+/* Not deployed: read the checklist from README.md next to the page; when the page is opened as a file or served
+   without the README, from the README of the repository on GitHub. */
+if (!VERIFIED_IDS) {
+  const readme = u => fetch(u).then(r => r.ok ? r.text() : "").then(md => parseVerified(md) || []).catch(() => []);
+  readme("README.md")
+    .then(ids => ids.length ? ids : readme("https://raw.githubusercontent.com/swisstopo/topo-swisseobrowser/main/README.md"))
+    .then(ids => {
+      ids.forEach(id => VERIFIED.add(id));
+      if (ids.length) { renderLayerList(); renderCompare(); }
+    });
 }
 renderCompare();
 renderAoiTool();
+if (xp.boot) showView("external");
 booted = true;
 if (aoiUrlPending) loadGeoUrl(aoiUrlPending, "aoi");
 if (maskUrlPending) loadGeoUrl(maskUrlPending, "mask");

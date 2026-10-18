@@ -1,0 +1,55 @@
+name: Fix or change a layer
+description: "A layer shows wrong values, colours, dates or masks, or its description, legend or download is wrong."
+title: "[LAYER] "
+labels: ["layer", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Thank you!** When you open this form from the swissEO Browser (Info tab, *Report an issue*), the link to
+        your view and the layer are already filled in. A link and two sentences are enough.
+  - type: input
+    id: permalink
+    attributes:
+      label: Link to the view (permalink)
+      description: Filled in by the viewer. Otherwise press *Copy link* at the top left of the map and paste it here.
+      placeholder: "https://swisstopo.github.io/topo-swisseobrowser/?zoom=…&center=…&layerId=…"
+    validations:
+      required: true
+  - type: input
+    id: layer
+    attributes:
+      label: Layer
+      description: Filled in by the viewer (name, id and date).
+      placeholder: "Example: NDVI (ndvi), 2026-08-13"
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is wrong?
+      options:
+        - Wrong values (index, reflectance, product value)
+        - Colours, legend or rendering
+        - Dates or data missing
+        - Masks (clouds, shadows, vegetation, custom mask)
+        - Statistics, time series or spectral explorer
+        - Image download or timelapse
+        - Description, formula or links of the layer
+        - Request a change (new option, other colour scale, …)
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: What do you see, and what should it be?
+      description: One or two sentences. Values from the pixel inspector or a reference (e.g. a GDAL / rasterio read) help a lot.
+      placeholder: "Example: the pixel inspector gives NDVI 0.91 at 2'645'120 / 1'249'030; QGIS gives 0.62 for the same COG."
+    validations:
+      required: true
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot (optional)
+      description: Drag and drop an image here.
