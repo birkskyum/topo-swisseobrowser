@@ -6042,12 +6042,41 @@ function feedbackLinks() {
     outlook: "https://outlook.office.com/mail/deeplink/compose?to=" + e(FEEDBACK_TO.join(";")) + "&subject=" + e(subj) + "&body=" + e(body)
   };
   $$("#fbMail a").forEach(a => { a.href = href[a.dataset.mail]; });
-  // GitHub issue forms take their fields from the query (field id = parameter)
-  const fields = { permalink: link, layer: sum, browser: navigator.userAgent + ", window " + innerWidth + " × " + innerHeight + " px" };
+  // The issue text is written here and passed as title + body, the URL parameters GitHub has always filled in
+  // (pre-filling issue form fields by id did not work). Same sections as the forms in .github/ISSUE_TEMPLATE;
+  // the choices are tick boxes. No labels parameter: GitHub answers it with a 404 for users without triage rights.
+  const browser = navigator.userAgent + ", window " + innerWidth + " × " + innerHeight + " px";
   $$("#fbIssue a").forEach(a => {
-    const t = a.dataset.issue;
-    a.href = t ? REPO + "/issues/new?" + new URLSearchParams(Object.assign({ template: t }, fields)) : REPO + "/issues/new/choose";
+    const k = ISSUE_KINDS[a.dataset.issue];
+    a.href = k ? REPO + "/issues/new?" + new URLSearchParams({ title: k.title, body: issueBody(k, link, sum, browser) })
+               : REPO + "/issues/new/choose";
   });
+}
+const ticks = items => items.map(t => "- [ ] " + t).join("\n");
+const ISSUE_KINDS = {
+  "01-layer.yml": { title: "[LAYER] ", parts: [["Layer", "{sum}"],
+    ["What is wrong? (tick one)", ticks(["Wrong values (index, reflectance, product value)", "Colours, legend or rendering",
+      "Dates or data missing", "Masks (clouds, shadows, vegetation, custom mask)", "Statistics, time series or spectral explorer",
+      "Image download or timelapse", "Description, formula or links of the layer", "Request a change (new option, other colour scale, …)", "Other"])],
+    ["What do you see, and what should it be?", "<!-- One or two sentences. A value from the pixel inspector or a reference read helps a lot. -->"],
+    ["Screenshot (optional)", "<!-- Drag and drop an image here. -->"]] },
+  "02-text.yml": { title: "[TEXT] ", parts: [["On the map", "{sum}"],
+    ["Where is the text?", "<!-- e.g. layer description of NDVI, Info tab, compare panel, highlight story -->"],
+    ["Language (tick one)", ticks(["English (current text)", "German (new translation)", "French (new translation)", "Italian (new translation)"])],
+    ["Current text (copy and paste)", ""], ["New text", ""]] },
+  "03-problem.yml": { title: "[PROBLEM] ", parts: [["On the map", "{sum}"],
+    ["Which part? (tick one)", ticks(["Map, basemaps, zoom or layout", "Loading (slow, tiles missing, error message)", "Date selection or calendar",
+      "Place search", "WMS / WMTS panel", "Compare", "Area of interest, statistics or import", "Image download or timelapse",
+      "Link (permalink) does not reproduce the view", "Other"])],
+    ["What happened, and what did you expect?", ""], ["Browser and screen", "{browser}"],
+    ["Screenshot (optional)", "<!-- Drag and drop an image here. -->"]] },
+  "04-idea.yml": { title: "[IDEA] ", parts: [["On the map", "{sum}"],
+    ["Your idea", "<!-- What should the viewer do, and what would you use it for? -->"],
+    ["Reference (optional)", "<!-- A paper, script, product or another viewer that does it already. -->"]] }
+};
+function issueBody(k, link, sum, browser) {
+  return "### Link to the view (permalink)\n\n" + link + "\n\n" + k.parts.map(([h, t]) =>
+    "### " + h + "\n\n" + t.replace("{sum}", sum).replace("{browser}", browser)).join("\n\n") + "\n";
 }
 ["#btnFeedback", "#btnIssue"].forEach(id => {
   $(id).onclick = e => {

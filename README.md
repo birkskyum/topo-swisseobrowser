@@ -387,10 +387,13 @@ The swissEO Browser therefore always uses the physical reflectance.
   current view** and a one-line summary of what is on the map (layer, id, date of its data, BETA; the compare list or the
   WMS / WMTS layer), so a sentence or two is enough. A local copy links to the same view on the public website.
   - *Feedback*: an e-mail to david.oesch@swisstopo.ch and joan.sturm@swisstopo.ch, in the mail app, Gmail or Outlook Web;
-  - *Report an issue / improvement*: a GitHub issue form of this repository
-    ([`.github/ISSUE_TEMPLATE`](.github/ISSUE_TEMPLATE)) with the permalink, the layer and the browser already filled in:
-    *Fix or change a layer*, *Change a text or translation*, *Report a general problem*, *Suggest an improvement*. Every
-    form has a required permalink field; blank issues are switched off. Issues need a GitHub account.
+  - *Report an issue / improvement*: a new GitHub issue in this repository whose title and text the viewer writes
+    (URL parameters `title` and `body`), with the permalink, the layer and, for problems, the browser already in it, and
+    the choices as tick boxes: *Fix or change a layer*, *Change a text or translation*, *Report a general problem*,
+    *Suggest an improvement*. The same four kinds are issue forms ([`.github/ISSUE_TEMPLATE`](.github/ISSUE_TEMPLATE)) for
+    issues opened directly on GitHub, each with a required permalink field. Pre-filling the form fields from the URL
+    did not work, hence the text; for it blank issues have to stay enabled (`config.yml`). Issues need a GitHub account,
+    and *Issues* must be switched on in the repository settings.
 - **Info tab**: the *not for operational use* notice (with the meaning of the BETA label, Feedback and issue links), the
   acquisitions of the selected date with their metadata, the scaling / no-data table, a description of the services used and links to all
   repositories and libraries the website builds on.

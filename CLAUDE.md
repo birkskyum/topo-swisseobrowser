@@ -19,8 +19,10 @@
   tracks `origin/main`. Never commit for or push to `upstream` (eu-cdse/copernicus-browser); its push URL
   is disabled on purpose. `davidoesch` (github.com/davidoesch/swisseobrowser) is the former repository.
 - The upstream `.gitignore` ignores `.github`, so workflow and issue-form changes need `git add -f`.
-- Issue forms: every form keeps the required `permalink` field; the Info tab fills it (and `layer`, `browser`) through the
-  query of `issues/new?template=…`, so field ids must stay in sync with `feedbackLinks()` in the page.
+- Issues: the Info tab writes the issue text itself (`ISSUE_KINDS` / `issueBody()` in the page, passed as `title` and
+  `body`; pre-filling issue form fields by id did not work), always starting with the permalink. Keep its sections in
+  sync with the forms in `.github/ISSUE_TEMPLATE/` (each with a required `permalink` field) and keep
+  `blank_issues_enabled: true`, otherwise GitHub sends the link to the template chooser and drops the text.
 - A push to `main` that changes the page or the README deploys GitHub Pages
   (https://swisstopo.github.io/topo-swisseobrowser/).
 
