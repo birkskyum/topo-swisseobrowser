@@ -1,6 +1,6 @@
 # Publishes the single-file swissEO Browser to GitHub Pages:
 #   https://swisstopo.github.io/topo-swisseobrowser/
-# Only swisseo-browser.html is deployed (as index.html); the upstream
+# Only swisseo-browser.html (as index.html) and its help pages in docs/ are deployed; the upstream
 # Copernicus Browser sources in this repository are not built or published.
 name: Deploy swissEO Browser to GitHub Pages
 
@@ -11,6 +11,7 @@ on:
       - swisseo-browser.html
       - README.md
       - public/previews/**
+      - docs/**
       - .github/workflows/pages.yml
   workflow_dispatch:
 
@@ -41,6 +42,8 @@ jobs:
           grep -oE '"[A-Z-]+-[0-9a-f]{6}-[^"]+\.png"' swisseo-browser.html | tr -d '"' | sort -u |
             while read -r f; do cp "public/previews/$f" _site/public/previews/; done
           ls _site/public/previews
+          # help and tutorial, opened by the (i) button of the map
+          cp -r docs _site/docs
           touch _site/.nojekyll
 
       - name: Apply the layer verification checklist of README.md

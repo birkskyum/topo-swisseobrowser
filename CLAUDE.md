@@ -12,8 +12,8 @@
 ## Repository
 
 - The app is the single file `swisseo-browser.html` (no build, no backend). It belongs together with
-  `README.md`, `CLAUDE.md`, `.github/workflows/pages.yml`, the issue forms in `.github/ISSUE_TEMPLATE/` and the
-  thumbnails it references in `public/previews/`. Everything else is the upstream Copernicus Browser, kept only as a reference:
+  `README.md`, `CLAUDE.md`, `.github/workflows/pages.yml`, the issue forms in `.github/ISSUE_TEMPLATE/`, the
+  help pages in `docs/` and the thumbnails it references in `public/previews/`. Everything else is the upstream Copernicus Browser, kept only as a reference:
   do not modify it.
 - **Git: push only to the remote `origin`** (github.com/swisstopo/topo-swisseobrowser); local `main`
   tracks `origin/main`. Never commit for or push to `upstream` (eu-cdse/copernicus-browser); its push URL
@@ -23,7 +23,9 @@
   `body`; pre-filling issue form fields by id did not work), always starting with the permalink. Keep its sections in
   sync with the forms in `.github/ISSUE_TEMPLATE/` (each with a required `permalink` field) and keep
   `blank_issues_enabled: true`, otherwise GitHub sends the link to the template chooser and drops the text.
-- A push to `main` that changes the page or the README deploys GitHub Pages
+- Help and tutorial: `docs/index.html` (screenshots in `docs/img/`, JPEG, 1400 × 900 px views of the app), opened by
+  the (i) button at the top right of the map. When a function is added or changed, update its section there too.
+- A push to `main` that changes the page, the README or `docs/` deploys GitHub Pages
   (https://swisstopo.github.io/topo-swisseobrowser/).
 
 ## Conventions

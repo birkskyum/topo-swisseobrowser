@@ -104,10 +104,15 @@ The swissEO Browser therefore always uses the physical reflectance.
   map. The chevron collapses the menu and a round button at the top left of the map opens it again; on small screens
   (up to 760 px) the menu starts collapsed and covers the map when opened. On the map:
   - top left: the date and the number of acquisitions on the map, *Copy link* and the pixel inspector toggle;
-  - top right: the place search, the basemap switcher (the layer button) and below it the area of interest, image
-    download, compare and timelapse buttons;
+  - top right: the place search, the **help button (i)**, below it the basemap switcher (the layer button) and the area
+    of interest, image download, compare and timelapse buttons;
   - bottom right: the zoom buttons and, on one line, the mouse position (LV95 easting and northing, `E 2'661'150 N 1'187'175`)
     and the scale bar; bottom left: the attribution and the loading indicator.
+- **Help and tutorial** ([`docs/index.html`](docs/index.html), opened by the (i) button in a new tab): an *About the
+  swissEO Browser* overview with a beginner tutorial (Part A: window, place search, date, layers, pixel inspector, area of
+  interest and statistics, download, sharing) and all functions in the order of the
+  [Copernicus Browser documentation](https://documentation.dataspace.copernicus.eu/Applications/Browser.html) (Part B),
+  with screenshots of the app in `docs/img/`. Deployed with the page.
 - **Basemap switcher** as in the Copernicus Browser: the layer button at the top right opens (on hover) *Basemaps* (*Map* =
   pixelkarte-farbe, *SWISSIMAGE*, *Map Grey* = pixelkarte-grau, *None*) and *Map overlays* (*Labels OSM*, the ASIT VD
   roads and place names, always drawn above the data).
