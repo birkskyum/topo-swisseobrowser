@@ -5,19 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>swissEO Browser Help</title>
 <meta name="description" content="Tutorial and overview of the swissEO Browser, the web viewer for swisstopo's swissEO Sentinel-2 products.">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23DA291C'/%3E%3Cpath d='M13 6h6v7h7v6h-7v7h-6v-7H6v-6h7z' fill='%23fff'/%3E%3C/svg%3E">
+<!-- official favicon of the Swiss Confederation (www.admin.ch/favicon.ico), as in the app -->
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACxElEQVR4nMVWz2vUUBCemfe2m2yabNcfVKEg7UEEvetZ8CL+CcL+ASqCoIee1ItQBAV7EI8KRQQPHvQPUBB7sL0Uqh7qr4PabevW3U26yUtGIrptNkmz3WbrBxPy5s3L972XyWQA/jNwJ8F87izUX722Cq47QszDQ8obCv2uLLQDhGZb0+r7Tp9p4NMnuxdgl4xDwnVPCg5OAfMxADiKzBPIrG0rEtFhxCUA+ACI73ykWb9YeFNq2T8y1TjF4oQnxA2FNBcABgEA52E+YKCI5jwS10OOVAGK6GFepGnmET3ayim7NBQyjyk8Zk0DKBajzo0NwHY7cy0Ci61j6prvHidjagqo/jNicPFSX2knu2aD3p6B8fzt9Xti4NQdI4APAwYjuKkCAgBn0ALCbEkVAADNQbMzYiM9BxCXI8GmCVAuxx9iGHFfGDc2FmdcWwO07U0KwPSC5AlRjRSQyUneLfxqNVoHhDif/goQv0WHkDsY8XuqAFfIzzBgeEJ+SRXgWOYSI/4aZAIqc/hjqoADtZrHiAudBfz30m3RWrIZnGD8J74jYLG8suJtq9IjcbOThETsSxkzNT0dSzZ19VpirI/YSUAlxG3Iqv2+FM/+3Yc/ZFQqblt21Ynl7Fgf6UWmAHH8xNuAaB5yRoC4ZFcqLzMFFObnICC6m7cAJnGvUltWmQJCtKzyTEC0CDmBEb86uv4gaY6SnJW1VeULeTk53cNy5gG321FTsc11oKS8YjUbm/W4V3hC3E9srYg4kDJqoS+pBRPicX3iCPSFplnWFNFs380o0ULDHDZhN3D00qiPuLhjcsRPG0W9z613wdb0w2Fb3Ts5vXc0bRzyhG2UrPB9ZpErQc8dXd8Pg8Dq+Di6slD1EWsJR153pbywfnA00nYPBC3DqHhC3vIR133EphLijq2XRmGv0bRGjJZlWXtOnCd+A9DAdAW2nwDLAAAAAElFTkSuQmCC">
 <style>
 :root{
   --blue:#003F6B; --blue-d:#002B4A; --blue-l:#E5EDF3; --red:#DC0000;
   --text:#1A1A1A; --muted:#666; --bg:#F5F5F5; --card:#fff; --border:#D0D0D0;
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:70px}
+html{scroll-behavior:smooth;scroll-padding-top:94px}
 body{margin:0;font:15px/1.6 Arial,Helvetica,"Noto Sans",sans-serif;color:var(--text);background:var(--bg)}
 a{color:var(--blue)}
 header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:3px solid var(--red);box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .hbar{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:10px 16px}
-.hbar svg{width:30px;height:30px;flex:0 0 30px}
+/* Confederation logo as on map.geo.admin.ch (ConfederationFullLogo.vue) and in the menu of the app */
+.conf-logo{display:flex;gap:.8rem;text-decoration:none;color:#000;flex:0 0 auto}
+.conf-logo .swiss-flag{width:2rem;height:36px;flex:0 0 2rem}
+.conf-txt{display:flex;flex-direction:column;font-size:7.5pt;line-height:10.35pt;letter-spacing:.078em;white-space:nowrap}
+.hbar .sep{width:1px;align-self:stretch;background:var(--border);margin:0 4px}
 .hbar .t{font-size:18px;font-weight:700;color:var(--blue)}
 .hbar .t small{font-weight:400;color:var(--muted);font-size:14px;margin-left:6px}
 .beta{display:inline-block;border:1.5px solid var(--red);color:var(--red);font-size:10px;font-weight:700;letter-spacing:.8px;
@@ -26,7 +31,7 @@ header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:3px solid 
   padding:8px 14px;border-radius:4px;white-space:nowrap}
 .hbar .open:hover{background:var(--blue-d)}
 .wrap{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:250px minmax(0,1fr);gap:28px;padding:22px 16px 60px}
-nav{position:sticky;top:76px;align-self:start;max-height:calc(100vh - 96px);overflow:auto;font-size:13.5px;
+nav{position:sticky;top:98px;align-self:start;max-height:calc(100vh - 118px);overflow:auto;font-size:13.5px;
   background:#fff;border:1px solid var(--border);border-radius:4px;padding:12px 14px}
 nav b{display:block;color:var(--blue);font-size:12px;letter-spacing:.6px;text-transform:uppercase;margin:12px 0 4px}
 nav b:first-child{margin-top:0}
@@ -77,13 +82,20 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--border);padd
   .hbar .t{font-size:16px;white-space:nowrap}
   .hbar .open{padding:7px 10px;font-size:13px}
   .hbar .open .long{display:none}
+  .conf-txt,.hbar .sep{display:none}
   h1{font-size:23px} h2{font-size:19px}
 }
 </style>
 </head>
 <body>
 <header><div class="hbar">
-  <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" fill="#DA291C"/><path d="M13 6h6v7h7v6h-7v7h-6v-7H6v-6h7z" fill="#fff"/></svg>
+  <a class="conf-logo" href="../swisseo-browser.html" title="swissEO Browser">
+    <!-- Swiss flag of web-mapviewer (assets/svg/swiss-flag.svg), as in ConfederationFullLogo.vue -->
+    <svg class="swiss-flag" viewBox="0 0 604 669" aria-hidden="true"><path fill="#D52B1E" d="M302,2 C 402,2 502,19 602,52 C 602,286 604,534 302,667 C 0,534 2,286 2,52 C 102,19 202,2 302,2 z"/><path fill="#fff" d="M102,242 h140 v-140 h120 v140 h140 v120 h-140 v140 h-120 v-140 h-140 z"/></svg>
+    <div class="conf-txt"><span>Schweizerische Eidgenossenschaft</span><span>Confédération suisse</span>
+      <span>Confederazione Svizzera</span><span>Confederaziun svizra</span></div>
+  </a>
+  <span class="sep" aria-hidden="true"></span>
   <div class="t">swissEO Browser<span class="beta">BETA</span><small>Help and tutorial</small></div>
   <a class="open" href="../swisseo-browser.html">Open the <span class="long">swissEO </span>Browser</a>
 </div></header>
