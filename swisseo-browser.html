@@ -1304,9 +1304,14 @@ const levelFor = (res, maxZ) => {
   return best;
 };
 const levelQuery = def => "L=" + levelFor(viewRes(), def.maxZ);
+/* A tile is drawn at the pixel size of its swisstopo level (not 512 px), so only the GPU resamples it: at rest, at the
+   resolution of a level, MapLibre places it on whole screen pixels and the map is shown 1:1, as the swisstopo grid. */
 const wmtsRaster = (def, before) => {
-  const lyr = addRaster((bbox, N, signal, url) => renderWmts(def, bbox, N, N, signal, +(/[?&]L=(\d+)/.exec(url) || [])[1]),
-                        { before, attribution: def.attribution, bounds: def.bounds, query: levelQuery(def) });
+  const lyr = addRaster((bbox, N, signal, url) => {
+    const target = (bbox[2] - bbox[0]) / N, z = wmtsLevel(def, target, +(/[?&]L=(\d+)/.exec(url) || [])[1]);
+    const n = clamp(Math.round(N * target / RES[z]), 64, 2048);
+    return renderWmts(def, bbox, n, n, signal, z, true);
+  }, { before, attribution: def.attribution, bounds: def.bounds, query: levelQuery(def) });
   lyr.def = def;
   return lyr;
 };
@@ -6916,15 +6921,22 @@ function aoiRingsPx(bbox, W, H) {
    output resolution and fetches its tiles within the layer's bounds. The map tiles are drawn with it too, from the
    level of the view (level) when it is within a factor 2.5 of the tile's resolution (in 3D the distant tiles are far
    coarser than the centre of the view). */
-async function renderWmts(layer, bbox, W, H, signal, level) {
+function wmtsLevel(layer, target, level) {
+  const maxZ = layer.maxZ || 26;
+  let z = 8;
+  for (let i = 8; i <= maxZ; i++) if (RES[i] >= target * 0.75) z = i;
+  if (level >= 8 && level <= maxZ && Math.abs(Math.log(RES[level] / target)) <= Math.log(2.5)) z = level;
+  return z;
+}
+/* native: W × H is the box at the level's own resolution, so the tiles are copied without smoothing */
+async function renderWmts(layer, bbox, W, H, signal, level, native) {
   const cv = makeCanvas(W, H), ctx = cv.getContext("2d"), lb = layer && layer.bounds || CH_BOX;
   const b = [Math.max(bbox[0], lb[0]), Math.max(bbox[1], lb[1]), Math.min(bbox[2], lb[2]), Math.min(bbox[3], lb[3])];
   if (!layer || b[2] <= b[0] || b[3] <= b[1]) return cv;
   ctx.imageSmoothingQuality = "high";
-  const target = (bbox[2] - bbox[0]) / W, maxZ = layer.maxZ || 26;
-  let z = 8;
-  for (let i = 8; i <= maxZ; i++) if (RES[i] >= target * 0.75) z = i;
-  if (level >= 8 && level <= maxZ && Math.abs(Math.log(RES[level] / target)) <= Math.log(2.5)) z = level;
+  if (native) ctx.imageSmoothingEnabled = false;
+  const target = (bbox[2] - bbox[0]) / W;
+  let z = wmtsLevel(layer, target, level);
   const span = zz => {
     const t = 256 * RES[zz];
     return [Math.floor((b[0] - ORIGIN[0]) / t), Math.ceil((b[2] - ORIGIN[0]) / t) - 1,

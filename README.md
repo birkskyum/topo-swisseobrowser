@@ -47,8 +47,10 @@ the swisstopo origin (2,420,000 / 1,350,000), so zoom 8 is exactly 10 m/px and e
 pixel grid of the Sentinel-2 bands. The page draws every tile of this grid itself (custom `swisseo://` protocol):
 the swisstopo WMTS tiles of the nearest level are composed into it, the swissEO layers are rendered from the COGs,
 the VHI layers and external services are read by WMS or WMTS. At 20, 10, 5 and 2.5 m/px the swissEO layers are
-pixel for pixel those of the swisstopo grid; between the levels the basemap is resampled once more and slightly
-softer. The `zoom` of links stays the level of the swisstopo grid (see [URL parameters](#url-parameters)).
+pixel for pixel those of the swisstopo grid. The basemaps are composed from the swisstopo level nearest to the view's
+resolution, each tile at that level's own pixel size, so only the GPU resamples them: at the resolution of a level the
+map is shown 1:1 (pixel for pixel as before at 20, 5, 2, 1 and 0.5 m/px, within a sub-pixel shift at the others);
+between the levels it is scaled, as any raster map in a continuously zooming viewer. The `zoom` of links stays the level of the swisstopo grid (see [URL parameters](#url-parameters)).
 
 ### Vegetation masks
 
