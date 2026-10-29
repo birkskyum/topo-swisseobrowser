@@ -6,7 +6,8 @@ name: Deploy swissEO Browser to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    # maplibre-viewer-epsg2056: preview of the MapLibre branch on birkskyum.github.io (drop before merging upstream)
+    branches: [main, maplibre-viewer-epsg2056]
     paths:
       - swisseo-browser.html
       - README.md
