@@ -34,7 +34,8 @@ the swisstopo WMS/WMTS services directly in the browser.
 | Vegetation masks | The `forest-10m` / `vegetation-10m` COGs of swissEO VHI v100 (STAC collection `ch.swisstopo.swisseo_vhi_v100`, most recent item): inside the mask = value ≠ 255 | Forest / all-vegetation mask for every S2-SR layer, statistics and exports |
 | Basemaps | `wmts.geo.admin.ch` (pixelkarte-farbe, swissimage, pixelkarte-grau) | Background maps *Map*, *SWISSIMAGE* and *Map Grey* from the native LV95 grid, over the whole tile matrix (also beyond the border) |
 | 3D terrain | [swissALTIRegio](https://www.swisstopo.admin.ch/en/height-model-swissaltiregio): one COG on `data.geo.admin.ch` (STAC collection `ch.swisstopo.swissaltiregio`), 10 m, LV95, Switzerland and its border regions | Heights of the optional 3D mode |
-| Label overlay | `wmts.asit-asso.ch` (`asitvd.fond_pourortho`, OpenStreetMap and Canton of Vaud data) | *Labels OSM*: roads and place names above the data |
+| Labels | `vectortiles.geo.admin.ch`: swisstopo's base map vector tiles (`ch.swisstopo.base.vt`, Switzerland and Liechtenstein) with the label layers of its imagery base map style | *Labels*: place, road, peak and lake names above the data |
+| Label map | `wmts.asit-asso.ch` (`asitvd.fond_pourortho`, OpenStreetMap and Canton of Vaud data) | Overlay of the high-res print and the timelapse; shown on the map when the swisstopo labels cannot be loaded |
 | Place search | `api3.geo.admin.ch/rest/services/ech/SearchServer` with `type=locations`, as `searchLocation` in [web-mapviewer `search.api.js`](https://github.com/geoadmin/web-mapviewer/blob/3e5a2900/packages/mapviewer/src/api/search.api.js) | Municipalities, districts, cantons, place names and addresses |
 | WMS / WMTS | `wms.geo.admin.ch` (preset) and the external providers of map.geo.admin.ch ([`external-providers.json`](https://github.com/geoadmin/web-mapviewer/blob/3e5a2900/packages/mapviewer/src/modules/menu/components/advancedTools/ImportCatalogue/external-providers.json), read when the panel is opened), or any WMS / WMTS URL | Layers of other map services on the map and in the compare list |
 
@@ -123,8 +124,16 @@ The swissEO Browser therefore always uses the physical reflectance.
   [Copernicus Browser documentation](https://documentation.dataspace.copernicus.eu/Applications/Browser.html) (Part B),
   with screenshots of the app in `docs/img/`. Deployed with the page.
 - **Basemap switcher** as in the Copernicus Browser: the layer button at the top right opens (on hover) *Basemaps* (*Map* =
-  pixelkarte-farbe, *SWISSIMAGE*, *Map Grey* = pixelkarte-grau, *None*) and *Map overlays* (*Labels OSM*, the ASIT VD
-  roads and place names, always drawn above the data).
+  pixelkarte-farbe, *SWISSIMAGE*, *Map Grey* = pixelkarte-grau, *None*) and *Map overlays* (*Labels*, always drawn above
+  the data).
+- **Labels**: the place, road, peak and lake names of swisstopo's base map vector tiles, in the style of swisstopo's imagery
+  base map (white text with a dark halo), drawn by MapLibre as text: sharp at every scale and on high-DPI screens,
+  without overlaps, and upright and facing the viewer in 3D. The tiles are in Web Mercator, so MapLibre's workers fetch the
+  Web Mercator tiles under each tile of the map's grid, move the label features into LV95 and encode them again
+  (`swisseo-vt://`); the zoom levels of the style are shifted by the difference between the two grids at the latitude of
+  Switzerland (about 4.39). The names stop at the border of Switzerland and Liechtenstein. The *Basic* image download
+  takes them from the map; the high-res print and the timelapse, which are drawn away from the map, use the ASIT VD
+  label map instead, which also replaces the labels when they cannot be loaded.
 - **3D terrain** (the *3D* button below the timelapse button): drapes the map, the data layers, the label overlay and
   the area of interest over **swissALTIRegio**, swisstopo's 10 m terrain model, read from its COG and turned into
   terrain tiles of the map grid in the browser (at most 20 m per pixel, about 6 s for a first view). In 3D the map can
@@ -514,8 +523,9 @@ the layer thumbnails it references from `public/previews/`, so the upstream `ind
 never published. The repository's *Settings → Pages → Source* must be set to **GitHub Actions**.
 
 External libraries are loaded from CDNs: MapLibre GL JS (an ES module, so the page script is a module too),
-proj4js (also in MapLibre's workers, which tile the area of interest) and geotiff.js; the import formats
-additionally load togeojson, JSZip, shpjs and mgrs on demand, and the timelapse GIF export loads gifenc.
+proj4js (also in MapLibre's workers, which tile the area of interest) and geotiff.js; the labels load pbf,
+@mapbox/vector-tile and @maplibre/vt-pbf into MapLibre's workers, the import formats load togeojson, JSZip, shpjs
+and mgrs on demand, and the timelapse GIF export loads gifenc.
 
 ## URL parameters
 
@@ -544,7 +554,7 @@ Parameter names follow the Copernicus Browser where an equivalent exists.
 | `opacity` | `70` | Layer opacity in % |
 | `cloudMask`, `shadowMask`, `terrainMask` | `true` | Masks (written when they differ from the layer's default; the two-date layers mask clouds and shadows by default) |
 | `vegetationMask` | `forest` | Vegetation mask: `off`, `forest` or `vegetation` (S2-SR layers; from swissEO VHI v100; the NDVI Analyst defaults to `forest`) |
-| `basemap`, `labels` | `swissimage`, `true` | Basemap (`pixelkarte` = *Map*, `swissimage`, `grey` = *Map Grey*, `none`) and the *Labels OSM* overlay |
+| `basemap`, `labels` | `swissimage`, `true` | Basemap (`pixelkarte` = *Map*, `swissimage`, `grey` = *Map Grey*, `none`) and the *Labels* overlay |
 | `compareLayers`, `comparedOpacity`, `comparedClipping`, `compareMode` | | Compare list (base64url JSON, each entry with its LV95 view; WMS / WMTS entries as `{"l":"ext","x":{"u":service URL,"k":"WMS"/"WMTS","n":layer name,"t":title}}`), per-layer opacity and split range; `compareMode` is `split` / `opacity` when comparing and `off` otherwise (links without it open in compare mode) |
 | `panel` | `wms` | The WMS / WMTS panel is open |
 | `wmsUrl`, `wmsLayer`, `wmsOpacity` | `https://wms.geo.admin.ch/?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities`, `ch.bafu.bundesinventare-bln`, `70` | Service of the WMS / WMTS panel (default: the swisstopo WMS), the layer shown from it and its opacity in % |
@@ -605,7 +615,8 @@ Example:
   (cumulative VHI deficit and days in extreme stress), [sentinel-hub/custom-scripts](https://github.com/sentinel-hub/custom-scripts)
   (index definitions and visualisations; Forest Disturbance Classification by Joanneum Research, EvoLand); libraries [MapLibre GL JS](https://github.com/maplibre/maplibre-gl-js),
   [proj4js](https://github.com/proj4js/proj4js), [geotiff.js](https://github.com/geotiffjs/geotiff.js),
-  [togeojson](https://github.com/placemark/togeojson), [shpjs](https://github.com/calvinmetcalf/shapefile-js),
+  [pbf](https://github.com/mapbox/pbf), [vector-tile-js](https://github.com/mapbox/vector-tile-js),
+  [vt-pbf](https://github.com/maplibre/vt-pbf), [togeojson](https://github.com/placemark/togeojson), [shpjs](https://github.com/calvinmetcalf/shapefile-js),
   [mgrs](https://github.com/proj4js/mgrs), [JSZip](https://github.com/Stuk/jszip) and
   [gifenc](https://github.com/mattdesl/gifenc).
 - Highlight texts after [watson.ch](https://www.watson.ch/schweiz/klima/773592776-dieser-satellitenbilder-vergleich-zeigt-trockenheit-in-der-schweiz)

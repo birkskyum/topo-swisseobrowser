@@ -39,7 +39,9 @@
   swisstopo WMTS levels; every raster tile is drawn by the page through the `swisseo://` protocol (`addRaster`).
   The `zoom` of links and compare entries stays the swisstopo level (`zoomToRes` / `resToZoom`), so old links keep
   working. Features of the view (`viewBox`, exports) assume the flat north-up map; in 3D (terrain from swissALTIRegio)
-  they use the area around the centre, and the compare split is not available.
+  they use the area around the centre, and the compare split is not available. The labels are swisstopo's vector tiles
+  (Web Mercator), moved into the LV95 grid in MapLibre's workers (`swisseo-vt://`, `vtWorker`); their style's zoom
+  stops are shifted by `VT_DZ`.
 - **Reflectance**: ρ = DN × 0.0001 − 0.1 for the swissEO S2-SR bands; negative ρ is clamped to 0 before
   an index is computed. Sentinel Hub custom scripts that work on DN expect 10000 × ρ, i.e.
   `max(0, DN − 1000)` of the swissEO bands.

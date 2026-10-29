@@ -668,9 +668,12 @@ table.kv td:first-child{color:var(--muted)}
             <p><b>Basemaps:</b> the layer button at the top right of the map (as in the Copernicus Browser) switches between
               <i>Map</i>, <i>SWISSIMAGE</i>, <i>Map Grey</i> (<code>wmts.geo.admin.ch</code>: pixelkarte-farbe, swissimage,
               pixelkarte-grau, from the native LV95 tile grid, also beyond the border) and <i>None</i>.</p>
-            <p><b>Map overlay:</b> <i>Labels OSM</i> is <code>wmts.asit-asso.ch</code> <code>asitvd.fond_pourortho</code> (roads and
-              place names from OpenStreetMap and Canton of Vaud data), published on the identical LV95 grid. It is drawn
-              above the data layers.</p>
+            <p><b>Map overlay:</b> <i>Labels</i> are the place, road, peak and lake names of swisstopo's base map vector tiles
+              (<code>vectortiles.geo.admin.ch</code>, <code>ch.swisstopo.base.vt</code>) in the style of swisstopo's imagery base map,
+              drawn as text above the data layers. The tiles are in Web Mercator and are moved into the LV95 grid in the browser.
+              The high-res print and the timelapse, which are drawn away from the map, use the ASIT VD label map
+              (<code>wmts.asit-asso.ch</code> <code>asitvd.fond_pourortho</code>, OpenStreetMap and Canton of Vaud data) as overlay;
+              it is also shown when the swisstopo labels cannot be loaded.</p>
             <p><b>3D terrain:</b> the <i>3D</i> button drapes the map over swissALTIRegio, swisstopo's 10 m height model
               (one COG on <code>data.geo.admin.ch</code>), turned into terrain in the browser. Tilt and turn the map with the
               right mouse button or Ctrl + drag; the compass resets it. In 3D the compare list uses the opacity effect.</p>
@@ -786,7 +789,7 @@ table.kv td:first-child{color:var(--muted)}
           <div style="color:var(--muted);font-size:11.5px">© swisstopo,
             <a href="https://www.swisstopo.admin.ch/ogd-conditions" target="_blank">open government data</a>.
             The swissEO products contain modified Copernicus Sentinel data. 3D terrain: swissALTIRegio © swisstopo.
-            Label overlay © ASIT VD, © OpenStreetMap contributors.
+            Labels © swisstopo; label map of the prints and timelapses © ASIT VD, © OpenStreetMap contributors.
             Layers of other WMS / WMTS services: © their providers. Not for operational use.</div></div>
       </div>
     </aside>
@@ -851,7 +854,7 @@ table.kv td:first-child{color:var(--muted)}
         <div data-ep="basic">
           <label class="chk" title="Exported image will include datasource and date, scale bar and branding."><input type="checkbox" id="exCapB" checked> Show captions</label>
           <textarea class="exdesc" id="exDescB" placeholder="Description: a short text added to the caption"></textarea>
-          <label class="chk" title="Place labels, streets and boundaries (ASIT VD overlay)."><input type="checkbox" id="exOvB"> Add map overlays</label>
+          <label class="chk" title="The labels as on the map (swisstopo); when they are off on the map, the ASIT VD label map (place names, streets)."><input type="checkbox" id="exOvB"> Add map overlays</label>
           <label class="chk"><input type="checkbox" id="exLegB" checked> Show legend</label>
           <label class="chk aoi-only"><input type="checkbox" id="exCropB"> Crop to AOI</label>
           <label class="chk aoi-only"><input type="checkbox" id="exLineB"> Draw AOI on image</label>
@@ -1237,7 +1240,7 @@ maplibregl.addProtocol("swisseo", async (params, ctrl) => {
   if (lyr.bounds && !boxesMeet(bbox, lyr.bounds)) return none();
   lyr.pending++; pendingSoon();
   try {
-    const im = await lyr.draw(bbox, N, ctrl.signal);
+    const im = await lyr.draw(bbox, N, ctrl.signal, params.url);
     if (ctrl.signal.aborted) throw new DOMException("Tile aborted", "AbortError");
     return im ? { data: await createImageBitmap(im) } : none();
   } catch (err) {
@@ -1248,10 +1251,11 @@ maplibregl.addProtocol("swisseo", async (params, ctrl) => {
   } finally { lyr.pending--; pendingSoon(); }
 });
 /* A raster layer below the marker layer o.before; returns its handle { id, pending }. */
+const tileUrl = lyr => "swisseo://" + lyr.id + "/{z}/{x}/{y}?v=" + lyr.v + (lyr.query ? "&" + lyr.query : "");
 function addRaster(draw, o) {
-  const id = "r" + ++rasterSeq, lyr = { id, draw, bounds: o.bounds || null, pending: 0, v: 0 };
+  const id = "r" + ++rasterSeq, lyr = { id, draw, bounds: o.bounds || null, pending: 0, v: 0, query: o.query || "" };
   RASTERS.set(id, lyr);
-  map.addSource(id, { type: "raster", tiles: ["swisseo://" + id + "/{z}/{x}/{y}"], tileSize: TILE, maxzoom: 14,
+  map.addSource(id, { type: "raster", tiles: [tileUrl(lyr)], tileSize: TILE, maxzoom: 14,
                       attribution: o.attribution || "" });
   map.addLayer({ id, type: "raster", source: id,
                  paint: { "raster-opacity": o.opacity != null ? o.opacity : 1, "raster-fade-duration": 0 } }, o.before);
@@ -1266,7 +1270,7 @@ function removeRaster(lyr) {
 function setLayerOpacity(lyr, o) { if (lyr && map.getLayer(lyr.id)) map.setPaintProperty(lyr.id, "raster-opacity", o); }
 /* Draws every tile again (new settings); the tiles on screen stay until their new version is ready. */
 function redrawRaster(lyr) {
-  if (lyr && map.getSource(lyr.id)) map.getSource(lyr.id).setTiles(["swisseo://" + lyr.id + "/{z}/{x}/{y}?v=" + ++lyr.v]);
+  if (lyr && map.getSource(lyr.id)) { lyr.v++; map.getSource(lyr.id).setTiles([tileUrl(lyr)]); }
 }
 
 /* Basemaps: swisstopo WMTS on the LV95 grid; tile(z, col, row) is the URL of a tile of level z, bounds the LV95 box
@@ -1288,10 +1292,29 @@ let baseLayer = null, basemap = "pixelkarte", baseMapLayer = null;
    (WMTS row/col path order {z}/{y}/{x}). It is drawn above the data layers. */
 const asitLayer = { attribution: ATTR_VD, maxZ: 27, bounds: CH_BOX,
   tile: (z, x, y) => "https://wmts.asit-asso.ch/wmts/1.0.0/asitvd.fond_pourortho/default/default/0/2056/" + z + "/" + y + "/" + x + ".png" };
-let labelsLayer = null;
-const labelsOn = () => !!labelsLayer;
-const wmtsRaster = (def, before) => addRaster((bbox, N, signal) => renderWmts(def, bbox, N, N, signal),
-                                             { before, attribution: def.attribution, bounds: def.bounds });
+let labelsLayer = null, labelIds = [], labelsWanted = false;       // ASIT VD raster (fallback) / vector label layers
+const labelsOn = () => labelsWanted;
+const labelLayerIds = () => labelIds.length ? labelIds : labelsLayer ? [labelsLayer.id] : [];
+/* The basemaps and the label overlay are composed from the swisstopo level nearest to the view's resolution, as the
+   swisstopo grid shows them, so map text and labels keep their size and density; after a zoom that changes the level
+   the tiles are drawn again from the new level (the previous ones stay until then). */
+const levelFor = (res, maxZ) => {
+  let best = 8;
+  for (let i = 9; i <= maxZ; i++) if (Math.abs(Math.log(RES[i] / res)) < Math.abs(Math.log(RES[best] / res))) best = i;
+  return best;
+};
+const levelQuery = def => "L=" + levelFor(viewRes(), def.maxZ);
+const wmtsRaster = (def, before) => {
+  const lyr = addRaster((bbox, N, signal, url) => renderWmts(def, bbox, N, N, signal, +(/[?&]L=(\d+)/.exec(url) || [])[1]),
+                        { before, attribution: def.attribution, bounds: def.bounds, query: levelQuery(def) });
+  lyr.def = def;
+  return lyr;
+};
+map.on("moveend", () => [baseMapLayer, labelsLayer].forEach(l => {
+  if (!l || l.query === levelQuery(l.def)) return;
+  l.query = levelQuery(l.def);
+  redrawRaster(l);
+}));
 
 /* Basemap switcher at the top right, as the layers control of the Copernicus Browser (opens on hover or click). */
 const basemapCtl = (() => {
@@ -1307,7 +1330,7 @@ const basemapCtl = (() => {
   });
   const lb = el("label"), cb = el("input");
   cb.type = "checkbox"; cb.onchange = () => setLabels(cb.checked);
-  lb.append(cb, el("span", null, " Labels OSM"));
+  lb.append(cb, el("span", null, " Labels"));
   over.append(lb);
   list.append(base, el("div", "bm-sep"), over);
   d.append(tg, list);
@@ -1331,11 +1354,28 @@ function setBasemap(name) {
   basemapCtl.sync();
   writeUrlSoon();
 }
-function setLabels(on) {
-  if (on && !labelsLayer) labelsLayer = wmtsRaster(asitLayer, "z-over");
-  if (!on && labelsLayer) { removeRaster(labelsLayer); labelsLayer = null; }
+/* The labels: swisstopo's vector labels (section 2c), or the ASIT VD label map when they cannot be loaded. */
+async function setLabels(on) {
+  labelsWanted = on;
   basemapCtl.sync();
   writeUrlSoon();
+  if (!on) {
+    labelIds.forEach(id => { if (map.getLayer(id)) map.removeLayer(id); });
+    labelIds = [];
+    if (labelsLayer) { removeRaster(labelsLayer); labelsLayer = null; }
+    return;
+  }
+  try {
+    const ls = await vectorLabels();
+    if (!labelsWanted || labelIds.length) return;
+    ls.forEach(l => map.addLayer(l, "z-over"));
+    labelIds = ls.map(l => l.id);
+  } catch (e) {
+    console.warn("labels", e);
+    if (!labelsWanted || labelsLayer) return;
+    labelsLayer = wmtsRaster(asitLayer, "z-over");
+    setStatus("The swisstopo labels could not be loaded: the ASIT VD label map is shown instead.");
+  }
 }
 
 /* ============================================================
@@ -1408,6 +1448,141 @@ function splitFor3D() {
   renderCompare(); updateClips();
 }
 $("#btn3d").onclick = () => setTerrain3D(!terrainOn);
+
+/* ============================================================
+   2c. Labels: swisstopo vector tiles in the LV95 grid
+   ============================================================ */
+/* The label overlay is text drawn by MapLibre from swisstopo's base map vector tiles (ch.swisstopo.base.vt), with the
+   label layers of swisstopo's imagery base map style (white text with a dark halo, made for aerial images): sharp at
+   every scale, upright and facing the viewer in 3D. Those tiles are in Web Mercator, so MapLibre's workers fetch the
+   Web Mercator tiles under each tile of the map's grid, move their label features into LV95 and encode them again
+   (swisseo-vt:// protocol). The style's zoom levels are shifted by VT_DZ, the difference between the Web Mercator zoom
+   and the map's zoom at the latitude of Switzerland. Should the labels not load, the ASIT VD label map is shown. */
+const VT_BASE = "https://vectortiles.geo.admin.ch/tiles/ch.swisstopo.base.vt/v1.0.0/";
+const VT_STYLE = "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.imagerybasemap.vt/style.json";
+const VT_LAYERS = ["place_city", "place_town_village", "place_other", "transportation_label", "peak_rank1", "peak_rank2",
+                   "water_name_point_label"];
+const VT_DZ = Math.log2(2 * Math.PI * 6378137 * Math.cos(46.8 * Math.PI / 180) / (TILE * RES0));     // about 4.39
+const vtWorker = sourceLayers => `
+import proj4 from "https://cdn.jsdelivr.net/npm/proj4@2.22.0/+esm";
+import { PbfReader } from "https://cdn.jsdelivr.net/npm/pbf@5.1.2/+esm";
+import { VectorTile } from "https://cdn.jsdelivr.net/npm/@mapbox/vector-tile@3.0.0/+esm";
+import { fromVectorTileJs } from "https://cdn.jsdelivr.net/npm/@maplibre/vt-pbf@4.3.3/+esm";
+const P = proj4("EPSG:4326", ${JSON.stringify(DEF2056)}), O = ${JSON.stringify(ORIGIN)}, E0 = ${TILE * RES0};
+const SRC = ${JSON.stringify(VT_BASE)}, DZ = ${Math.floor(VT_DZ)}, EXT = 4096, BUF = 256;
+const KEEP = ${JSON.stringify(sourceLayers)}, cache = new Map();
+function merc(k) {                                   // a Web Mercator tile, decoded; the last 96 are kept
+  if (!cache.has(k)) {
+    const p = fetch(SRC + k + ".pbf").then(r => r.ok ? r.arrayBuffer() : null).then(b => b && new VectorTile(new PbfReader(b)));
+    p.catch(() => cache.delete(k));
+    cache.set(k, p);
+    if (cache.size > 96) cache.delete(cache.keys().next().value);
+  }
+  return cache.get(k).catch(() => null);
+}
+const R = Math.PI / 180;
+self.addProtocol("swisseo-vt", async params => {
+  const [z, x, y] = params.url.match(/(\\d+)\\/(\\d+)\\/(\\d+)/).slice(1).map(Number);
+  const span = E0 / 2 ** z, x0 = O[0] + x * span, y1 = O[1] - y * span, k = EXT / span, b = span * BUF / EXT;
+  const zm = Math.min(14, z + DZ), n = 2 ** zm;
+  // the Web Mercator tiles under the tile and its buffer (corners and middles of the sides)
+  let c0 = Infinity, c1 = -Infinity, r0 = Infinity, r1 = -Infinity;
+  for (const [e, nn] of [[x0 - b, y1 + b], [x0 + span + b, y1 + b], [x0 - b, y1 - span - b], [x0 + span + b, y1 - span - b],
+                         [x0 + span / 2, y1 + b], [x0 + span / 2, y1 - span - b], [x0 - b, y1 - span / 2], [x0 + span + b, y1 - span / 2]]) {
+    const [lng, lat] = P.inverse([e, nn]), c = (lng + 180) / 360 * n, r = (1 - Math.log(Math.tan(lat * R) + 1 / Math.cos(lat * R)) / Math.PI) / 2 * n;
+    c0 = Math.min(c0, c); c1 = Math.max(c1, c); r0 = Math.min(r0, r); r1 = Math.max(r1, r);
+  }
+  const keys = [];
+  for (let ty = Math.floor(r0); ty <= Math.floor(r1); ty++) for (let tx = Math.floor(c0); tx <= Math.floor(c1); tx++) keys.push([tx, ty]);
+  const tiles = await Promise.all(keys.map(([tx, ty]) => merc(zm + "/" + tx + "/" + ty))), out = {};
+  tiles.forEach((mt, j) => {
+    if (!mt) return;
+    const [tx, ty] = keys[j];
+    for (const name of KEEP) {
+      const ly = mt.layers[name];
+      if (!ly) continue;
+      const e = ly.extent, feats = out[name] || (out[name] = []);
+      for (let i = 0; i < ly.length; i++) {
+        const f = ly.feature(i);
+        if (f.type === 3) continue;                     // labels are points and lines
+        const geom = [];
+        let lo = Infinity, hi = -Infinity, le = Infinity, ri = -Infinity;
+        for (const ring of f.loadGeometry()) {
+          const pts = [];
+          for (const p of ring) {
+            // a point in the Web Mercator tile's buffer belongs to its neighbour, which brings it too
+            if (f.type === 1 && (p.x < 0 || p.x >= e || p.y < 0 || p.y >= e)) continue;
+            const lng = (tx + p.x / e) / n * 360 - 180, lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * (ty + p.y / e) / n))) / R;
+            const q = P.forward([lng, lat]), px = Math.round((q[0] - x0) * k), py = Math.round((y1 - q[1]) * k);
+            pts.push({ x: px, y: py });
+            le = Math.min(le, px); ri = Math.max(ri, px); lo = Math.min(lo, py); hi = Math.max(hi, py);
+          }
+          if (f.type === 1) pts.forEach(q => geom.push([q]));
+          else if (pts.length > 1) geom.push(pts);
+        }
+        if (geom.length && ri >= -BUF && le <= EXT + BUF && hi >= -BUF && lo <= EXT + BUF)
+          feats.push({ type: f.type, id: f.id, properties: f.properties, geom });
+      }
+    }
+  });
+  const layers = {};
+  for (const name in out) {
+    const fs = out[name];
+    layers[name] = { name, version: 2, extent: EXT, length: fs.length,
+                     feature: i => ({ type: fs[i].type, id: fs[i].id, properties: fs[i].properties, loadGeometry: () => fs[i].geom }) };
+  }
+  const u8 = fromVectorTileJs({ layers });
+  return { data: u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength) };
+});
+`;
+/* Shifts the zoom levels of a style value (zoom inputs of interpolate and step, comparisons with the zoom, zoom
+   functions of the legacy syntax) by d. */
+const isZoom = v => Array.isArray(v) && v[0] === "zoom";
+function shiftZoom(v, d) {
+  if (Array.isArray(v)) {
+    if (v[0] === "interpolate" && isZoom(v[2]))
+      return v.slice(0, 3).concat(v.slice(3).map((x, i) => i % 2 ? shiftZoom(x, d) : x - d));
+    if (v[0] === "step" && isZoom(v[1]))
+      return [v[0], v[1], shiftZoom(v[2], d)].concat(v.slice(3).map((x, i) => i % 2 ? shiftZoom(x, d) : x - d));
+    if (["<", "<=", ">", ">=", "==", "!="].includes(v[0]) && v.length === 3) {
+      if (isZoom(v[1]) && typeof v[2] === "number") return [v[0], v[1], v[2] - d];
+      if (isZoom(v[2]) && typeof v[1] === "number") return [v[0], v[1] - d, v[2]];
+    }
+    return v.map(x => shiftZoom(x, d));
+  }
+  if (v && typeof v === "object") {
+    if (Array.isArray(v.stops)) return Object.assign({}, v, { stops: v.stops.map(([s, o]) =>
+      [v.property === undefined ? s - d : s && typeof s === "object" && "zoom" in s ? Object.assign({}, s, { zoom: s.zoom - d }) : s, o]) });
+    return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, shiftZoom(x, d)]));
+  }
+  return v;
+}
+let vtReady = null;
+function vectorLabels() {                          // the label layers, once their source is set up
+  if (!vtReady) {
+    vtReady = (async () => {
+      const st = await (await fetch(VT_STYLE)).json();
+      const ls = st.layers.filter(l => VT_LAYERS.includes(l.id));
+      if (!ls.length) throw new Error("no label layers in the swisstopo style");
+      await maplibregl.importScriptInWorkers(URL.createObjectURL(new Blob([vtWorker([...new Set(ls.map(l => l["source-layer"]))])],
+                                                                         { type: "text/javascript" })));
+      map.setGlyphs(st.glyphs);
+      map.setSprite(st.sprite);
+      map.addSource("labels", { type: "vector", tiles: ["swisseo-vt://{z}/{x}/{y}"], maxzoom: 14 - Math.floor(VT_DZ),
+                                attribution: ATTR });
+      return ls.map(l => {
+        const o = { id: "lbl-" + l.id, type: "symbol", source: "labels", "source-layer": l["source-layer"],
+                    layout: shiftZoom(l.layout || {}, VT_DZ), paint: shiftZoom(l.paint || {}, VT_DZ) };
+        if (l.filter) o.filter = shiftZoom(l.filter, VT_DZ);
+        if (l.minzoom != null) o.minzoom = Math.max(0, l.minzoom - VT_DZ);
+        if (l.maxzoom != null) o.maxzoom = Math.max(0, l.maxzoom - VT_DZ);
+        return o;
+      });
+    })();
+    vtReady.catch(() => { vtReady = null; });
+  }
+  return vtReady;
+}
 
 /* ============================================================
    3. swissEO asset addressing and scaling
@@ -6466,7 +6641,7 @@ const FONT = "Arial,Helvetica,'Noto Sans',sans-serif";
    on screen, compare split and opacity included: map.redraw() renders synchronously, so the WebGL drawing buffer can
    be copied right after it. */
 const OPACITY_PROPS = { raster: ["raster-opacity"], line: ["line-opacity"], circle: ["circle-opacity", "circle-stroke-opacity"],
-                        background: ["background-opacity"] };
+                        background: ["background-opacity"], symbol: ["text-opacity", "icon-opacity"] };
 function snapshot(ids, W, H) {
   const keep = new Set(ids), saved = [];
   map.getLayersOrder().forEach(id => {
@@ -6587,6 +6762,8 @@ function drawLegendBox(ctx, rec, s, x, y, title) {
 
 const capHeight = desc => desc ? 62 : 46;
 
+/* overlay: true for the ASIT VD label map, or the credit of the overlay drawn */
+const OVERLAY_VD = " · overlay © ASIT VD, © OpenStreetMap contributors";
 function drawCaption(ctx, W, H, desc, overlay) {
   const h = capHeight(desc);
   ctx.save();
@@ -6608,7 +6785,7 @@ function drawCaption(ctx, W, H, desc, overlay) {
           (ids.length && currentRec.source === "s2" ? " · " + ids.map(timeOf).join(", ") : "") +
           (currentRec.source === "s2" && VEG_LABEL[S(currentRec).veg] ? " · " + VEG_LABEL[S(currentRec).veg].toLowerCase() + " mask" : "");
   }
-  sub += "  |  © swisstopo · contains modified Copernicus Sentinel data" + (overlay ? " · overlay © ASIT VD, © OpenStreetMap contributors" : "");
+  sub += "  |  © swisstopo · contains modified Copernicus Sentinel data" + (overlay ? (typeof overlay === "string" ? overlay : OVERLAY_VD) : "");
   ctx.font = "700 13px " + FONT;
   ctx.fillStyle = "#003F6B";
   ctx.fillText(title, 14, H - h + 21);
@@ -6640,7 +6817,7 @@ function decorate(cv, o, mpp, k) {
   }
   if (o.caption) {
     if (mpp) drawScaleBar(ctx, W, H, mpp * k, capHeight(o.desc));
-    drawCaption(ctx, W, H, o.desc, o.overlay);
+    drawCaption(ctx, W, H, o.desc, o.overlay && (o.overlayCredit || true));
   }
   ctx.restore();
 }
@@ -6658,10 +6835,11 @@ async function buildExportCanvas(o) {
 
   // Same paint order as the map: basemap, product layer(s), then the always-on-top overlay.
   const data = (compareMode ? cmpLayers : [current, xp.preview]).filter(Boolean).map(l => l.id);
+  if (labelIds.length) o.overlayCredit = " · labels © swisstopo";
   if (terrainOn) {
     // 3D: the view as seen, in one image (alone, a layer would show the edges of the terrain tiles where it has no
     // data); the area of interest clips all of it
-    const ids = ["ground"].concat(baseMapLayer ? [baseMapLayer.id] : [], data, o.overlay && labelsLayer ? [labelsLayer.id] : []);
+    const ids = ["ground"].concat(baseMapLayer ? [baseMapLayer.id] : [], data, o.overlay ? labelLayerIds() : []);
     ctx.save();
     if (clipAoi) { pathRings(ctx, rings); ctx.clip("evenodd"); }
     ctx.drawImage(snapshot(ids, W, H), 0, 0);
@@ -6672,7 +6850,8 @@ async function buildExportCanvas(o) {
     if (clipAoi) { pathRings(ctx, rings); ctx.clip("evenodd"); }
     if (data.length) ctx.drawImage(snapshot(data, W, H), 0, 0);
     ctx.restore();
-    if (o.overlay) ctx.drawImage(labelsLayer ? snapshot([labelsLayer.id], W, H) : await renderWmts(asitLayer, viewBox(), W, H), 0, 0);
+    // the labels as on the map; without them on the map, the ASIT VD label map of the view
+    if (o.overlay) ctx.drawImage(labelLayerIds().length ? snapshot(labelLayerIds(), W, H) : await renderWmts(asitLayer, viewBox(), W, H), 0, 0);
   }
   if (rings.length && o.aoiLine) strokeAoi(ctx, rings, 1);
 
@@ -6734,8 +6913,10 @@ function aoiRingsPx(bbox, W, H) {
 }
 
 /* WMTS basemap or overlay for any LV95 box and pixel size: picks the level of the swisstopo grid that matches the
-   output resolution and fetches its tiles within the layer's bounds. The map tiles are drawn with it too. */
-async function renderWmts(layer, bbox, W, H, signal) {
+   output resolution and fetches its tiles within the layer's bounds. The map tiles are drawn with it too, from the
+   level of the view (level) when it is within a factor 2.5 of the tile's resolution (in 3D the distant tiles are far
+   coarser than the centre of the view). */
+async function renderWmts(layer, bbox, W, H, signal, level) {
   const cv = makeCanvas(W, H), ctx = cv.getContext("2d"), lb = layer && layer.bounds || CH_BOX;
   const b = [Math.max(bbox[0], lb[0]), Math.max(bbox[1], lb[1]), Math.min(bbox[2], lb[2]), Math.min(bbox[3], lb[3])];
   if (!layer || b[2] <= b[0] || b[3] <= b[1]) return cv;
@@ -6743,6 +6924,7 @@ async function renderWmts(layer, bbox, W, H, signal) {
   const target = (bbox[2] - bbox[0]) / W, maxZ = layer.maxZ || 26;
   let z = 8;
   for (let i = 8; i <= maxZ; i++) if (RES[i] >= target * 0.75) z = i;
+  if (level >= 8 && level <= maxZ && Math.abs(Math.log(RES[level] / target)) <= Math.log(2.5)) z = level;
   const span = zz => {
     const t = 256 * RES[zz];
     return [Math.floor((b[0] - ORIGIN[0]) / t), Math.ceil((b[2] - ORIGIN[0]) / t) - 1,
@@ -7428,7 +7610,7 @@ async function tlFrame(it, area, W, H, o, signal) {
     ctx.fillText(rec.name + (rec.sub ? ": " + rec.sub : ""), 14, Hk - h + 21);
     ctx.font = "11px " + FONT; ctx.fillStyle = "#555";
     ctx.fillText(SOURCES[rec.source].name + (rec.source === "s2" && VEG_LABEL[s.veg] ? " · " + VEG_LABEL[s.veg].toLowerCase() + " mask" : "") +
-      "  |  © swisstopo · contains modified Copernicus Sentinel data" + (o.overlay ? " · overlay © ASIT VD, © OpenStreetMap contributors" : ""), 14, Hk - h + 37);
+      "  |  © swisstopo · contains modified Copernicus Sentinel data" + (o.overlay ? OVERLAY_VD : ""), 14, Hk - h + 37);
   }
   ctx.restore();
   return cv;
